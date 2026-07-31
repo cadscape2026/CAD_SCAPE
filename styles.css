@@ -109,9 +109,9 @@ body.light-mode .hero-overlay { background: rgba(255, 255, 255, 0.7); }
 .btn-small { background: #2b303b; border: none; color: #fff; padding: 8px 16px; border-radius: 6px; cursor: pointer; text-decoration: none; font-weight: 600;}
 .btn-small:hover { background: var(--blue-primary); }
 
-/* FORMS & MODALS & ADMIN REQUESTS */
+/* FORMS & MODALS */
 .form-card { background: var(--bg-card); padding: 2rem; border-radius: 12px; max-width: 600px; margin: 0 auto; border: 1px solid var(--border); }
-.form-card input, .form-card textarea { display: block; width: 100%; margin-bottom: 15px; padding: 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit;}
+.form-card input[type="text"], .form-card input[type="number"], .form-card input[type="tel"], .form-card input[type="url"], .form-card textarea { display: block; width: 100%; margin-bottom: 15px; padding: 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit;}
 .admin-req-card { background: var(--bg-main); border: 1px solid var(--border); padding: 1.5rem; margin-bottom: 1rem; border-radius: 8px; }
 .admin-req-card p { margin-bottom: 8px; font-size: 0.95rem; }
 .admin-req-card a { color: var(--blue-primary); text-decoration: none; }
@@ -123,4 +123,42 @@ body.light-mode .hero-overlay { background: rgba(255, 255, 255, 0.7); }
 .comment-box { background: var(--bg-main); padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px solid var(--border); }
 .comment-author { font-weight: bold; font-size: 0.85rem; color: var(--blue-primary); margin-bottom: 4px; }
 .comment-text { font-size: 0.95rem; }
-.modal-form input, .modal-form textarea { display: block; width: 100%; margin-bottom: 15px; padding: 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit; }
+.modal-form input[type="text"], .modal-form input[type="number"], .modal-form input[type="tel"], .modal-form input[type="url"], .modal-form textarea { display: block; width: 100%; margin-bottom: 15px; padding: 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-main); font-family: inherit; }
+
+/* DRAG AND DROP ZONE UI */
+.drop-zone {
+  max-width: 100%;
+  height: 180px;
+  padding: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  margin-bottom: 15px;
+  background: var(--bg-main);
+  transition: 0.2s;
+}
+.drop-zone--over {
+  border-style: solid;
+  border-color: var(--blue-primary);
+  background: rgba(0, 132, 255, 0.1);
+}
+.drop-zone__input {
+  display: none;
+}
+.drop-zone__thumb {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: var(--bg-main);
+  background-size: cover;
+  background-position: center;
+}
