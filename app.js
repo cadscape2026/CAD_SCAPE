@@ -1,29 +1,16 @@
-const API_BASE = "https://procad-backend-xyz.onrender.com/api"; // Keep your Render URL here
+const API_BASE = "https://procad-backend-xyz.onrender.com/api"; // Set to your live Render API
 
-// --- 1. THEME TOGGLE (Dark/Light) ---
-const themeToggle = document.getElementById('themeToggle');
-const body = document.body;
-themeToggle.addEventListener('click', () => {
-  if (body.classList.contains('dark-mode')) {
-    body.classList.remove('dark-mode');
-    body.classList.add('light-mode');
-    themeToggle.textContent = '🌙';
-  } else {
-    body.classList.remove('light-mode');
-    body.classList.add('dark-mode');
-    themeToggle.textContent = '☀️';
-  }
-});
-
-// --- 2. NAVIGATION ---
+// --- NAVIGATION ---
 const views = {
   home: document.getElementById('viewHome'),
   market: document.getElementById('viewMarketplace'),
+  requests: document.getElementById('viewRequests'),
   admin: document.getElementById('viewAdmin')
 };
 const navs = {
   home: document.getElementById('navHome'),
   market: document.getElementById('navMarket'),
+  requests: document.getElementById('navRequests'),
   admin: document.getElementById('navAdmin')
 };
 
@@ -31,43 +18,38 @@ function switchView(target) {
   Object.values(views).forEach(v => v.classList.add('hidden'));
   Object.values(navs).forEach(n => n.classList.remove('active'));
   views[target].classList.remove('hidden');
-  navs[target].classList.add('active');
+  if(navs[target]) navs[target].classList.add('active');
 }
 
-navs.home.addEventListener('click', (e) => { e.preventDefault(); switchView('home'); });
-navs.market.addEventListener('click', (e) => { e.preventDefault(); switchView('market'); });
-navs.admin.addEventListener('click', (e) => { e.preventDefault(); switchView('admin'); });
+navs.home.addEventListener('click', () => switchView('home'));
+navs.market.addEventListener('click', () => switchView('market'));
+navs.requests.addEventListener('click', () => switchView('requests'));
+navs.admin.addEventListener('click', () => switchView('admin'));
 document.getElementById('heroBrowseBtn').addEventListener('click', () => switchView('market'));
+document.getElementById('heroRequestBtn').addEventListener('click', () => switchView('requests'));
 
+// --- AUTHENTICATION (Role Based) ---
+const adminEmails = ["your-email@gmail.com", "friend-email@gmail.com"]; 
+let currentUser = { name: "Guest", email: null };
 
-// --- 3. REAL GOOGLE AUTHENTICATION (OAuth2) ---
-const customLoginBtn = document.getElementById('customLoginBtn');
-const userInfo = document.getElementById('userInfo');
-const userAvatar = document.getElementById('userAvatar');
-const logoutBtn = document.getElementById('logoutBtn');
-
-const adminEmails = ["your-email@gmail.com", "friend-email@gmail.com"]; // Update these
-
-// We use the modern Google Identity Services Token Client for custom buttons
-let tokenClient;
 window.onload = function () {
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: 'YOUR_GOOGLE_CLIENT_ID_HERE', // You need to generate this in Google Cloud Console
+  google.accounts.oauth2.initTokenClient({
+    client_id: 'YOUR_GOOGLE_CLIENT_ID', 
     scope: 'email profile',
     callback: async (tokenResponse) => {
       if (tokenResponse && tokenResponse.access_token) {
-        // Fetch user details using the access token
         const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
         });
         const user = await res.json();
         
-        // Update UI
-        customLoginBtn.classList.add('hidden');
-        userInfo.classList.remove('hidden');
-        userAvatar.src = user.picture;
+        currentUser = { name: user.name, email: user.email };
+        document.getElementById('customLoginBtn').classList.add('hidden');
+        document.getElementById('userInfo').classList.remove('hidden');
+        document.getElementById('userNameDisplay').textContent = user.given_name;
+        document.getElementById('userAvatar').src = user.picture;
 
-        // Role-based Access
+        // Unlock Admin if authorized developer/admin
         if (adminEmails.includes(user.email)) {
           navs.admin.classList.remove('hidden');
         }
@@ -76,65 +58,69 @@ window.onload = function () {
   });
 };
 
-customLoginBtn.addEventListener('click', () => {
-  tokenClient.requestAccessToken(); // Triggers the real Google popup
+document.getElementById('customLoginBtn').addEventListener('click', () => {
+  if (typeof google !== 'undefined') {
+    const client = google.accounts.oauth2.initTokenClient({...}); // Must be initialized properly in production
+    client.requestAccessToken(); 
+  } else {
+    // Fallback Mock Login for local testing if Google isn't setup yet
+    currentUser = { name: "Admin Developer", email: "your-email@gmail.com" };
+    document.getElementById('customLoginBtn').classList.add('hidden');
+    document.getElementById('userInfo').classList.remove('hidden');
+    document.getElementById('userNameDisplay').textContent = "Admin";
+    navs.admin.classList.remove('hidden');
+  }
 });
 
-logoutBtn.addEventListener('click', () => {
-  customLoginBtn.classList.remove('hidden');
-  userInfo.classList.add('hidden');
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  currentUser = { name: "Guest", email: null };
+  document.getElementById('customLoginBtn').classList.remove('hidden');
+  document.getElementById('userInfo').classList.add('hidden');
   navs.admin.classList.add('hidden');
   switchView('home');
 });
 
-
-// --- 4. STATE: CART, WISHLIST, LIKES ---
+// --- STATE: CART & WISHLIST ---
 let cart = JSON.parse(localStorage.getItem('cadCart')) || [];
 let wishlist = JSON.parse(localStorage.getItem('cadWishlist')) || [];
-// Note: In production, likes and comments MUST be saved to the database via API. 
-// For now, we mock them on the frontend.
-let mockedLikes = {}; 
+let allProducts = []; // Cache products for the comments modal
 
 function updateCounters() {
   document.getElementById('cartCount').textContent = cart.length;
   document.getElementById('wishlistCount').textContent = wishlist.length;
 }
 
-// --- 5. RENDER PRODUCTS ---
+// --- RENDER PRODUCTS ---
 async function loadProducts() {
   try {
     const response = await fetch(`${API_BASE}/products`);
-    const products = await response.json();
+    allProducts = await response.json();
     const grid = document.getElementById('productGrid');
     grid.innerHTML = '';
     
-    products.forEach(p => {
-      // Logic for Free (Green) vs Paid
+    allProducts.forEach(p => {
       const priceDisplay = p.price === 0 
         ? `<span class="price text-green">Free</span>` 
         : `<span class="price">$${p.price.toFixed(2)}</span>`;
 
       const actionHtml = p.price === 0 
-        ? `<a href="${p.download_url}" target="_blank" class="btn-small">Download Drive File</a>`
+        ? `<a href="${p.download_url}" target="_blank" class="btn-small">Get File</a>`
         : `<button onclick="addToCart(${p.id}, '${p.name}', ${p.price})" class="btn-small">Add to Cart</button>`;
 
-      const isWishlisted = wishlist.includes(p.id) ? 'active' : '';
-      const likesCount = mockedLikes[p.id] || Math.floor(Math.random() * 50); // Mocking initial likes
+      const isWishlisted = wishlist.includes(p.id) ? 'Remove from Wishlist' : 'Add to Wishlist';
 
       grid.innerHTML += `
         <div class="card">
           <div class="card-img-wrapper">
             <img src="${p.image_url}" alt="${p.name}">
-            <button class="wishlist-icon ${isWishlisted}" onclick="toggleWishlist(${p.id}, this)">
-              ${isWishlisted ? '♥' : '♡'}
-            </button>
           </div>
           <div class="card-info">
             <h3 class="card-title">${p.name}</h3>
+            <p class="card-desc">${p.description || 'No description provided.'}</p>
             
             <div class="card-social">
-              <button class="social-btn" onclick="toggleLike(${p.id}, this)">❤️ <span>${likesCount}</span></button>
-              <button class="social-btn" onclick="openComments(${p.id})">💬 Comment</button>
+              <button class="social-btn" onclick="toggleWishlist(${p.id}, this)">★ ${isWishlisted}</button>
+              <button class="social-btn" onclick="openComments(${p.id})">💬 Comments (${p.comments.length})</button>
             </div>
 
             <div class="card-footer">
@@ -150,82 +136,109 @@ async function loadProducts() {
   }
 }
 
-// --- 6. INTERACTIONS ---
 window.toggleWishlist = function(id, btnElement) {
   const index = wishlist.indexOf(id);
   if (index > -1) {
     wishlist.splice(index, 1);
-    btnElement.classList.remove('active');
-    btnElement.textContent = '♡';
+    btnElement.textContent = '★ Add to Wishlist';
   } else {
     wishlist.push(id);
-    btnElement.classList.add('active');
-    btnElement.textContent = '♥';
+    btnElement.textContent = '★ Remove from Wishlist';
   }
   localStorage.setItem('cadWishlist', JSON.stringify(wishlist));
   updateCounters();
-}
-
-window.toggleLike = function(id, btnElement) {
-  let countSpan = btnElement.querySelector('span');
-  let currentCount = parseInt(countSpan.textContent);
-  
-  if (btnElement.classList.contains('liked')) {
-    btnElement.classList.remove('liked');
-    countSpan.textContent = currentCount - 1;
-  } else {
-    btnElement.classList.add('liked');
-    countSpan.textContent = currentCount + 1;
-  }
-}
-
-window.openComments = function(id) {
-  // To build out a real comment section, you will need a new API endpoint on your Flask backend.
-  alert("Comment section opening for product ID: " + id + "\n(Requires backend database integration to save text)");
 }
 
 window.addToCart = function(id, name, price) {
   cart.push({ id, name, price });
   localStorage.setItem('cadCart', JSON.stringify(cart));
   updateCounters();
-  renderCart();
+  alert(`${name} added to cart!`);
 }
 
-// --- 7. MODAL LOGIC ---
-const cartModal = document.getElementById('cartModal');
-document.getElementById('cartBtn').addEventListener('click', () => {
-  cartModal.classList.remove('hidden');
-  renderCart();
-});
-document.getElementById('closeCart').addEventListener('click', () => cartModal.classList.add('hidden'));
+// --- COMMENTS LOGIC ---
+let activeCommentProductId = null;
 
-function renderCart() {
-  const container = document.getElementById('cartItems');
-  container.innerHTML = '';
-  let total = 0;
-  
-  cart.forEach((item, i) => {
-    total += item.price;
-    container.innerHTML += `
-      <div class="cart-item">
-        <span>${item.name}</span>
-        <div>
-          <span>$${item.price.toFixed(2)}</span>
-          <button onclick="removeFromCart(${i})" style="color:red; background:none; border:none; cursor:pointer; margin-left:10px;">✕</button>
+window.openComments = function(productId) {
+  activeCommentProductId = productId;
+  const product = allProducts.find(p => p.id === productId);
+  const commentsList = document.getElementById('commentsList');
+  commentsList.innerHTML = '';
+
+  if(product.comments.length === 0) {
+    commentsList.innerHTML = '<p style="color:#8b949e">No comments yet. Be the first!</p>';
+  } else {
+    product.comments.forEach(c => {
+      commentsList.innerHTML += `
+        <div class="comment-box">
+          <div class="comment-author">${c.user_name}</div>
+          <div class="comment-text">${c.text}</div>
         </div>
-      </div>
-    `;
+      `;
+    });
+  }
+  document.getElementById('commentsModal').classList.remove('hidden');
+}
+
+document.getElementById('submitCommentBtn').addEventListener('click', async () => {
+  const textInput = document.getElementById('newCommentText');
+  if(!textInput.value.trim()) return;
+
+  const commentData = {
+    product_id: activeCommentProductId,
+    user_name: currentUser.name,
+    text: textInput.value
+  };
+
+  await fetch(`${API_BASE}/comments`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(commentData)
   });
-  document.getElementById('cartTotal').textContent = total.toFixed(2);
-}
 
-window.removeFromCart = function(index) {
-  cart.splice(index, 1);
-  localStorage.setItem('cadCart', JSON.stringify(cart));
-  updateCounters();
-  renderCart();
-}
+  textInput.value = '';
+  loadProducts(); // Refresh data from database
+  setTimeout(() => openComments(activeCommentProductId), 500); // Reopen modal with new data
+});
 
-// --- INIT ---
+// --- FORMS LOGIC ---
+document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const data = {
+    name: document.getElementById('modelName').value,
+    description: document.getElementById('modelDesc').value,
+    price: document.getElementById('modelPrice').value,
+    image_url: document.getElementById('modelImage').value,
+    download_url: document.getElementById('modelFile').value
+  };
+
+  await fetch(`${API_BASE}/products`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  alert("Product Uploaded!");
+  document.getElementById('uploadForm').reset();
+  loadProducts();
+});
+
+document.getElementById('requestForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const data = {
+    details: document.getElementById('reqDetails').value,
+    reference_link: document.getElementById('reqLink').value,
+    user_email: currentUser.email || 'guest@example.com'
+  };
+
+  await fetch(`${API_BASE}/requests`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  alert("Request Submitted! We will review your CAD requirements.");
+  document.getElementById('requestForm').reset();
+});
+
+// Init
 updateCounters();
 loadProducts();
