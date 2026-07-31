@@ -70,6 +70,33 @@ def add_product():
     products_collection.insert_one(new_product)
     return jsonify({"message": "Product added successfully"}), 201
 
+@app.route('/api/products/<product_id>', methods=['PUT'])
+def update_product(product_id):
+    """Admin route to edit an existing product."""
+    data = request.json
+    try:
+        updated_data = {
+            "name": data.get('name'),
+            "description": data.get('description', ''),
+            "price": float(data.get('price', 0)),
+            "image_url": data.get('image_url'),
+            "download_url": data.get('download_url')
+        }
+        products_collection.update_one({"_id": ObjectId(product_id)}, {"$set": updated_data})
+        return jsonify({"message": "Product updated successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+@app.route('/api/products/<product_id>', methods=['DELETE'])
+def delete_product(product_id):
+    """Admin route to delete a product and its comments."""
+    try:
+        products_collection.delete_one({"_id": ObjectId(product_id)})
+        comments_collection.delete_many({"product_id": product_id})
+        return jsonify({"message": "Product deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
 @app.route('/api/comments', methods=['POST'])
 def add_comment():
     data = request.json
