@@ -112,8 +112,6 @@
         <input type="tel" id="reqPhone" placeholder="Phone or WhatsApp Number" required>
         <textarea id="reqDetails" rows="5" placeholder="Dimensions, constraints, mechanical requirements..." required></textarea>
         <input type="url" id="reqLink" placeholder="Google Drive link to sketches/references (Optional)">
-        
-        <!-- FIX: Changed to type="button" to prevent refresh -->
         <button type="button" id="requestBtn" class="btn-blue-large" style="width:100%" onclick="submitDesignRequest()">Submit Request</button>
       </form>
     </div>
@@ -135,10 +133,14 @@
         <input type="text" id="modelName" placeholder="Product Name" required>
         <textarea id="modelDesc" rows="3" placeholder="Product Description..." required></textarea>
         <input type="number" id="modelPrice" step="0.01" value="0" placeholder="Price (0 for Free)" required>
-        <input type="url" id="modelImage" placeholder="Thumbnail Image URL" required>
-        <input type="url" id="modelFile" placeholder="Google Drive Link for Download" required>
         
-        <!-- FIX: Changed to type="button" to prevent refresh -->
+        <!-- DRAG AND DROP ZONE FOR UPLOAD -->
+        <div class="drop-zone" id="uploadDropZone">
+          <span class="drop-zone__prompt">Drag & Drop Image Here or Click to Browse</span>
+          <input type="file" id="modelImageFile" class="drop-zone__input" accept="image/*">
+        </div>
+
+        <input type="url" id="modelFile" placeholder="Google Drive Link for CAD Download" required>
         <button type="button" id="uploadBtn" class="btn-blue-large" style="width:100%" onclick="submitNewProduct()">Upload to Database</button>
       </form>
     </div>
@@ -191,10 +193,14 @@
         <input type="text" id="editModelName" placeholder="Product Name" required>
         <textarea id="editModelDesc" rows="3" placeholder="Product Description..." required></textarea>
         <input type="number" id="editModelPrice" step="0.01" placeholder="Price (0 for Free)" required>
-        <input type="url" id="editModelImage" placeholder="Thumbnail Image URL" required>
-        <input type="url" id="editModelFile" placeholder="Google Drive Link for Download" required>
         
-        <!-- FIX: Changed to type="button" to prevent refresh -->
+        <!-- DRAG AND DROP ZONE FOR EDITING -->
+        <div class="drop-zone" id="editDropZone">
+          <span class="drop-zone__prompt">Drag & Drop New Image Here or Click to Browse</span>
+          <input type="file" id="editModelImageFile" class="drop-zone__input" accept="image/*">
+        </div>
+
+        <input type="url" id="editModelFile" placeholder="Google Drive Link for CAD Download" required>
         <button type="button" id="editBtn" class="btn-blue-large" style="width:100%" onclick="submitEditProduct()">Save Changes</button>
       </form>
     </div>
