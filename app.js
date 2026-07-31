@@ -1,4 +1,4 @@
-const API_BASE = "https://procad-backend.onrender.com"; // IMPORTANT: Replace this with your actual Render URL!
+const API_BASE = "https://procad-backend.onrender.com/api"; // Fixed: Added /api to the end!
 
 // --- NAVIGATION ---
 const views = {
@@ -72,14 +72,40 @@ document.getElementById('themeToggleBtn').addEventListener('click', () => {
 
 // --- AUTHENTICATION ---
 const adminEmails = ["deekshith123pi@gmail.com", "cadscape2026@gmail.com"]; 
-let currentUser = { name: "Guest", email: null };
-let tokenClient; // Defined variable to hold the Google Login instance
+// Fixed: Now checks the browser's local memory to see if you are already logged in
+let currentUser = JSON.parse(localStorage.getItem('cadUser')) || { name: "Guest", email: null };
+let tokenClient; 
+
+function handleSuccessfulLogin(name, email, avatarUrl) {
+  // Save the user to the browser so refresh doesn't log them out
+  currentUser = { name: name, email: email, avatar: avatarUrl };
+  localStorage.setItem('cadUser', JSON.stringify(currentUser)); 
+
+  document.getElementById('customLoginBtn').classList.add('hidden');
+  
+  // Update Sidebar
+  document.getElementById('sidebarGuestInfo').classList.add('hidden');
+  document.getElementById('sidebarUserInfo').classList.remove('hidden');
+  if(avatarUrl) document.getElementById('userAvatar').src = avatarUrl;
+  document.getElementById('userNameDisplay').textContent = name;
+  document.getElementById('userEmailDisplay').textContent = email;
+  document.getElementById('logoutBtn').classList.remove('hidden');
+
+  if (adminEmails.includes(email)) {
+    navs.admin.classList.remove('hidden');
+  }
+}
+
+// Auto-login instantly if you refresh the page
+if (currentUser.email) {
+  handleSuccessfulLogin(currentUser.name, currentUser.email, currentUser.avatar);
+}
 
 window.onload = function () {
   try {
     if (typeof google !== 'undefined' && google.accounts) {
       tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: '668904528697-eotq6djic32hvggt9ge3ja90piq22d5e.apps.googleusercontent.com', // Added Quotes
+        client_id: '668904528697-eotq6djic32hvggt9ge3ja90piq22d5e.apps.googleusercontent.com', 
         scope: 'email profile',
         callback: async (tokenResponse) => {
           if (tokenResponse && tokenResponse.access_token) {
@@ -106,25 +132,10 @@ document.getElementById('customLoginBtn').addEventListener('click', () => {
   }
 });
 
-function handleSuccessfulLogin(name, email, avatarUrl) {
-  currentUser = { name: name, email: email };
-  document.getElementById('customLoginBtn').classList.add('hidden');
-  
-  // Update Sidebar
-  document.getElementById('sidebarGuestInfo').classList.add('hidden');
-  document.getElementById('sidebarUserInfo').classList.remove('hidden');
-  document.getElementById('userAvatar').src = avatarUrl;
-  document.getElementById('userNameDisplay').textContent = name;
-  document.getElementById('userEmailDisplay').textContent = email;
-  document.getElementById('logoutBtn').classList.remove('hidden');
-
-  if (adminEmails.includes(email)) {
-    navs.admin.classList.remove('hidden');
-  }
-}
-
 document.getElementById('logoutBtn').addEventListener('click', () => {
   currentUser = { name: "Guest", email: null };
+  localStorage.removeItem('cadUser'); // Wipes the memory so you stay logged out
+  
   document.getElementById('customLoginBtn').classList.remove('hidden');
   
   // Reset Sidebar
