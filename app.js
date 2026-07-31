@@ -1,4 +1,4 @@
-const API_BASE = "https://procad-backend-xyz.onrender.com/api"; // IMPORTANT: Replace this with your actual Render URL!
+const API_BASE = "https://procad-backend.onrender.com"; // IMPORTANT: Replace this with your actual Render URL!
 
 // --- NAVIGATION ---
 const views = {
