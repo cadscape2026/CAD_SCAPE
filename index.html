@@ -177,6 +177,23 @@
     </div>
   </div>
 
+  <div id="editModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Product</h3>
+        <button class="close-modal" onclick="document.getElementById('editModal').classList.add('hidden')">&times;</button>
+      </div>
+      <form id="editForm" class="modal-form" style="margin-top: 15px;">
+        <input type="text" id="editModelName" placeholder="Product Name" required>
+        <textarea id="editModelDesc" rows="3" placeholder="Product Description..." required></textarea>
+        <input type="number" id="editModelPrice" step="0.01" placeholder="Price (0 for Free)" required>
+        <input type="url" id="editModelImage" placeholder="Thumbnail Image URL" required>
+        <input type="url" id="editModelFile" placeholder="Google Drive Link for Download" required>
+        <button type="submit" class="btn-blue-large" style="width:100%">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>
