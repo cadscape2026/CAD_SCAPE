@@ -30,7 +30,7 @@ navs.admin.addEventListener('click', (e) => { e.preventDefault(); switchView('ad
 document.getElementById('heroBrowseBtn').addEventListener('click', () => switchView('market'));
 
 
-// --- ADMIN TABS (Upload vs View Requests) ---
+// --- ADMIN TABS ---
 document.getElementById('btnShowUpload').addEventListener('click', () => {
   document.getElementById('adminUploadSection').classList.remove('hidden');
   document.getElementById('adminRequestsSection').classList.add('hidden');
@@ -47,7 +47,7 @@ document.getElementById('btnShowRequests').addEventListener('click', () => {
 });
 
 
-// --- SIDEBAR & THEME TOGGLE ---
+// --- SIDEBAR & THEME ---
 const sidebar = document.getElementById('sidebar');
 const sidebarOverlay = document.getElementById('sidebarOverlay');
 
@@ -150,6 +150,7 @@ function updateCounters() {
   document.getElementById('wishlistCount').textContent = wishlist.length;
 }
 
+// Keep the converter alive for any old products that still use Drive links
 function getDirectImageUrl(url) {
   if (!url) return '';
   if (url.includes('drive.google.com/file/d/')) {
@@ -159,6 +160,88 @@ function getDirectImageUrl(url) {
     }
   }
   return url; 
+}
+
+// --- DRAG AND DROP IMAGE LOGIC ---
+let currentUploadBase64 = "";
+let currentEditBase64 = "";
+
+function setupDropZone(dropZoneId, inputId, isEdit = false) {
+  const dropZoneElement = document.getElementById(dropZoneId);
+  const inputElement = document.getElementById(inputId);
+
+  // Clicking opens file browser
+  dropZoneElement.addEventListener("click", () => inputElement.click());
+
+  // Selecting file via click
+  inputElement.addEventListener("change", () => {
+    if (inputElement.files.length) {
+      updateThumbnail(dropZoneElement, inputElement.files[0], isEdit);
+    }
+  });
+
+  // Drag over effects
+  dropZoneElement.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropZoneElement.classList.add("drop-zone--over");
+  });
+
+  ["dragleave", "dragend"].forEach((type) => {
+    dropZoneElement.addEventListener(type, () => {
+      dropZoneElement.classList.remove("drop-zone--over");
+    });
+  });
+
+  // Dropping file
+  dropZoneElement.addEventListener("drop", (e) => {
+    e.preventDefault();
+    if (e.dataTransfer.files.length) {
+      inputElement.files = e.dataTransfer.files;
+      updateThumbnail(dropZoneElement, e.dataTransfer.files[0], isEdit);
+    }
+    dropZoneElement.classList.remove("drop-zone--over");
+  });
+}
+
+function updateThumbnail(dropZoneElement, file, isEdit) {
+  let thumbnailElement = dropZoneElement.querySelector(".drop-zone__thumb");
+
+  // Remove the text prompt
+  if (dropZoneElement.querySelector(".drop-zone__prompt")) {
+    dropZoneElement.querySelector(".drop-zone__prompt").remove();
+  }
+
+  // Create thumbnail element if it doesn't exist
+  if (!thumbnailElement) {
+    thumbnailElement = document.createElement("div");
+    thumbnailElement.classList.add("drop-zone__thumb");
+    dropZoneElement.appendChild(thumbnailElement);
+  }
+
+  // Convert to Base64 String
+  if (file.type.startsWith("image/")) {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      thumbnailElement.style.backgroundImage = `url('${reader.result}')`;
+      if (isEdit) {
+        currentEditBase64 = reader.result;
+      } else {
+        currentUploadBase64 = reader.result;
+      }
+    };
+  }
+}
+
+// Initialize the two drop zones
+setupDropZone("uploadDropZone", "modelImageFile", false);
+setupDropZone("editDropZone", "editModelImageFile", true);
+
+function resetDropZone(dropZoneId) {
+  const dropZoneElement = document.getElementById(dropZoneId);
+  dropZoneElement.innerHTML = `<span class="drop-zone__prompt">Drag & Drop Image Here or Click to Browse</span>
+                               <input type="file" id="${dropZoneId === 'uploadDropZone' ? 'modelImageFile' : 'editModelImageFile'}" class="drop-zone__input" accept="image/*">`;
+  setupDropZone(dropZoneId, dropZoneId === 'uploadDropZone' ? 'modelImageFile' : 'editModelImageFile', dropZoneId === 'editDropZone');
 }
 
 
@@ -267,26 +350,25 @@ async function loadProducts() {
   }
 }
 
-// --- ADMIN: UPLOAD PRODUCT (BULLETPROOF FIX) ---
+// --- ADMIN: UPLOAD PRODUCT ---
 window.submitNewProduct = async function() {
   const btn = document.getElementById('uploadBtn');
   const name = document.getElementById('modelName').value;
   const desc = document.getElementById('modelDesc').value;
   const price = document.getElementById('modelPrice').value;
-  const image = document.getElementById('modelImage').value;
   const file = document.getElementById('modelFile').value;
 
-  if (!name || !desc || !image || !file) {
-    alert("Please fill in all required fields!");
+  if (!name || !desc || !currentUploadBase64 || !file) {
+    alert("Please fill in all fields and upload an image!");
     return;
   }
 
-  // Visual Feedback - Orange Loading Button
   btn.textContent = "Uploading... Please wait";
   btn.style.backgroundColor = "#f59e0b";
   btn.style.pointerEvents = "none"; 
 
-  const data = { name, description: desc, price, image_url: image, download_url: file };
+  // Send the Base64 image directly!
+  const data = { name, description: desc, price, image_url: currentUploadBase64, download_url: file };
 
   try {
     const response = await fetch(`${API_BASE}/products`, {
@@ -298,6 +380,8 @@ window.submitNewProduct = async function() {
     if (response.ok) {
       alert("Product Uploaded Successfully!");
       document.getElementById('uploadForm').reset();
+      currentUploadBase64 = ""; // Reset variable
+      resetDropZone("uploadDropZone"); // Reset UI
       loadProducts(); 
     } else {
       alert("Failed to upload product. Check backend connection.");
@@ -305,7 +389,6 @@ window.submitNewProduct = async function() {
   } catch (error) {
     alert("Error uploading product. Is the backend running?");
   } finally {
-    // Reset Button
     btn.textContent = "Upload to Database";
     btn.style.backgroundColor = ""; 
     btn.style.pointerEvents = "auto";
@@ -313,7 +396,7 @@ window.submitNewProduct = async function() {
 };
 
 
-// --- ADMIN: EDIT & DELETE PRODUCTS (BULLETPROOF FIX) ---
+// --- ADMIN: EDIT & DELETE PRODUCTS ---
 let currentEditId = null;
 
 window.openEditModal = function(id) {
@@ -324,9 +407,17 @@ window.openEditModal = function(id) {
   document.getElementById('editModelName').value = product.name;
   document.getElementById('editModelDesc').value = product.description;
   document.getElementById('editModelPrice').value = product.price;
-  document.getElementById('editModelImage').value = product.image_url;
   document.getElementById('editModelFile').value = product.download_url;
   
+  // Set existing image as base64 backup
+  currentEditBase64 = product.image_url;
+  
+  // Display the existing image in the drop zone
+  const dropZone = document.getElementById('editDropZone');
+  dropZone.innerHTML = `<div class="drop-zone__thumb" style="background-image: url('${getDirectImageUrl(product.image_url)}')"></div>
+                        <input type="file" id="editModelImageFile" class="drop-zone__input" accept="image/*">`;
+  setupDropZone("editDropZone", "editModelImageFile", true);
+
   document.getElementById('editModal').classList.remove('hidden');
 }
 
@@ -335,16 +426,15 @@ window.submitEditProduct = async function() {
   const name = document.getElementById('editModelName').value;
   const desc = document.getElementById('editModelDesc').value;
   const price = document.getElementById('editModelPrice').value;
-  const image = document.getElementById('editModelImage').value;
   const file = document.getElementById('editModelFile').value;
 
-  if (!name || !desc || !image || !file) return alert("Fill all fields!");
+  if (!name || !desc || !currentEditBase64 || !file) return alert("Fill all fields and include an image!");
 
   btn.textContent = "Saving...";
   btn.style.backgroundColor = "#f59e0b";
   btn.style.pointerEvents = "none";
 
-  const data = { name, description: desc, price, image_url: image, download_url: file };
+  const data = { name, description: desc, price, image_url: currentEditBase64, download_url: file };
 
   try {
     const res = await fetch(`${API_BASE}/products/${currentEditId}`, {
@@ -385,7 +475,7 @@ window.deleteProduct = async function(id) {
   }
 }
 
-// --- SUBMITTING REQUESTS (BULLETPROOF FIX) ---
+// --- SUBMITTING REQUESTS ---
 window.submitDesignRequest = async function() {
   const btn = document.getElementById('requestBtn');
   const phone = document.getElementById('reqPhone').value;
