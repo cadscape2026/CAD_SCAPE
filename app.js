@@ -89,7 +89,6 @@ function handleSuccessfulLogin(name, email, avatarUrl) {
   if (adminEmails.includes(email)) {
     navs.admin.classList.remove('hidden');
   }
-
   renderGrid(allProducts);
 }
 
@@ -151,7 +150,6 @@ function updateCounters() {
   document.getElementById('wishlistCount').textContent = wishlist.length;
 }
 
-// --- HELPER: GOOGLE DRIVE IMAGE CONVERTER ---
 function getDirectImageUrl(url) {
   if (!url) return '';
   if (url.includes('drive.google.com/file/d/')) {
@@ -269,20 +267,26 @@ async function loadProducts() {
   }
 }
 
-// --- ADMIN: UPLOAD PRODUCT (FULLY BULLETPROOF) ---
-window.handleUpload = async function(e) {
-  e.preventDefault(); 
-  const btn = e.target.querySelector('button[type="submit"]');
-  btn.textContent = "Uploading..."; // Visual Feedback!
-  btn.disabled = true;
+// --- ADMIN: UPLOAD PRODUCT (BULLETPROOF FIX) ---
+window.submitNewProduct = async function() {
+  const btn = document.getElementById('uploadBtn');
+  const name = document.getElementById('modelName').value;
+  const desc = document.getElementById('modelDesc').value;
+  const price = document.getElementById('modelPrice').value;
+  const image = document.getElementById('modelImage').value;
+  const file = document.getElementById('modelFile').value;
 
-  const data = {
-    name: document.getElementById('modelName').value,
-    description: document.getElementById('modelDesc').value,
-    price: document.getElementById('modelPrice').value,
-    image_url: document.getElementById('modelImage').value,
-    download_url: document.getElementById('modelFile').value
-  };
+  if (!name || !desc || !image || !file) {
+    alert("Please fill in all required fields!");
+    return;
+  }
+
+  // Visual Feedback - Orange Loading Button
+  btn.textContent = "Uploading... Please wait";
+  btn.style.backgroundColor = "#f59e0b";
+  btn.style.pointerEvents = "none"; 
+
+  const data = { name, description: desc, price, image_url: image, download_url: file };
 
   try {
     const response = await fetch(`${API_BASE}/products`, {
@@ -301,13 +305,15 @@ window.handleUpload = async function(e) {
   } catch (error) {
     alert("Error uploading product. Is the backend running?");
   } finally {
+    // Reset Button
     btn.textContent = "Upload to Database";
-    btn.disabled = false;
+    btn.style.backgroundColor = ""; 
+    btn.style.pointerEvents = "auto";
   }
 };
 
 
-// --- ADMIN: EDIT & DELETE PRODUCTS ---
+// --- ADMIN: EDIT & DELETE PRODUCTS (BULLETPROOF FIX) ---
 let currentEditId = null;
 
 window.openEditModal = function(id) {
@@ -324,19 +330,21 @@ window.openEditModal = function(id) {
   document.getElementById('editModal').classList.remove('hidden');
 }
 
-window.handleEdit = async function(e) {
-  e.preventDefault();
-  const btn = e.target.querySelector('button[type="submit"]');
-  btn.textContent = "Saving...";
-  btn.disabled = true;
+window.submitEditProduct = async function() {
+  const btn = document.getElementById('editBtn');
+  const name = document.getElementById('editModelName').value;
+  const desc = document.getElementById('editModelDesc').value;
+  const price = document.getElementById('editModelPrice').value;
+  const image = document.getElementById('editModelImage').value;
+  const file = document.getElementById('editModelFile').value;
 
-  const data = {
-    name: document.getElementById('editModelName').value,
-    description: document.getElementById('editModelDesc').value,
-    price: document.getElementById('editModelPrice').value,
-    image_url: document.getElementById('editModelImage').value,
-    download_url: document.getElementById('editModelFile').value
-  };
+  if (!name || !desc || !image || !file) return alert("Fill all fields!");
+
+  btn.textContent = "Saving...";
+  btn.style.backgroundColor = "#f59e0b";
+  btn.style.pointerEvents = "none";
+
+  const data = { name, description: desc, price, image_url: image, download_url: file };
 
   try {
     const res = await fetch(`${API_BASE}/products/${currentEditId}`, {
@@ -356,7 +364,8 @@ window.handleEdit = async function(e) {
     alert("Error communicating with server.");
   } finally {
     btn.textContent = "Save Changes";
-    btn.disabled = false;
+    btn.style.backgroundColor = "";
+    btn.style.pointerEvents = "auto";
   }
 };
 
@@ -376,33 +385,45 @@ window.deleteProduct = async function(id) {
   }
 }
 
-// --- SUBMITTING & FETCHING REQUESTS ---
-window.handleRequest = async function(e) {
-  e.preventDefault();
-  const btn = e.target.querySelector('button[type="submit"]');
+// --- SUBMITTING REQUESTS (BULLETPROOF FIX) ---
+window.submitDesignRequest = async function() {
+  const btn = document.getElementById('requestBtn');
+  const phone = document.getElementById('reqPhone').value;
+  const details = document.getElementById('reqDetails').value;
+  const link = document.getElementById('reqLink').value;
+
+  if(!phone || !details) return alert("Please provide your phone number and details.");
+
   btn.textContent = "Submitting...";
-  btn.disabled = true;
+  btn.style.backgroundColor = "#f59e0b";
+  btn.style.pointerEvents = "none";
 
   const data = {
-    details: document.getElementById('reqDetails').value,
-    reference_link: document.getElementById('reqLink').value, 
-    phone: document.getElementById('reqPhone').value,         
+    details: details,
+    reference_link: link, 
+    phone: phone,         
     user_email: currentUser.email || 'guest@example.com'
   };
 
   try {
-    await fetch(`${API_BASE}/requests`, {
+    const res = await fetch(`${API_BASE}/requests`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
-    alert("Request Submitted! We will review your CAD requirements.");
-    document.getElementById('requestForm').reset();
+    
+    if(res.ok) {
+      alert("Request Submitted! We will review your CAD requirements.");
+      document.getElementById('requestForm').reset();
+    } else {
+      alert("Failed to submit request.");
+    }
   } catch (error) {
     alert("Error submitting request.");
   } finally {
     btn.textContent = "Submit Request";
-    btn.disabled = false;
+    btn.style.backgroundColor = "";
+    btn.style.pointerEvents = "auto";
   }
 };
 
@@ -449,7 +470,7 @@ window.removeFromCart = function(index) {
   cart.splice(index, 1);
   localStorage.setItem('cadCart', JSON.stringify(cart));
   updateCounters();
-  renderCart(); // Refresh the modal visually
+  renderCart(); 
 }
 
 function renderCart() {
@@ -477,7 +498,6 @@ function renderCart() {
   cartTotalSpan.textContent = total.toFixed(2);
 }
 
-// Opens the Cart Window
 document.getElementById('cartBtn').addEventListener('click', () => {
   renderCart();
   document.getElementById('cartModal').classList.remove('hidden');
@@ -543,7 +563,7 @@ document.getElementById('submitCommentBtn').addEventListener('click', async () =
     textInput.value = '';
     document.getElementById('commentsModal').classList.add('hidden');
     alert("Comment posted successfully!");
-    loadProducts(); // Automatically refresh the store to show the new comment count
+    loadProducts(); 
   } catch (e) {
     alert("Failed to post comment.");
   }
