@@ -1,19 +1,30 @@
-<!-- Navigation Bar -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAD SCAPE | Precision Engineering Models</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
   <header class="navbar">
     
     <!-- Logo now acts as the Home Button -->
     <a href="#" id="logoHomeBtn" class="logo">
-      <img src="logo_3.png" alt="CAD SCAPE" class="logo-img">
+      <img src="logo_4.png" alt="CAD SCAPE" class="logo-img">
     </a>
 
-    <!-- Center Nav (Removed toggle/pill styling, removed Home) -->
+    <!-- Center Nav (High-end layout, no pill/toggle) -->
     <nav class="main-nav">
       <a href="#" id="navMarket">Marketplace</a>
       <a href="#" id="navRequests">Design Requests</a>
       <a href="#" id="navAdmin" class="hidden">Admin Console</a>
     </nav>
 
-    <!-- Right Actions (Kept exactly the same) -->
+    <!-- Right Actions -->
     <div class="nav-actions">
       <button id="wishlistBtn" class="nav-link">Wishlist (<span id="wishlistCount">0</span>)</button>
       <button id="cartBtn" class="nav-link">Cart (<span id="cartCount">0</span>)</button>
@@ -32,3 +43,94 @@
       </div>
     </div>
   </header>
+
+  <!-- VIEW: HOME -->
+  <section id="viewHome" class="view-section active">
+    <div class="hero">
+      <video class="hero-video" autoplay loop muted playsinline>
+        <source src="background-video.mp4" type="video/mp4">
+      </video>
+      <div class="hero-overlay"></div>
+      
+      <div class="hero-content">
+        <span class="hero-badge">ENGINEERED PRECISION & ATMOSPHERIC DESIGN</span>
+        <h1>Precision CAD Models & Industrial Parts</h1>
+        <p>Production-ready SolidWorks assemblies, parametric parts, and cinematic 3D visual assets crafted<br>for aerospace, robotics, and industrial engineering.</p>
+        <div class="hero-buttons">
+          <button id="heroBrowseBtn" class="btn-blue-large">Browse Marketplace</button>
+          <button id="heroRequestBtn" class="btn-glass-large">Custom Design Requests</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW: MARKETPLACE -->
+  <section id="viewMarketplace" class="view-section hidden container">
+    <div class="store-header">
+      <h2>Asset Library</h2>
+    </div>
+    <div class="grid" id="productGrid"></div>
+  </section>
+
+  <!-- VIEW: CUSTOM REQUESTS -->
+  <section id="viewRequests" class="view-section hidden container">
+    <div class="form-card">
+      <h2>Request Custom CAD Assembly</h2>
+      <p style="color:#8b949e; margin-bottom: 20px;">Describe your engineering requirements. We will review and provide a quote.</p>
+      <form id="requestForm">
+        <textarea id="reqDetails" rows="5" placeholder="Dimensions, constraints, mechanical requirements..." required></textarea>
+        <input type="url" id="reqLink" placeholder="Google Drive link to sketches/references" required>
+        <button type="submit" class="btn-blue-large" style="width:100%">Submit Request</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- VIEW: ADMIN CONSOLE -->
+  <section id="viewAdmin" class="view-section hidden container">
+    <div class="form-card">
+      <h2>Publish New Product</h2>
+      <form id="uploadForm">
+        <input type="text" id="modelName" placeholder="Product Name" required>
+        <textarea id="modelDesc" rows="3" placeholder="Product Description..." required></textarea>
+        <input type="number" id="modelPrice" step="0.01" value="0" placeholder="Price (0 for Free)" required>
+        <input type="url" id="modelImage" placeholder="Thumbnail Image URL" required>
+        <input type="url" id="modelFile" placeholder="Google Drive Link" required>
+        <button type="submit" class="btn-blue-large" style="width:100%">Upload to Database</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- MODALS -->
+  <!-- Cart Modal -->
+  <div id="cartModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Shopping Cart</h3>
+        <button class="close-modal" onclick="document.getElementById('cartModal').classList.add('hidden')">&times;</button>
+      </div>
+      <div id="cartItems"></div>
+      <div class="modal-footer" style="margin-top: 20px;">
+        <h3>Total: $<span id="cartTotal">0.00</span></h3>
+        <button class="btn-blue-large">Checkout</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comments Modal -->
+  <div id="commentsModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Community Comments</h3>
+        <button class="close-modal" onclick="document.getElementById('commentsModal').classList.add('hidden')">&times;</button>
+      </div>
+      <div id="commentsList" style="max-height: 300px; overflow-y: auto; margin: 15px 0;"></div>
+      <div style="display:flex; gap:10px;">
+        <input type="text" id="newCommentText" placeholder="Add a comment..." style="flex:1; padding:10px; border-radius:6px; background:#0f141d; color:#fff; border:1px solid #2d3540;">
+        <button id="submitCommentBtn" class="btn-blue-large" style="padding:10px 20px;">Post</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
