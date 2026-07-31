@@ -108,12 +108,13 @@
       <h2>Request Custom CAD Assembly</h2>
       <p style="color:var(--text-muted); margin-bottom: 20px;">Describe your engineering requirements. We will review and provide a quote.</p>
       
-      <!-- Fixed: Added direct form handler to block refreshing -->
-      <form id="requestForm" onsubmit="handleRequest(event)">
+      <form id="requestForm">
         <input type="tel" id="reqPhone" placeholder="Phone or WhatsApp Number" required>
         <textarea id="reqDetails" rows="5" placeholder="Dimensions, constraints, mechanical requirements..." required></textarea>
         <input type="url" id="reqLink" placeholder="Google Drive link to sketches/references (Optional)">
-        <button type="submit" class="btn-blue-large" style="width:100%">Submit Request</button>
+        
+        <!-- FIX: Changed to type="button" to prevent refresh -->
+        <button type="button" id="requestBtn" class="btn-blue-large" style="width:100%" onclick="submitDesignRequest()">Submit Request</button>
       </form>
     </div>
   </section>
@@ -130,14 +131,15 @@
     <div id="adminUploadSection" class="form-card">
       <h2>Publish New Product</h2>
       
-      <!-- Fixed: Added direct form handler to block refreshing -->
-      <form id="uploadForm" onsubmit="handleUpload(event)">
+      <form id="uploadForm">
         <input type="text" id="modelName" placeholder="Product Name" required>
         <textarea id="modelDesc" rows="3" placeholder="Product Description..." required></textarea>
         <input type="number" id="modelPrice" step="0.01" value="0" placeholder="Price (0 for Free)" required>
         <input type="url" id="modelImage" placeholder="Thumbnail Image URL" required>
         <input type="url" id="modelFile" placeholder="Google Drive Link for Download" required>
-        <button type="submit" class="btn-blue-large" style="width:100%">Upload to Database</button>
+        
+        <!-- FIX: Changed to type="button" to prevent refresh -->
+        <button type="button" id="uploadBtn" class="btn-blue-large" style="width:100%" onclick="submitNewProduct()">Upload to Database</button>
       </form>
     </div>
 
@@ -185,14 +187,15 @@
         <button class="close-modal" onclick="document.getElementById('editModal').classList.add('hidden')">&times;</button>
       </div>
       
-      <!-- Fixed: Added direct form handler to block refreshing -->
-      <form id="editForm" class="modal-form" style="margin-top: 15px;" onsubmit="handleEdit(event)">
+      <form id="editForm" class="modal-form" style="margin-top: 15px;">
         <input type="text" id="editModelName" placeholder="Product Name" required>
         <textarea id="editModelDesc" rows="3" placeholder="Product Description..." required></textarea>
         <input type="number" id="editModelPrice" step="0.01" placeholder="Price (0 for Free)" required>
         <input type="url" id="editModelImage" placeholder="Thumbnail Image URL" required>
         <input type="url" id="editModelFile" placeholder="Google Drive Link for Download" required>
-        <button type="submit" class="btn-blue-large" style="width:100%">Save Changes</button>
+        
+        <!-- FIX: Changed to type="button" to prevent refresh -->
+        <button type="button" id="editBtn" class="btn-blue-large" style="width:100%" onclick="submitEditProduct()">Save Changes</button>
       </form>
     </div>
   </div>
