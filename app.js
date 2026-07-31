@@ -243,6 +243,37 @@ async function loadProducts() {
   }
 }
 
+// --- ADMIN: UPLOAD PRODUCT ---
+document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+  e.preventDefault(); // This stops the page from refreshing!
+
+  const data = {
+    name: document.getElementById('modelName').value,
+    description: document.getElementById('modelDesc').value,
+    price: document.getElementById('modelPrice').value,
+    image_url: document.getElementById('modelImage').value,
+    download_url: document.getElementById('modelFile').value
+  };
+
+  try {
+    const response = await fetch(`${API_BASE}/products`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    if (response.ok) {
+      alert("Product Uploaded Successfully!");
+      document.getElementById('uploadForm').reset();
+      loadProducts(); // Automatically updates the store grid
+    } else {
+      alert("Failed to upload product. Check backend connection.");
+    }
+  } catch (error) {
+    alert("Error uploading product. Is the backend running?");
+  }
+});
+
 // --- SUBMITTING & FETCHING REQUESTS ---
 document.getElementById('requestForm').addEventListener('submit', async (e) => {
   e.preventDefault();
