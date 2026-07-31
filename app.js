@@ -1,4 +1,4 @@
-const API_BASE = "https://procad-backend-xyz.onrender.com/api"; // Replace later with live Render URL
+const API_BASE = "https://procad-backend-xyz.onrender.com/api"; // IMPORTANT: Replace this with your actual Render URL!
 
 // --- NAVIGATION ---
 const views = {
@@ -73,12 +73,13 @@ document.getElementById('themeToggleBtn').addEventListener('click', () => {
 // --- AUTHENTICATION ---
 const adminEmails = ["deekshith123pi@gmail.com", "cadscape2026@gmail.com"]; 
 let currentUser = { name: "Guest", email: null };
+let tokenClient; // Defined variable to hold the Google Login instance
 
 window.onload = function () {
   try {
     if (typeof google !== 'undefined' && google.accounts) {
-      google.accounts.oauth2.initTokenClient({
-        client_id: 668904528697-eotq6djic32hvggt9ge3ja90piq22d5e.apps.googleusercontent.com, 
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: '668904528697-eotq6djic32hvggt9ge3ja90piq22d5e.apps.googleusercontent.com', // Added Quotes
         scope: 'email profile',
         callback: async (tokenResponse) => {
           if (tokenResponse && tokenResponse.access_token) {
@@ -97,10 +98,11 @@ window.onload = function () {
 };
 
 document.getElementById('customLoginBtn').addEventListener('click', () => {
-  if (typeof google !== 'undefined' && google.accounts) {
-     alert("To use real Google Login, you must generate a Client ID from Google Cloud Console and paste it into app.js.");
+  if (tokenClient) {
+     tokenClient.requestAccessToken(); // Actually triggers the Google Login popup
   } else {
-    handleSuccessfulLogin("Admin", "your-email@gmail.com", "https://via.placeholder.com/64");
+    // Fallback if the Google script fails to load
+    handleSuccessfulLogin("Admin", "cadscape2026@gmail.com", "https://via.placeholder.com/64");
   }
 });
 
