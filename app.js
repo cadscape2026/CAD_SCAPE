@@ -1,4 +1,4 @@
-const API_BASE = "https://procad-backend.onrender.com/api"; // Fixed: Added /api to the end!
+const API_BASE = "https://procad-backend.onrender.com/api"; 
 
 // --- NAVIGATION ---
 const views = {
@@ -20,7 +20,6 @@ function switchView(target) {
   if(views[target]) views[target].classList.remove('hidden');
   if(navs[target]) navs[target].classList.add('active');
 
-  // If Admin panel is opened, auto-fetch requests
   if(target === 'admin') fetchAdminRequests();
 }
 
@@ -72,18 +71,14 @@ document.getElementById('themeToggleBtn').addEventListener('click', () => {
 
 // --- AUTHENTICATION ---
 const adminEmails = ["deekshith123pi@gmail.com", "cadscape2026@gmail.com"]; 
-// Fixed: Now checks the browser's local memory to see if you are already logged in
 let currentUser = JSON.parse(localStorage.getItem('cadUser')) || { name: "Guest", email: null };
 let tokenClient; 
 
 function handleSuccessfulLogin(name, email, avatarUrl) {
-  // Save the user to the browser so refresh doesn't log them out
   currentUser = { name: name, email: email, avatar: avatarUrl };
   localStorage.setItem('cadUser', JSON.stringify(currentUser)); 
 
   document.getElementById('customLoginBtn').classList.add('hidden');
-  
-  // Update Sidebar
   document.getElementById('sidebarGuestInfo').classList.add('hidden');
   document.getElementById('sidebarUserInfo').classList.remove('hidden');
   if(avatarUrl) document.getElementById('userAvatar').src = avatarUrl;
@@ -96,7 +91,6 @@ function handleSuccessfulLogin(name, email, avatarUrl) {
   }
 }
 
-// Auto-login instantly if you refresh the page
 if (currentUser.email) {
   handleSuccessfulLogin(currentUser.name, currentUser.email, currentUser.avatar);
 }
@@ -125,20 +119,16 @@ window.onload = function () {
 
 document.getElementById('customLoginBtn').addEventListener('click', () => {
   if (tokenClient) {
-     tokenClient.requestAccessToken(); // Actually triggers the Google Login popup
+     tokenClient.requestAccessToken(); 
   } else {
-    // Fallback if the Google script fails to load
     handleSuccessfulLogin("Admin", "cadscape2026@gmail.com", "https://via.placeholder.com/64");
   }
 });
 
 document.getElementById('logoutBtn').addEventListener('click', () => {
   currentUser = { name: "Guest", email: null };
-  localStorage.removeItem('cadUser'); // Wipes the memory so you stay logged out
-  
+  localStorage.removeItem('cadUser'); 
   document.getElementById('customLoginBtn').classList.remove('hidden');
-  
-  // Reset Sidebar
   document.getElementById('sidebarUserInfo').classList.add('hidden');
   document.getElementById('sidebarGuestInfo').classList.remove('hidden');
   document.getElementById('logoutBtn').classList.add('hidden');
@@ -158,6 +148,19 @@ function updateCounters() {
   document.getElementById('wishlistCount').textContent = wishlist.length;
 }
 
+// --- HELPER: GOOGLE DRIVE IMAGE CONVERTER ---
+function getDirectImageUrl(url) {
+  if (!url) return '';
+  // Converts standard Drive share link into a direct image link
+  if (url.includes('drive.google.com/file/d/')) {
+    const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) {
+      return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+    }
+  }
+  return url; 
+}
+
 
 // --- STEAM CAROUSEL LOGIC ---
 let currentSlide = 0;
@@ -172,10 +175,10 @@ function initCarousel(products) {
   featured.forEach(p => {
     track.innerHTML += `
       <div class="carousel-slide">
-        <img src="${p.image_url}" alt="${p.name}">
+        <img src="${getDirectImageUrl(p.image_url)}" alt="${p.name}">
         <div class="carousel-info">
           <h2 style="margin-bottom:10px;">${p.name}</h2>
-          <button class="btn-blue-large" onclick="addToCart(${p.id}, '${p.name}', ${p.price})">View & Download</button>
+          <button class="btn-blue-large" onclick="addToCart('${p.id}', '${p.name}', ${p.price})">Add to Cart</button>
         </div>
       </div>
     `;
@@ -206,7 +209,7 @@ function renderGrid(products) {
 
     const actionHtml = p.price === 0 
       ? `<a href="${p.download_url}" target="_blank" class="btn-small">Get File</a>`
-      : `<button onclick="addToCart(${p.id}, '${p.name}', ${p.price})" class="btn-small">Add to Cart</button>`;
+      : `<button onclick="addToCart('${p.id}', '${p.name}', ${p.price})" class="btn-small">Add to Cart</button>`;
 
     const isWishlisted = wishlist.includes(p.id) ? 'Remove' : 'Wishlist';
     const commentsLength = p.comments ? p.comments.length : 0;
@@ -214,15 +217,15 @@ function renderGrid(products) {
     grid.innerHTML += `
       <div class="card">
         <div class="card-img-wrapper">
-          <img src="${p.image_url}" alt="${p.name}">
+          <img src="${getDirectImageUrl(p.image_url)}" alt="${p.name}">
         </div>
         <div class="card-info">
           <h3 class="card-title">${p.name}</h3>
           <p class="card-desc">${p.description || 'No description provided.'}</p>
           
           <div class="card-social">
-            <button class="social-btn" onclick="toggleWishlist(${p.id}, this)">★ ${isWishlisted}</button>
-            <button class="social-btn" onclick="openComments(${p.id})">💬 Comments (${commentsLength})</button>
+            <button class="social-btn" onclick="toggleWishlist('${p.id}', this)">★ ${isWishlisted}</button>
+            <button class="social-btn" onclick="openComments('${p.id}')">💬 Comments (${commentsLength})</button>
           </div>
 
           <div class="card-footer">
@@ -250,13 +253,13 @@ async function loadProducts() {
     initCarousel(allProducts);
     renderGrid(allProducts);
   } catch (error) {
-    console.warn("Backend not connected yet. Products will load once API is live.");
+    console.warn("Backend not connected yet.");
   }
 }
 
 // --- ADMIN: UPLOAD PRODUCT ---
 document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-  e.preventDefault(); // This stops the page from refreshing!
+  e.preventDefault(); 
 
   const data = {
     name: document.getElementById('modelName').value,
@@ -276,7 +279,7 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     if (response.ok) {
       alert("Product Uploaded Successfully!");
       document.getElementById('uploadForm').reset();
-      loadProducts(); // Automatically updates the store grid
+      loadProducts(); 
     } else {
       alert("Failed to upload product. Check backend connection.");
     }
@@ -285,13 +288,14 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
   }
 });
 
+
 // --- SUBMITTING & FETCHING REQUESTS ---
 document.getElementById('requestForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const data = {
     details: document.getElementById('reqDetails').value,
-    reference_link: document.getElementById('reqLink').value, // Now Optional
-    phone: document.getElementById('reqPhone').value,         // New Phone Field
+    reference_link: document.getElementById('reqLink').value, 
+    phone: document.getElementById('reqPhone').value,         
     user_email: currentUser.email || 'guest@example.com'
   };
 
@@ -304,7 +308,7 @@ document.getElementById('requestForm').addEventListener('submit', async (e) => {
     alert("Request Submitted! We will review your CAD requirements.");
     document.getElementById('requestForm').reset();
   } catch (error) {
-    alert("Error submitting request. Backend may not be live.");
+    alert("Error submitting request.");
   }
 });
 
@@ -321,7 +325,7 @@ async function fetchAdminRequests() {
     }
 
     requests.forEach(req => {
-      const linkHtml = req.reference_link !== "None provided" 
+      const linkHtml = req.reference_link && req.reference_link !== "None provided" && req.reference_link !== ""
         ? `<a href="${req.reference_link}" target="_blank">View Attached Files (Google Drive)</a>`
         : `<span style="color:var(--text-muted)">No files attached</span>`;
 
@@ -339,7 +343,53 @@ async function fetchAdminRequests() {
   }
 }
 
-// Global UI Functions
+// --- CART LOGIC ---
+window.addToCart = function(id, name, price) {
+  cart.push({ id, name, price: parseFloat(price) });
+  localStorage.setItem('cadCart', JSON.stringify(cart));
+  updateCounters();
+  alert(`${name} added to cart!`);
+}
+
+window.removeFromCart = function(index) {
+  cart.splice(index, 1);
+  localStorage.setItem('cadCart', JSON.stringify(cart));
+  updateCounters();
+  renderCart(); // Refresh the modal visually
+}
+
+function renderCart() {
+  const cartItemsDiv = document.getElementById('cartItems');
+  const cartTotalSpan = document.getElementById('cartTotal');
+  cartItemsDiv.innerHTML = '';
+  let total = 0;
+
+  if (cart.length === 0) {
+    cartItemsDiv.innerHTML = '<p style="color:var(--text-muted);">Your cart is empty.</p>';
+  } else {
+    cart.forEach((item, index) => {
+      total += item.price;
+      cartItemsDiv.innerHTML += `
+        <div class="cart-item" style="display:flex; justify-content:space-between; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+          <span style="font-weight: 500;">${item.name}</span>
+          <div>
+            <span style="color:var(--green-free); font-weight:bold;">$${item.price.toFixed(2)}</span>
+            <button onclick="removeFromCart(${index})" style="background:none; border:none; color:#ef4444; margin-left:15px; cursor:pointer; font-weight:bold;">X</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+  cartTotalSpan.textContent = total.toFixed(2);
+}
+
+// Opens the Cart Window
+document.getElementById('cartBtn').addEventListener('click', () => {
+  renderCart();
+  document.getElementById('cartModal').classList.remove('hidden');
+});
+
+// --- WISHLIST LOGIC ---
 window.toggleWishlist = function(id, btnElement) {
   const index = wishlist.indexOf(id);
   if (index > -1) {
@@ -353,12 +403,57 @@ window.toggleWishlist = function(id, btnElement) {
   updateCounters();
 }
 
-window.addToCart = function(id, name, price) {
-  cart.push({ id, name, price });
-  localStorage.setItem('cadCart', JSON.stringify(cart));
-  updateCounters();
-  alert(`${name} added to cart!`);
+// --- COMMENTS LOGIC ---
+let currentCommentProductId = null;
+
+window.openComments = function(id) {
+  currentCommentProductId = id;
+  const product = allProducts.find(p => p.id === id);
+  const commentsList = document.getElementById('commentsList');
+  commentsList.innerHTML = '';
+
+  if (product && product.comments && product.comments.length > 0) {
+    product.comments.forEach(c => {
+      commentsList.innerHTML += `
+        <div class="comment-box">
+          <div class="comment-author">${c.user_name}</div>
+          <div class="comment-text">${c.text}</div>
+        </div>
+      `;
+    });
+  } else {
+    commentsList.innerHTML = '<p style="color:var(--text-muted)">No comments yet. Be the first!</p>';
+  }
+  
+  document.getElementById('commentsModal').classList.remove('hidden');
 }
+
+document.getElementById('submitCommentBtn').addEventListener('click', async () => {
+  const textInput = document.getElementById('newCommentText');
+  const text = textInput.value.trim();
+  if (!text || !currentCommentProductId) return;
+
+  const data = {
+    product_id: currentCommentProductId,
+    user_name: currentUser.name || "Guest",
+    text: text
+  };
+
+  try {
+    await fetch(`${API_BASE}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    
+    textInput.value = '';
+    document.getElementById('commentsModal').classList.add('hidden');
+    alert("Comment posted successfully!");
+    loadProducts(); // Automatically refresh the store to show the new comment count
+  } catch (e) {
+    alert("Failed to post comment.");
+  }
+});
 
 // Init
 updateCounters();
