@@ -1,143 +1,144 @@
-const API_BASE = "https://procad-backend.onrender.com";
+const API_BASE = "https://procad-backend-xyz.onrender.com/api"; // Keep your Render URL here
 
-// --- 1. OTT Banner Smooth Transition ---
-let currentSlide = 0;
-const slides = document.querySelectorAll('.banner-slide');
+// --- 1. THEME TOGGLE (Dark/Light) ---
+const themeToggle = document.getElementById('themeToggle');
+const body = document.body;
+themeToggle.addEventListener('click', () => {
+  if (body.classList.contains('dark-mode')) {
+    body.classList.remove('dark-mode');
+    body.classList.add('light-mode');
+    themeToggle.textContent = '🌙';
+  } else {
+    body.classList.remove('light-mode');
+    body.classList.add('dark-mode');
+    themeToggle.textContent = '☀️';
+  }
+});
 
-function nextSlide() {
-  if (slides.length === 0) return;
-  slides[currentSlide].classList.remove('active');
-  currentSlide = (currentSlide + 1) % slides.length;
-  slides[currentSlide].classList.add('active');
-}
-setInterval(nextSlide, 5000); // Transitions every 5 seconds
-
-// --- 2. Navigation & Views ---
+// --- 2. NAVIGATION ---
 const views = {
+  home: document.getElementById('viewHome'),
   market: document.getElementById('viewMarketplace'),
-  requests: document.getElementById('viewRequests'),
   admin: document.getElementById('viewAdmin')
 };
 const navs = {
+  home: document.getElementById('navHome'),
   market: document.getElementById('navMarket'),
-  requests: document.getElementById('navRequests'),
   admin: document.getElementById('navAdmin')
 };
 
 function switchView(target) {
-  Object.values(views).forEach(v => v?.classList.add('hidden'));
-  Object.values(navs).forEach(n => n?.classList.remove('active'));
-  
-  if (views[target]) views[target].classList.remove('hidden');
-  if (navs[target]) navs[target].classList.add('active');
+  Object.values(views).forEach(v => v.classList.add('hidden'));
+  Object.values(navs).forEach(n => n.classList.remove('active'));
+  views[target].classList.remove('hidden');
+  navs[target].classList.add('active');
 }
 
-navs.market?.addEventListener('click', (e) => { e.preventDefault(); switchView('market'); });
-navs.requests?.addEventListener('click', (e) => { e.preventDefault(); switchView('requests'); });
-navs.admin?.addEventListener('click', (e) => { e.preventDefault(); switchView('admin'); });
+navs.home.addEventListener('click', (e) => { e.preventDefault(); switchView('home'); });
+navs.market.addEventListener('click', (e) => { e.preventDefault(); switchView('market'); });
+navs.admin.addEventListener('click', (e) => { e.preventDefault(); switchView('admin'); });
+document.getElementById('heroBrowseBtn').addEventListener('click', () => switchView('market'));
 
-// --- 3. Mock Authentication (Replace with actual Google OAuth later) ---
-const loginBtn = document.getElementById('loginBtn');
-const logoutBtn = document.getElementById('logoutBtn');
+
+// --- 3. REAL GOOGLE AUTHENTICATION (OAuth2) ---
+const customLoginBtn = document.getElementById('customLoginBtn');
 const userInfo = document.getElementById('userInfo');
-const userName = document.getElementById('userName');
+const userAvatar = document.getElementById('userAvatar');
+const logoutBtn = document.getElementById('logoutBtn');
 
-// Add your email and your friend's email here to grant admin panel access
-const adminEmails = ["developer@example.com", "admin@example.com"]; 
+const adminEmails = ["your-email@gmail.com", "friend-email@gmail.com"]; // Update these
 
-loginBtn?.addEventListener('click', () => {
-  // Simulating a successful Google Login response
-  const mockUser = { name: "Dev User", email: "developer@example.com" }; 
-  
-  loginBtn.classList.add('hidden');
-  userInfo.classList.remove('hidden');
-  userName.textContent = `Hello, ${mockUser.name}`;
+// We use the modern Google Identity Services Token Client for custom buttons
+let tokenClient;
+window.onload = function () {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: 'YOUR_GOOGLE_CLIENT_ID_HERE', // You need to generate this in Google Cloud Console
+    scope: 'email profile',
+    callback: async (tokenResponse) => {
+      if (tokenResponse && tokenResponse.access_token) {
+        // Fetch user details using the access token
+        const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+        });
+        const user = await res.json();
+        
+        // Update UI
+        customLoginBtn.classList.add('hidden');
+        userInfo.classList.remove('hidden');
+        userAvatar.src = user.picture;
 
-  // Role-Based Access Control Check
-  if (adminEmails.includes(mockUser.email)) {
-    navs.admin.classList.remove('hidden'); // Unlock Admin Panel
-  }
+        // Role-based Access
+        if (adminEmails.includes(user.email)) {
+          navs.admin.classList.remove('hidden');
+        }
+      }
+    },
+  });
+};
+
+customLoginBtn.addEventListener('click', () => {
+  tokenClient.requestAccessToken(); // Triggers the real Google popup
 });
 
-logoutBtn?.addEventListener('click', () => {
-  loginBtn.classList.remove('hidden');
+logoutBtn.addEventListener('click', () => {
+  customLoginBtn.classList.remove('hidden');
   userInfo.classList.add('hidden');
   navs.admin.classList.add('hidden');
-  switchView('market'); // Kick user back to marketplace if they were in admin
+  switchView('home');
 });
 
-// --- 4. Local Storage Cart Logic ---
+
+// --- 4. STATE: CART, WISHLIST, LIKES ---
 let cart = JSON.parse(localStorage.getItem('cadCart')) || [];
-const cartModal = document.getElementById('cartModal');
-const cartBtn = document.getElementById('cartBtn');
-const closeCartBtn = document.getElementById('closeCartBtn');
+let wishlist = JSON.parse(localStorage.getItem('cadWishlist')) || [];
+// Note: In production, likes and comments MUST be saved to the database via API. 
+// For now, we mock them on the frontend.
+let mockedLikes = {}; 
 
-cartBtn?.addEventListener('click', () => cartModal.classList.remove('hidden'));
-closeCartBtn?.addEventListener('click', () => cartModal.classList.add('hidden'));
-
-window.addToCart = function(id, name, price) {
-  cart.push({ id, name, price });
-  updateCart();
+function updateCounters() {
+  document.getElementById('cartCount').textContent = cart.length;
+  document.getElementById('wishlistCount').textContent = wishlist.length;
 }
 
-function updateCart() {
-  localStorage.setItem('cadCart', JSON.stringify(cart));
-  
-  const cartCount = document.getElementById('cartCount');
-  if (cartCount) cartCount.textContent = cart.length;
-  
-  const cartItemsDiv = document.getElementById('cartItems');
-  if (!cartItemsDiv) return;
-  
-  cartItemsDiv.innerHTML = '';
-  let total = 0;
-
-  cart.forEach((item, index) => {
-    total += item.price;
-    cartItemsDiv.innerHTML += `
-      <div class="cart-item">
-        <span>${item.name}</span>
-        <div>
-          <span>$${item.price.toFixed(2)}</span>
-          <button onclick="removeFromCart(${index})" style="background:none; border:none; cursor:pointer; color:#dc2626; margin-left:10px; font-weight:bold;">✕</button>
-        </div>
-      </div>
-    `;
-  });
-  
-  const cartTotal = document.getElementById('cartTotal');
-  if (cartTotal) cartTotal.textContent = total.toFixed(2);
-}
-
-window.removeFromCart = function(index) {
-  cart.splice(index, 1);
-  updateCart();
-}
-
-// --- 5. API Logic: Fetch & Render Products ---
+// --- 5. RENDER PRODUCTS ---
 async function loadProducts() {
   try {
     const response = await fetch(`${API_BASE}/products`);
-    if (!response.ok) throw new Error("Failed to fetch products");
-    
     const products = await response.json();
     const grid = document.getElementById('productGrid');
-    if (!grid) return;
-    
     grid.innerHTML = '';
     
     products.forEach(p => {
+      // Logic for Free (Green) vs Paid
+      const priceDisplay = p.price === 0 
+        ? `<span class="price text-green">Free</span>` 
+        : `<span class="price">$${p.price.toFixed(2)}</span>`;
+
       const actionHtml = p.price === 0 
-        ? `<a href="${p.download_url}" target="_blank" class="btn-secondary" style="text-decoration:none; text-align:center; display:inline-block;">Download Free</a>`
-        : `<button onclick="addToCart(${p.id}, '${p.name}', ${p.price})" class="btn-primary">Add to Cart</button>`;
+        ? `<a href="${p.download_url}" target="_blank" class="btn-small">Download Drive File</a>`
+        : `<button onclick="addToCart(${p.id}, '${p.name}', ${p.price})" class="btn-small">Add to Cart</button>`;
+
+      const isWishlisted = wishlist.includes(p.id) ? 'active' : '';
+      const likesCount = mockedLikes[p.id] || Math.floor(Math.random() * 50); // Mocking initial likes
 
       grid.innerHTML += `
         <div class="card">
-          <img src="${p.image_url}" alt="${p.name}" loading="lazy">
+          <div class="card-img-wrapper">
+            <img src="${p.image_url}" alt="${p.name}">
+            <button class="wishlist-icon ${isWishlisted}" onclick="toggleWishlist(${p.id}, this)">
+              ${isWishlisted ? '♥' : '♡'}
+            </button>
+          </div>
           <div class="card-info">
-            <h3>${p.name}</h3>
-            <div class="price-row">
-              <strong>${p.price === 0 ? 'Free' : '$' + p.price.toFixed(2)}</strong>
+            <h3 class="card-title">${p.name}</h3>
+            
+            <div class="card-social">
+              <button class="social-btn" onclick="toggleLike(${p.id}, this)">❤️ <span>${likesCount}</span></button>
+              <button class="social-btn" onclick="openComments(${p.id})">💬 Comment</button>
+            </div>
+
+            <div class="card-footer">
+              ${priceDisplay}
               ${actionHtml}
             </div>
           </div>
@@ -145,73 +146,86 @@ async function loadProducts() {
       `;
     });
   } catch (error) {
-    console.error("Error loading products from backend:", error);
+    console.error("Error loading products:", error);
   }
 }
 
-// --- 6. API Logic: Admin Upload Form ---
-const uploadForm = document.getElementById('uploadForm');
-uploadForm?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  
-  const productData = {
-    name: document.getElementById('modelName').value,
-    price: document.getElementById('modelPrice').value,
-    image_url: document.getElementById('modelImage').value,
-    download_url: document.getElementById('modelFile').value
-  };
-
-  try {
-    const response = await fetch(`${API_BASE}/products`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(productData)
-    });
-
-    if (response.ok) {
-      alert("Model published successfully!");
-      uploadForm.reset();
-      switchView('market'); 
-      loadProducts(); 
-    } else {
-      alert("Failed to publish model.");
-    }
-  } catch (error) {
-    console.error("Error submitting product:", error);
+// --- 6. INTERACTIONS ---
+window.toggleWishlist = function(id, btnElement) {
+  const index = wishlist.indexOf(id);
+  if (index > -1) {
+    wishlist.splice(index, 1);
+    btnElement.classList.remove('active');
+    btnElement.textContent = '♡';
+  } else {
+    wishlist.push(id);
+    btnElement.classList.add('active');
+    btnElement.textContent = '♥';
   }
-});
+  localStorage.setItem('cadWishlist', JSON.stringify(wishlist));
+  updateCounters();
+}
 
-// --- 7. API Logic: Custom Request Form ---
-const requestForm = document.getElementById('requestForm');
-requestForm?.addEventListener('submit', async (e) => {
-  e.preventDefault();
+window.toggleLike = function(id, btnElement) {
+  let countSpan = btnElement.querySelector('span');
+  let currentCount = parseInt(countSpan.textContent);
   
-  const requestData = {
-    details: document.querySelector('#requestForm textarea').value,
-    reference_link: document.querySelector('#requestForm input[type="url"]').value,
-    user_email: userName?.textContent.replace('Hello, ', '') || 'guest@example.com'
-  };
-
-  try {
-    const response = await fetch(`${API_BASE}/requests`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestData)
-    });
-
-    if (response.ok) {
-      alert("Custom request submitted successfully! We will be in touch.");
-      requestForm.reset();
-    } else {
-      alert("Failed to submit request.");
-    }
-  } catch (error) {
-    console.error("Error submitting request:", error);
+  if (btnElement.classList.contains('liked')) {
+    btnElement.classList.remove('liked');
+    countSpan.textContent = currentCount - 1;
+  } else {
+    btnElement.classList.add('liked');
+    countSpan.textContent = currentCount + 1;
   }
-});
+}
 
-// --- 8. Initialization ---
-document.addEventListener('DOMContentLoaded', () => {
-  updateCart();
-  loadProducts();
+window.openComments = function(id) {
+  // To build out a real comment section, you will need a new API endpoint on your Flask backend.
+  alert("Comment section opening for product ID: " + id + "\n(Requires backend database integration to save text)");
+}
+
+window.addToCart = function(id, name, price) {
+  cart.push({ id, name, price });
+  localStorage.setItem('cadCart', JSON.stringify(cart));
+  updateCounters();
+  renderCart();
+}
+
+// --- 7. MODAL LOGIC ---
+const cartModal = document.getElementById('cartModal');
+document.getElementById('cartBtn').addEventListener('click', () => {
+  cartModal.classList.remove('hidden');
+  renderCart();
 });
+document.getElementById('closeCart').addEventListener('click', () => cartModal.classList.add('hidden'));
+
+function renderCart() {
+  const container = document.getElementById('cartItems');
+  container.innerHTML = '';
+  let total = 0;
+  
+  cart.forEach((item, i) => {
+    total += item.price;
+    container.innerHTML += `
+      <div class="cart-item">
+        <span>${item.name}</span>
+        <div>
+          <span>$${item.price.toFixed(2)}</span>
+          <button onclick="removeFromCart(${i})" style="color:red; background:none; border:none; cursor:pointer; margin-left:10px;">✕</button>
+        </div>
+      </div>
+    `;
+  });
+  document.getElementById('cartTotal').textContent = total.toFixed(2);
+}
+
+window.removeFromCart = function(index) {
+  cart.splice(index, 1);
+  localStorage.setItem('cadCart', JSON.stringify(cart));
+  updateCounters();
+  renderCart();
+}
+
+// --- INIT ---
+updateCounters();
+loadProducts();
