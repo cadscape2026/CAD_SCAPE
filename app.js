@@ -7,8 +7,9 @@ const views = {
   requests: document.getElementById('viewRequests'),
   admin: document.getElementById('viewAdmin')
 };
+
+// Removed 'home' nav from the array, as the logo now serves this purpose
 const navs = {
-  home: document.getElementById('navHome'),
   market: document.getElementById('navMarket'),
   requests: document.getElementById('navRequests'),
   admin: document.getElementById('navAdmin')
@@ -27,7 +28,9 @@ function switchView(target) {
 }
 
 // Event Listeners for Navigation
-if(navs.home) navs.home.addEventListener('click', (e) => { e.preventDefault(); switchView('home'); });
+const logoHomeBtn = document.getElementById('logoHomeBtn');
+if(logoHomeBtn) logoHomeBtn.addEventListener('click', (e) => { e.preventDefault(); switchView('home'); });
+
 if(navs.market) navs.market.addEventListener('click', (e) => { e.preventDefault(); switchView('market'); });
 if(navs.requests) navs.requests.addEventListener('click', (e) => { e.preventDefault(); switchView('requests'); });
 if(navs.admin) navs.admin.addEventListener('click', (e) => { e.preventDefault(); switchView('admin'); });
