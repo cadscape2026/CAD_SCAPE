@@ -150,7 +150,6 @@ function updateCounters() {
   document.getElementById('wishlistCount').textContent = wishlist.length;
 }
 
-// Keep the converter alive for any old products that still use Drive links
 function getDirectImageUrl(url) {
   if (!url) return '';
   if (url.includes('drive.google.com/file/d/')) {
@@ -170,17 +169,19 @@ function setupDropZone(dropZoneId, inputId, isEdit = false) {
   const dropZoneElement = document.getElementById(dropZoneId);
   const inputElement = document.getElementById(inputId);
 
-  // Clicking opens file browser
-  dropZoneElement.addEventListener("click", () => inputElement.click());
+  // Clicking the zone opens the file browser
+  dropZoneElement.addEventListener("click", (e) => {
+    if(e.target !== inputElement) {
+      inputElement.click();
+    }
+  });
 
-  // Selecting file via click
   inputElement.addEventListener("change", () => {
     if (inputElement.files.length) {
       updateThumbnail(dropZoneElement, inputElement.files[0], isEdit);
     }
   });
 
-  // Drag over effects
   dropZoneElement.addEventListener("dragover", (e) => {
     e.preventDefault();
     dropZoneElement.classList.add("drop-zone--over");
@@ -192,7 +193,6 @@ function setupDropZone(dropZoneId, inputId, isEdit = false) {
     });
   });
 
-  // Dropping file
   dropZoneElement.addEventListener("drop", (e) => {
     e.preventDefault();
     if (e.dataTransfer.files.length) {
@@ -206,19 +206,19 @@ function setupDropZone(dropZoneId, inputId, isEdit = false) {
 function updateThumbnail(dropZoneElement, file, isEdit) {
   let thumbnailElement = dropZoneElement.querySelector(".drop-zone__thumb");
 
-  // Remove the text prompt
+  // Remove the prompt text
   if (dropZoneElement.querySelector(".drop-zone__prompt")) {
     dropZoneElement.querySelector(".drop-zone__prompt").remove();
   }
 
-  // Create thumbnail element if it doesn't exist
+  // Create thumbnail element if missing
   if (!thumbnailElement) {
     thumbnailElement = document.createElement("div");
     thumbnailElement.classList.add("drop-zone__thumb");
     dropZoneElement.appendChild(thumbnailElement);
   }
 
-  // Convert to Base64 String
+  // Convert Image to Base64 String
   if (file.type.startsWith("image/")) {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -230,19 +230,39 @@ function updateThumbnail(dropZoneElement, file, isEdit) {
         currentUploadBase64 = reader.result;
       }
     };
+  } else {
+    alert("Please upload an image file (JPG, PNG, etc).");
   }
 }
 
-// Initialize the two drop zones
+// Reset function that clears the form properly
+function resetDropZone(dropZoneId, isEdit = false) {
+  const dropZoneElement = document.getElementById(dropZoneId);
+  const inputElement = dropZoneElement.querySelector(".drop-zone__input");
+  
+  if(inputElement) inputElement.value = ""; // clear file
+  
+  const thumb = dropZoneElement.querySelector(".drop-zone__thumb");
+  if(thumb) thumb.remove(); // remove preview image
+
+  let prompt = dropZoneElement.querySelector(".drop-zone__prompt");
+  if(!prompt) {
+    prompt = document.createElement("span");
+    prompt.classList.add("drop-zone__prompt");
+    prompt.textContent = isEdit ? "Drag & Drop New Image Here or Click to Browse" : "Drag & Drop Image Here or Click to Browse";
+    dropZoneElement.insertBefore(prompt, inputElement);
+  }
+
+  if (isEdit) {
+    currentEditBase64 = "";
+  } else {
+    currentUploadBase64 = "";
+  }
+}
+
+// Initialize the two drop zones on page load
 setupDropZone("uploadDropZone", "modelImageFile", false);
 setupDropZone("editDropZone", "editModelImageFile", true);
-
-function resetDropZone(dropZoneId) {
-  const dropZoneElement = document.getElementById(dropZoneId);
-  dropZoneElement.innerHTML = `<span class="drop-zone__prompt">Drag & Drop Image Here or Click to Browse</span>
-                               <input type="file" id="${dropZoneId === 'uploadDropZone' ? 'modelImageFile' : 'editModelImageFile'}" class="drop-zone__input" accept="image/*">`;
-  setupDropZone(dropZoneId, dropZoneId === 'uploadDropZone' ? 'modelImageFile' : 'editModelImageFile', dropZoneId === 'editDropZone');
-}
 
 
 // --- STEAM CAROUSEL LOGIC ---
@@ -367,7 +387,6 @@ window.submitNewProduct = async function() {
   btn.style.backgroundColor = "#f59e0b";
   btn.style.pointerEvents = "none"; 
 
-  // Send the Base64 image directly!
   const data = { name, description: desc, price, image_url: currentUploadBase64, download_url: file };
 
   try {
@@ -380,8 +399,7 @@ window.submitNewProduct = async function() {
     if (response.ok) {
       alert("Product Uploaded Successfully!");
       document.getElementById('uploadForm').reset();
-      currentUploadBase64 = ""; // Reset variable
-      resetDropZone("uploadDropZone"); // Reset UI
+      resetDropZone("uploadDropZone", false); // Clears the image preview UI perfectly
       loadProducts(); 
     } else {
       alert("Failed to upload product. Check backend connection.");
@@ -409,14 +427,22 @@ window.openEditModal = function(id) {
   document.getElementById('editModelPrice').value = product.price;
   document.getElementById('editModelFile').value = product.download_url;
   
-  // Set existing image as base64 backup
-  currentEditBase64 = product.image_url;
-  
   // Display the existing image in the drop zone
-  const dropZone = document.getElementById('editDropZone');
-  dropZone.innerHTML = `<div class="drop-zone__thumb" style="background-image: url('${getDirectImageUrl(product.image_url)}')"></div>
-                        <input type="file" id="editModelImageFile" class="drop-zone__input" accept="image/*">`;
-  setupDropZone("editDropZone", "editModelImageFile", true);
+  currentEditBase64 = product.image_url;
+  const dropZoneElement = document.getElementById('editDropZone');
+  
+  // Remove prompt if it exists
+  const prompt = dropZoneElement.querySelector(".drop-zone__prompt");
+  if(prompt) prompt.remove();
+
+  // Show image thumbnail
+  let thumb = dropZoneElement.querySelector(".drop-zone__thumb");
+  if(!thumb) {
+    thumb = document.createElement("div");
+    thumb.classList.add("drop-zone__thumb");
+    dropZoneElement.appendChild(thumb);
+  }
+  thumb.style.backgroundImage = `url('${getDirectImageUrl(product.image_url)}')`;
 
   document.getElementById('editModal').classList.remove('hidden');
 }
@@ -446,6 +472,7 @@ window.submitEditProduct = async function() {
     if(res.ok) {
       alert("Product updated successfully!");
       document.getElementById('editModal').classList.add('hidden');
+      resetDropZone('editDropZone', true);
       loadProducts();
     } else {
       alert("Failed to update product.");
