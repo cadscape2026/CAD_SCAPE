@@ -1,4 +1,4 @@
-const API_BASE = "https://procad-backend-xyz.onrender.com/api"; // Set to your live Render API
+const API_BASE = "https://procad-backend-xyz.onrender.com/api"; // Update with your actual backend URL later
 
 // --- NAVIGATION ---
 const views = {
@@ -15,87 +15,115 @@ const navs = {
 };
 
 function switchView(target) {
-  Object.values(views).forEach(v => v.classList.add('hidden'));
-  Object.values(navs).forEach(n => n.classList.remove('active'));
-  views[target].classList.remove('hidden');
+  Object.values(views).forEach(v => {
+    if(v) v.classList.add('hidden');
+  });
+  Object.values(navs).forEach(n => {
+    if(n) n.classList.remove('active');
+  });
+  
+  if(views[target]) views[target].classList.remove('hidden');
   if(navs[target]) navs[target].classList.add('active');
 }
 
-navs.home.addEventListener('click', () => switchView('home'));
-navs.market.addEventListener('click', () => switchView('market'));
-navs.requests.addEventListener('click', () => switchView('requests'));
-navs.admin.addEventListener('click', () => switchView('admin'));
-document.getElementById('heroBrowseBtn').addEventListener('click', () => switchView('market'));
-document.getElementById('heroRequestBtn').addEventListener('click', () => switchView('requests'));
+// Event Listeners for Navigation
+if(navs.home) navs.home.addEventListener('click', (e) => { e.preventDefault(); switchView('home'); });
+if(navs.market) navs.market.addEventListener('click', (e) => { e.preventDefault(); switchView('market'); });
+if(navs.requests) navs.requests.addEventListener('click', (e) => { e.preventDefault(); switchView('requests'); });
+if(navs.admin) navs.admin.addEventListener('click', (e) => { e.preventDefault(); switchView('admin'); });
+
+const heroBrowseBtn = document.getElementById('heroBrowseBtn');
+const heroRequestBtn = document.getElementById('heroRequestBtn');
+if(heroBrowseBtn) heroBrowseBtn.addEventListener('click', () => switchView('market'));
+if(heroRequestBtn) heroRequestBtn.addEventListener('click', () => switchView('requests'));
+
 
 // --- AUTHENTICATION (Role Based) ---
 const adminEmails = ["your-email@gmail.com", "friend-email@gmail.com"]; 
 let currentUser = { name: "Guest", email: null };
 
+// Safe initialization of Google Auth
 window.onload = function () {
-  google.accounts.oauth2.initTokenClient({
-    client_id: 'YOUR_GOOGLE_CLIENT_ID', 
-    scope: 'email profile',
-    callback: async (tokenResponse) => {
-      if (tokenResponse && tokenResponse.access_token) {
-        const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
-        });
-        const user = await res.json();
-        
-        currentUser = { name: user.name, email: user.email };
-        document.getElementById('customLoginBtn').classList.add('hidden');
-        document.getElementById('userInfo').classList.remove('hidden');
-        document.getElementById('userNameDisplay').textContent = user.given_name;
-        document.getElementById('userAvatar').src = user.picture;
-
-        // Unlock Admin if authorized developer/admin
-        if (adminEmails.includes(user.email)) {
-          navs.admin.classList.remove('hidden');
-        }
-      }
-    },
-  });
+  try {
+    if (typeof google !== 'undefined' && google.accounts) {
+      google.accounts.oauth2.initTokenClient({
+        client_id: 'YOUR_GOOGLE_CLIENT_ID', // Replace later
+        scope: 'email profile',
+        callback: async (tokenResponse) => {
+          if (tokenResponse && tokenResponse.access_token) {
+            const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+              headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+            });
+            const user = await res.json();
+            handleSuccessfulLogin(user.given_name, user.email, user.picture);
+          }
+        },
+      });
+    }
+  } catch (error) {
+    console.warn("Google Auth not fully configured yet.", error);
+  }
 };
 
-document.getElementById('customLoginBtn').addEventListener('click', () => {
-  if (typeof google !== 'undefined') {
-    const client = google.accounts.oauth2.initTokenClient({...}); // Must be initialized properly in production
-    client.requestAccessToken(); 
-  } else {
-    // Fallback Mock Login for local testing if Google isn't setup yet
-    currentUser = { name: "Admin Developer", email: "your-email@gmail.com" };
-    document.getElementById('customLoginBtn').classList.add('hidden');
-    document.getElementById('userInfo').classList.remove('hidden');
-    document.getElementById('userNameDisplay').textContent = "Admin";
+const customLoginBtn = document.getElementById('customLoginBtn');
+if(customLoginBtn) {
+  customLoginBtn.addEventListener('click', () => {
+    if (typeof google !== 'undefined' && google.accounts) {
+       // Triggers real Google Login if configured
+       // client.requestAccessToken(); 
+       alert("Google Client ID needs to be configured in app.js");
+    } else {
+      // Fallback Mock Login for testing
+      handleSuccessfulLogin("Admin", "your-email@gmail.com", "https://via.placeholder.com/32");
+    }
+  });
+}
+
+function handleSuccessfulLogin(name, email, avatarUrl) {
+  currentUser = { name: name, email: email };
+  document.getElementById('customLoginBtn').classList.add('hidden');
+  document.getElementById('userInfo').classList.remove('hidden');
+  document.getElementById('userNameDisplay').textContent = name;
+  document.getElementById('userAvatar').src = avatarUrl;
+
+  if (adminEmails.includes(email)) {
     navs.admin.classList.remove('hidden');
   }
-});
+}
 
-document.getElementById('logoutBtn').addEventListener('click', () => {
-  currentUser = { name: "Guest", email: null };
-  document.getElementById('customLoginBtn').classList.remove('hidden');
-  document.getElementById('userInfo').classList.add('hidden');
-  navs.admin.classList.add('hidden');
-  switchView('home');
-});
+const logoutBtn = document.getElementById('logoutBtn');
+if(logoutBtn) {
+  logoutBtn.addEventListener('click', () => {
+    currentUser = { name: "Guest", email: null };
+    document.getElementById('customLoginBtn').classList.remove('hidden');
+    document.getElementById('userInfo').classList.add('hidden');
+    navs.admin.classList.add('hidden');
+    switchView('home');
+  });
+}
 
 // --- STATE: CART & WISHLIST ---
 let cart = JSON.parse(localStorage.getItem('cadCart')) || [];
 let wishlist = JSON.parse(localStorage.getItem('cadWishlist')) || [];
-let allProducts = []; // Cache products for the comments modal
+let allProducts = []; 
 
 function updateCounters() {
-  document.getElementById('cartCount').textContent = cart.length;
-  document.getElementById('wishlistCount').textContent = wishlist.length;
+  const cartCount = document.getElementById('cartCount');
+  const wishlistCount = document.getElementById('wishlistCount');
+  if(cartCount) cartCount.textContent = cart.length;
+  if(wishlistCount) wishlistCount.textContent = wishlist.length;
 }
 
 // --- RENDER PRODUCTS ---
 async function loadProducts() {
   try {
     const response = await fetch(`${API_BASE}/products`);
+    if (!response.ok) return; // Exit if backend isn't ready
+    
     allProducts = await response.json();
     const grid = document.getElementById('productGrid');
+    if(!grid) return;
+    
     grid.innerHTML = '';
     
     allProducts.forEach(p => {
@@ -108,6 +136,7 @@ async function loadProducts() {
         : `<button onclick="addToCart(${p.id}, '${p.name}', ${p.price})" class="btn-small">Add to Cart</button>`;
 
       const isWishlisted = wishlist.includes(p.id) ? 'Remove from Wishlist' : 'Add to Wishlist';
+      const commentsLength = p.comments ? p.comments.length : 0;
 
       grid.innerHTML += `
         <div class="card">
@@ -120,7 +149,7 @@ async function loadProducts() {
             
             <div class="card-social">
               <button class="social-btn" onclick="toggleWishlist(${p.id}, this)">★ ${isWishlisted}</button>
-              <button class="social-btn" onclick="openComments(${p.id})">💬 Comments (${p.comments.length})</button>
+              <button class="social-btn" onclick="openComments(${p.id})">💬 Comments (${commentsLength})</button>
             </div>
 
             <div class="card-footer">
@@ -132,7 +161,7 @@ async function loadProducts() {
       `;
     });
   } catch (error) {
-    console.error("Error loading products:", error);
+    console.warn("Backend not connected yet. Products will load once API is live.");
   }
 }
 
@@ -155,89 +184,6 @@ window.addToCart = function(id, name, price) {
   updateCounters();
   alert(`${name} added to cart!`);
 }
-
-// --- COMMENTS LOGIC ---
-let activeCommentProductId = null;
-
-window.openComments = function(productId) {
-  activeCommentProductId = productId;
-  const product = allProducts.find(p => p.id === productId);
-  const commentsList = document.getElementById('commentsList');
-  commentsList.innerHTML = '';
-
-  if(product.comments.length === 0) {
-    commentsList.innerHTML = '<p style="color:#8b949e">No comments yet. Be the first!</p>';
-  } else {
-    product.comments.forEach(c => {
-      commentsList.innerHTML += `
-        <div class="comment-box">
-          <div class="comment-author">${c.user_name}</div>
-          <div class="comment-text">${c.text}</div>
-        </div>
-      `;
-    });
-  }
-  document.getElementById('commentsModal').classList.remove('hidden');
-}
-
-document.getElementById('submitCommentBtn').addEventListener('click', async () => {
-  const textInput = document.getElementById('newCommentText');
-  if(!textInput.value.trim()) return;
-
-  const commentData = {
-    product_id: activeCommentProductId,
-    user_name: currentUser.name,
-    text: textInput.value
-  };
-
-  await fetch(`${API_BASE}/comments`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(commentData)
-  });
-
-  textInput.value = '';
-  loadProducts(); // Refresh data from database
-  setTimeout(() => openComments(activeCommentProductId), 500); // Reopen modal with new data
-});
-
-// --- FORMS LOGIC ---
-document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const data = {
-    name: document.getElementById('modelName').value,
-    description: document.getElementById('modelDesc').value,
-    price: document.getElementById('modelPrice').value,
-    image_url: document.getElementById('modelImage').value,
-    download_url: document.getElementById('modelFile').value
-  };
-
-  await fetch(`${API_BASE}/products`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  alert("Product Uploaded!");
-  document.getElementById('uploadForm').reset();
-  loadProducts();
-});
-
-document.getElementById('requestForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const data = {
-    details: document.getElementById('reqDetails').value,
-    reference_link: document.getElementById('reqLink').value,
-    user_email: currentUser.email || 'guest@example.com'
-  };
-
-  await fetch(`${API_BASE}/requests`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  alert("Request Submitted! We will review your CAD requirements.");
-  document.getElementById('requestForm').reset();
-});
 
 // Init
 updateCounters();
