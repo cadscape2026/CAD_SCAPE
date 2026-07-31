@@ -89,6 +89,9 @@ function handleSuccessfulLogin(name, email, avatarUrl) {
   if (adminEmails.includes(email)) {
     navs.admin.classList.remove('hidden');
   }
+
+  // Refresh the store grid to show Admin Edit/Delete buttons if applicable
+  renderGrid(allProducts);
 }
 
 if (currentUser.email) {
@@ -135,6 +138,9 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
   navs.admin.classList.add('hidden');
   switchView('home');
   toggleSidebar();
+
+  // Refresh the store grid to hide Admin Edit/Delete buttons
+  renderGrid(allProducts);
 });
 
 
@@ -202,6 +208,8 @@ function renderGrid(products) {
     return;
   }
 
+  const isAdmin = adminEmails.includes(currentUser.email);
+
   products.forEach(p => {
     const priceDisplay = p.price === 0 
       ? `<span class="price text-green">Free</span>` 
@@ -213,6 +221,13 @@ function renderGrid(products) {
 
     const isWishlisted = wishlist.includes(p.id) ? 'Remove' : 'Wishlist';
     const commentsLength = p.comments ? p.comments.length : 0;
+
+    const adminControls = isAdmin ? `
+      <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); display: flex; gap: 10px;">
+        <button onclick="openEditModal('${p.id}')" class="btn-small" style="background:#f59e0b; flex:1;">Edit</button>
+        <button onclick="deleteProduct('${p.id}')" class="btn-small" style="background:#ef4444; flex:1;">Delete</button>
+      </div>
+    ` : '';
 
     grid.innerHTML += `
       <div class="card">
@@ -232,6 +247,7 @@ function renderGrid(products) {
             ${priceDisplay}
             ${actionHtml}
           </div>
+          ${adminControls}
         </div>
       </div>
     `;
@@ -288,6 +304,67 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
   }
 });
 
+// --- ADMIN: EDIT & DELETE PRODUCTS ---
+let currentEditId = null;
+
+window.openEditModal = function(id) {
+  const product = allProducts.find(p => p.id === id);
+  if(!product) return;
+  
+  currentEditId = id;
+  document.getElementById('editModelName').value = product.name;
+  document.getElementById('editModelDesc').value = product.description;
+  document.getElementById('editModelPrice').value = product.price;
+  document.getElementById('editModelImage').value = product.image_url;
+  document.getElementById('editModelFile').value = product.download_url;
+  
+  document.getElementById('editModal').classList.remove('hidden');
+}
+
+document.getElementById('editForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const data = {
+    name: document.getElementById('editModelName').value,
+    description: document.getElementById('editModelDesc').value,
+    price: document.getElementById('editModelPrice').value,
+    image_url: document.getElementById('editModelImage').value,
+    download_url: document.getElementById('editModelFile').value
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/products/${currentEditId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    if(res.ok) {
+      alert("Product updated successfully!");
+      document.getElementById('editModal').classList.add('hidden');
+      loadProducts();
+    } else {
+      alert("Failed to update product.");
+    }
+  } catch (error) {
+    alert("Error communicating with server.");
+  }
+});
+
+window.deleteProduct = async function(id) {
+  if(!confirm("Are you sure you want to permanently delete this product?")) return;
+  
+  try {
+    const res = await fetch(`${API_BASE}/products/${id}`, { method: 'DELETE' });
+    if(res.ok) {
+      alert("Product deleted!");
+      loadProducts();
+    } else {
+      alert("Failed to delete product.");
+    }
+  } catch (error) {
+    alert("Error communicating with server.");
+  }
+}
 
 // --- SUBMITTING & FETCHING REQUESTS ---
 document.getElementById('requestForm').addEventListener('submit', async (e) => {
