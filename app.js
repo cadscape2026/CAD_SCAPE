@@ -71,14 +71,14 @@ document.getElementById('themeToggleBtn').addEventListener('click', () => {
 
 
 // --- AUTHENTICATION ---
-const adminEmails = ["your-email@gmail.com", "friend-email@gmail.com"]; 
+const adminEmails = ["deekshith123pi@gmail.com", "cadscape2026@gmail.com"]; 
 let currentUser = { name: "Guest", email: null };
 
 window.onload = function () {
   try {
     if (typeof google !== 'undefined' && google.accounts) {
       google.accounts.oauth2.initTokenClient({
-        client_id: 'YOUR_GOOGLE_CLIENT_ID', 
+        client_id: 668904528697-eotq6djic32hvggt9ge3ja90piq22d5e.apps.googleusercontent.com, 
         scope: 'email profile',
         callback: async (tokenResponse) => {
           if (tokenResponse && tokenResponse.access_token) {
