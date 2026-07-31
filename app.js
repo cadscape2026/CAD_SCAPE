@@ -1,4 +1,4 @@
-const API_BASE = "https://procad-backend-xyz.onrender.com/api"; // Update with actual backend URL
+const API_BASE = "https://procad-backend-xyz.onrender.com/api"; // Replace later with live Render URL
 
 // --- NAVIGATION ---
 const views = {
@@ -19,6 +19,9 @@ function switchView(target) {
   
   if(views[target]) views[target].classList.remove('hidden');
   if(navs[target]) navs[target].classList.add('active');
+
+  // If Admin panel is opened, auto-fetch requests
+  if(target === 'admin') fetchAdminRequests();
 }
 
 document.getElementById('logoHomeBtn').addEventListener('click', (e) => { e.preventDefault(); switchView('home'); });
@@ -26,6 +29,23 @@ navs.market.addEventListener('click', (e) => { e.preventDefault(); switchView('m
 navs.requests.addEventListener('click', (e) => { e.preventDefault(); switchView('requests'); });
 navs.admin.addEventListener('click', (e) => { e.preventDefault(); switchView('admin'); });
 document.getElementById('heroBrowseBtn').addEventListener('click', () => switchView('market'));
+
+
+// --- ADMIN TABS (Upload vs View Requests) ---
+document.getElementById('btnShowUpload').addEventListener('click', () => {
+  document.getElementById('adminUploadSection').classList.remove('hidden');
+  document.getElementById('adminRequestsSection').classList.add('hidden');
+  document.getElementById('btnShowUpload').className = "btn-blue-large";
+  document.getElementById('btnShowRequests').className = "btn-glass-large";
+});
+
+document.getElementById('btnShowRequests').addEventListener('click', () => {
+  document.getElementById('adminUploadSection').classList.add('hidden');
+  document.getElementById('adminRequestsSection').classList.remove('hidden');
+  document.getElementById('btnShowRequests').className = "btn-blue-large";
+  document.getElementById('btnShowUpload').className = "btn-glass-large";
+  fetchAdminRequests();
+});
 
 
 // --- SIDEBAR & THEME TOGGLE ---
@@ -78,7 +98,7 @@ window.onload = function () {
 
 document.getElementById('customLoginBtn').addEventListener('click', () => {
   if (typeof google !== 'undefined' && google.accounts) {
-     alert("Google Client ID needs to be configured in app.js");
+     alert("To use real Google Login, you must generate a Client ID from Google Cloud Console and paste it into app.js.");
   } else {
     handleSuccessfulLogin("Admin", "your-email@gmail.com", "https://via.placeholder.com/64");
   }
@@ -135,7 +155,6 @@ function initCarousel(products) {
   track.innerHTML = '';
   if(products.length === 0) return;
 
-  // Use top 3 products for featured carousel
   const featured = products.slice(0, 3);
   featured.forEach(p => {
     track.innerHTML += `
@@ -149,12 +168,11 @@ function initCarousel(products) {
     `;
   });
 
-  // Auto-Slide Logic
   clearInterval(carouselInterval);
   carouselInterval = setInterval(() => {
     currentSlide = (currentSlide + 1) % featured.length;
     track.style.transform = `translateX(-${currentSlide * 100}%)`;
-  }, 4000); // Changes every 4 seconds
+  }, 4000); 
 }
 
 
@@ -220,6 +238,60 @@ async function loadProducts() {
     renderGrid(allProducts);
   } catch (error) {
     console.warn("Backend not connected yet. Products will load once API is live.");
+  }
+}
+
+// --- SUBMITTING & FETCHING REQUESTS ---
+document.getElementById('requestForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const data = {
+    details: document.getElementById('reqDetails').value,
+    reference_link: document.getElementById('reqLink').value, // Now Optional
+    phone: document.getElementById('reqPhone').value,         // New Phone Field
+    user_email: currentUser.email || 'guest@example.com'
+  };
+
+  try {
+    await fetch(`${API_BASE}/requests`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    alert("Request Submitted! We will review your CAD requirements.");
+    document.getElementById('requestForm').reset();
+  } catch (error) {
+    alert("Error submitting request. Backend may not be live.");
+  }
+});
+
+async function fetchAdminRequests() {
+  try {
+    const res = await fetch(`${API_BASE}/requests`);
+    const requests = await res.json();
+    const list = document.getElementById('adminRequestsList');
+    list.innerHTML = '';
+
+    if(requests.length === 0) {
+      list.innerHTML = "<p>No custom requests yet.</p>";
+      return;
+    }
+
+    requests.forEach(req => {
+      const linkHtml = req.reference_link !== "None provided" 
+        ? `<a href="${req.reference_link}" target="_blank">View Attached Files (Google Drive)</a>`
+        : `<span style="color:var(--text-muted)">No files attached</span>`;
+
+      list.innerHTML += `
+        <div class="admin-req-card">
+          <p><strong>Email:</strong> ${req.user_email}</p>
+          <p><strong>Phone:</strong> ${req.phone}</p>
+          <p><strong>Details:</strong> ${req.details}</p>
+          <p style="margin-top: 10px;">${linkHtml}</p>
+        </div>
+      `;
+    });
+  } catch (err) {
+    console.warn("Could not fetch requests.");
   }
 }
 
