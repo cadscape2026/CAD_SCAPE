@@ -3,115 +3,113 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ProCAD | Marketplace & Custom Engineering</title>
+  <title>CAD SCAPE | Precision Engineering Models</title>
   <link rel="stylesheet" href="styles.css">
+  <!-- Real Google Sign-In Library -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-<body>
+<body class="dark-mode">
 
-  <!-- Navigation -->
+  <!-- Navigation Bar -->
   <header class="navbar">
-    <div class="logo">ProCAD</div>
-    <nav class="nav-links">
-      <a href="#" id="navMarket" class="active">Marketplace</a>
-      <a href="#" id="navRequests">Custom Requests</a>
-      <a href="#" id="navAdmin" class="hidden">Admin Panel</a>
+    <div class="logo">
+      <!-- Using your logo_2.png -->
+      <img src="logo_2.png" alt="CAD SCAPE" class="logo-img">
+      <span class="logo-text">SCAPE</span>
+    </div>
+
+    <!-- Center Pill Navigation -->
+    <nav class="nav-pill">
+      <a href="#" id="navHome" class="active">Home</a>
+      <a href="#" id="navMarket">Marketplace</a>
+      <a href="#" id="navAdmin" class="hidden">Admin</a>
     </nav>
+
+    <!-- Right Actions -->
     <div class="nav-actions">
-      <button id="cartBtn" class="cart-btn">Cart (<span id="cartCount">0</span>)</button>
-      <button id="loginBtn" class="btn-primary">Google Sign In</button>
-      <div id="userInfo" class="hidden">
-        <span id="userName"></span>
-        <button id="logoutBtn" class="btn-secondary">Logout</button>
+      <button id="themeToggle" class="icon-btn" title="Toggle Light/Dark Mode">☀️</button>
+      <button id="cartBtn" class="icon-btn" title="View Cart">🛒 (<span id="cartCount">0</span>)</button>
+      <button id="wishlistBtn" class="icon-btn" title="View Wishlist">⭐ (<span id="wishlistCount">0</span>)</button>
+      
+      <!-- Custom Google Sign-In Button matching your image -->
+      <button id="customLoginBtn" class="g-signin-btn">
+        <svg viewBox="0 0 48 48" width="18px" height="18px">
+          <path fill="#ffffff" d="M23.49,20.59v6.86h11.41c-0.47,2.94-3.52,8.6-11.41,8.6c-6.86,0-12.48-5.71-12.48-12.76s5.62-12.76,12.48-12.76 c3.9,0,6.52,1.67,8.02,3.1l5.4-5.4C33.4,4.92,28.91,3,23.49,3C12.72,3,4,11.72,4,22.5S12.72,42,23.49,42 c11.27,0,18.77-7.93,18.77-19.1c0-1.29-0.12-2.31-0.34-3.31H23.49z"></path>
+        </svg>
+        Sign in
+      </button>
+
+      <div id="userInfo" class="hidden user-profile">
+        <img id="userAvatar" src="" alt="Avatar">
+        <button id="logoutBtn" class="btn-outline-small">Logout</button>
       </div>
     </div>
   </header>
 
-  <!-- Cart Modal (Slides in from right) -->
-  <div id="cartModal" class="cart-modal hidden">
-    <div class="cart-header">
-      <h3>Your Cart</h3>
-      <button id="closeCartBtn" class="close-btn">&times;</button>
-    </div>
-    <div id="cartItems" class="cart-items"></div>
-    <div class="cart-footer">
-      <p>Total: $<span id="cartTotal">0.00</span></p>
-      <button class="btn-primary checkout-btn">Checkout</button>
-    </div>
-  </div>
-
-  <!-- VIEW: Marketplace -->
-  <section id="viewMarketplace" class="view-section active">
-    <!-- OTT Style Smooth Banner -->
-    <div class="ott-banner-container">
-      <div class="banner-slide active" style="background-image: url('https://images.unsplash.com/photo-1581092160562-40aa08e78837?q=80&w=2000&auto=format&fit=crop');">
-        <div class="banner-content">
-          <span class="tag">New Release</span>
-          <h2>V8 Engine Block Assembly</h2>
-          <p>Highly detailed, production-ready SLDASM files.</p>
+  <!-- HOME VIEW (Matches your image exactly) -->
+  <section id="viewHome" class="view-section active">
+    <div class="hero">
+      <!-- Background Video -->
+      <video class="hero-video" autoplay loop muted playsinline>
+        <source src="background-video.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <!-- Dark fade overlay -->
+      <div class="hero-overlay"></div>
+      
+      <!-- Hero Content -->
+      <div class="hero-content">
+        <span class="hero-badge">ENGINEERED PRECISION & ATMOSPHERIC DESIGN</span>
+        <h1>Precision CAD Models & Industrial<br>Parts</h1>
+        <p>Production-ready SolidWorks assemblies, parametric parts, and cinematic 3D visual assets crafted<br>for aerospace, robotics, and industrial engineering.</p>
+        <div class="hero-buttons">
+          <button id="heroBrowseBtn" class="btn-blue-large">Browse Marketplace</button>
+          <button id="heroRequestBtn" class="btn-glass-large">Design Requests</button>
         </div>
-      </div>
-      <div class="banner-slide" style="background-image: url('https://images.unsplash.com/photo-1613564998950-a3528b8dc510?q=80&w=2000&auto=format&fit=crop');">
-        <div class="banner-content">
-          <span class="tag">Featured</span>
-          <h2>Robotic Arm Mechanics</h2>
-          <p>Parametric parts available for free download.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Product Grid -->
-    <div class="container">
-      <h2>Browse CAD Models</h2>
-      <div class="grid" id="productGrid">
-        <!-- Products injected via JS -->
       </div>
     </div>
   </section>
 
-  <!-- VIEW: Custom Requests -->
-  <section id="viewRequests" class="view-section hidden container">
-    <div class="form-card">
-      <h2>Request a Custom CAD Model</h2>
-      <p>Need something specific? Describe your project and we'll send you a quote.</p>
-      <form id="requestForm">
-        <div class="form-group">
-          <label>Project Details</label>
-          <textarea rows="5" placeholder="Describe the dimensions, mechanical requirements, etc." required></textarea>
-        </div>
-        <div class="form-group">
-          <label>Google Drive Reference Link</label>
-          <input type="url" placeholder="Link to sketches or diagrams" required>
-        </div>
-        <button type="submit" class="btn-primary">Submit Request</button>
-      </form>
+  <!-- MARKETPLACE VIEW -->
+  <section id="viewMarketplace" class="view-section hidden container">
+    <div class="store-header">
+      <h2>CAD Asset Library</h2>
+      <input type="text" id="searchInput" placeholder="Search models...">
+    </div>
+    <div class="grid" id="productGrid">
+      <!-- Products dynamically injected here -->
     </div>
   </section>
 
-  <!-- VIEW: Admin Panel -->
+  <!-- ADMIN VIEW -->
   <section id="viewAdmin" class="view-section hidden container">
+    <!-- Same admin form as before -->
     <div class="form-card">
       <h2>Upload New CAD Project</h2>
       <form id="uploadForm">
-        <div class="form-group">
-          <label>Model Name</label>
-          <input type="text" id="modelName" required>
-        </div>
-        <div class="form-group">
-          <label>Price (Set to 0 for Free)</label>
-          <input type="number" id="modelPrice" step="0.01" value="0" required>
-        </div>
-        <div class="form-group">
-          <label>Image URL</label>
-          <input type="url" id="modelImage" required>
-        </div>
-        <div class="form-group">
-          <label>Google Drive Download Link</label>
-          <input type="url" id="modelFile" required>
-        </div>
-        <button type="submit" class="btn-primary">Publish to Marketplace</button>
+        <input type="text" id="modelName" placeholder="Model Name" required>
+        <input type="number" id="modelPrice" step="0.01" value="0" placeholder="Price (0 for Free)" required>
+        <input type="url" id="modelImage" placeholder="Thumbnail Image URL" required>
+        <input type="url" id="modelFile" placeholder="Google Drive Link" required>
+        <button type="submit" class="btn-blue-large">Publish to Marketplace</button>
       </form>
     </div>
   </section>
+
+  <!-- Cart Modal -->
+  <div id="cartModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Shopping Cart</h3>
+        <button class="close-modal" id="closeCart">&times;</button>
+      </div>
+      <div id="cartItems"></div>
+      <div class="modal-footer">
+        <h3>Total: $<span id="cartTotal">0.00</span></h3>
+        <button class="btn-blue-large">Secure Checkout</button>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
