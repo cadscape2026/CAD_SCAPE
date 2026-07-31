@@ -90,7 +90,6 @@ function handleSuccessfulLogin(name, email, avatarUrl) {
     navs.admin.classList.remove('hidden');
   }
 
-  // Refresh the store grid to show Admin Edit/Delete buttons if applicable
   renderGrid(allProducts);
 }
 
@@ -138,8 +137,6 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
   navs.admin.classList.add('hidden');
   switchView('home');
   toggleSidebar();
-
-  // Refresh the store grid to hide Admin Edit/Delete buttons
   renderGrid(allProducts);
 });
 
@@ -157,7 +154,6 @@ function updateCounters() {
 // --- HELPER: GOOGLE DRIVE IMAGE CONVERTER ---
 function getDirectImageUrl(url) {
   if (!url) return '';
-  // Converts standard Drive share link into a direct image link
   if (url.includes('drive.google.com/file/d/')) {
     const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
     if (match && match[1]) {
@@ -273,9 +269,12 @@ async function loadProducts() {
   }
 }
 
-// --- ADMIN: UPLOAD PRODUCT ---
-document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+// --- ADMIN: UPLOAD PRODUCT (FULLY BULLETPROOF) ---
+window.handleUpload = async function(e) {
   e.preventDefault(); 
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.textContent = "Uploading..."; // Visual Feedback!
+  btn.disabled = true;
 
   const data = {
     name: document.getElementById('modelName').value,
@@ -301,8 +300,12 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     }
   } catch (error) {
     alert("Error uploading product. Is the backend running?");
+  } finally {
+    btn.textContent = "Upload to Database";
+    btn.disabled = false;
   }
-});
+};
+
 
 // --- ADMIN: EDIT & DELETE PRODUCTS ---
 let currentEditId = null;
@@ -321,8 +324,12 @@ window.openEditModal = function(id) {
   document.getElementById('editModal').classList.remove('hidden');
 }
 
-document.getElementById('editForm').addEventListener('submit', async (e) => {
+window.handleEdit = async function(e) {
   e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.textContent = "Saving...";
+  btn.disabled = true;
+
   const data = {
     name: document.getElementById('editModelName').value,
     description: document.getElementById('editModelDesc').value,
@@ -347,8 +354,11 @@ document.getElementById('editForm').addEventListener('submit', async (e) => {
     }
   } catch (error) {
     alert("Error communicating with server.");
+  } finally {
+    btn.textContent = "Save Changes";
+    btn.disabled = false;
   }
-});
+};
 
 window.deleteProduct = async function(id) {
   if(!confirm("Are you sure you want to permanently delete this product?")) return;
@@ -367,8 +377,12 @@ window.deleteProduct = async function(id) {
 }
 
 // --- SUBMITTING & FETCHING REQUESTS ---
-document.getElementById('requestForm').addEventListener('submit', async (e) => {
+window.handleRequest = async function(e) {
   e.preventDefault();
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.textContent = "Submitting...";
+  btn.disabled = true;
+
   const data = {
     details: document.getElementById('reqDetails').value,
     reference_link: document.getElementById('reqLink').value, 
@@ -386,8 +400,11 @@ document.getElementById('requestForm').addEventListener('submit', async (e) => {
     document.getElementById('requestForm').reset();
   } catch (error) {
     alert("Error submitting request.");
+  } finally {
+    btn.textContent = "Submit Request";
+    btn.disabled = false;
   }
-});
+};
 
 async function fetchAdminRequests() {
   try {
