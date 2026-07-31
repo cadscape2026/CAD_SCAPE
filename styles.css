@@ -21,13 +21,13 @@ body { background-color: var(--bg-main); color: var(--text-main); }
   border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
 }
 
-.logo { display: flex; align-items: center; }
-.logo-img { height: 28px; }
+.logo { display: flex; align-items: center; text-decoration: none; cursor: pointer; }
+.logo-img { height: 28px; transition: opacity 0.2s; }
+.logo-img:hover { opacity: 0.8; }
 
-.nav-pill { display: flex; background: var(--bg-card); border-radius: 30px; padding: 4px; border: 1px solid var(--border); }
-.nav-pill a { text-decoration: none; color: var(--text-muted); padding: 6px 20px; border-radius: 20px; font-size: 0.9rem; font-weight: 500; transition: 0.2s; }
-.nav-pill a:hover { color: var(--text-main); }
-.nav-pill a.active { background: var(--blue-primary); color: #fff; }
+.main-nav { display: flex; gap: 30px; }
+.main-nav a { text-decoration: none; color: var(--text-muted); font-size: 0.95rem; font-weight: 500; transition: 0.2s; }
+.main-nav a:hover, .main-nav a.active { color: var(--text-main); }
 
 .nav-actions { display: flex; align-items: center; gap: 20px; }
 .nav-link { background: none; border: none; color: var(--text-main); font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: 0.2s; }
