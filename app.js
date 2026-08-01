@@ -379,7 +379,8 @@ async function loadProducts() {
   }
 }
 
-// --- ADMIN: UPLOAD PRODUCT ---
+
+// --- ADMIN: UPLOAD, EDIT, DELETE PRODUCTS ---
 window.submitNewProduct = async function() {
   const btn = document.getElementById('uploadBtn');
   const name = document.getElementById('modelName').value;
@@ -422,8 +423,6 @@ window.submitNewProduct = async function() {
   }
 };
 
-
-// --- ADMIN: EDIT & DELETE PRODUCTS ---
 let currentEditId = null;
 
 window.openEditModal = function(id) {
@@ -508,7 +507,8 @@ window.deleteProduct = async function(id) {
   }
 }
 
-// --- SUBMITTING REQUESTS (BULLETPROOFED) ---
+
+// --- REQUESTS & ORDER HISTORY LOGIC ---
 window.submitDesignRequest = async function() {
   const btn = document.getElementById('requestBtn');
   const phone = document.getElementById('reqPhone').value;
@@ -521,7 +521,6 @@ window.submitDesignRequest = async function() {
   btn.style.backgroundColor = "#f59e0b";
   btn.style.pointerEvents = "none";
 
-  // Safely extract email to prevent crash
   const safeEmail = (currentUser && currentUser.email) ? currentUser.email : 'guest@example.com';
   
   const data = {
@@ -539,7 +538,7 @@ window.submitDesignRequest = async function() {
     });
     
     if(res.ok) {
-      alert("Request Submitted! We will review your CAD requirements.");
+      alert("Request Submitted! You can track it in your Order History.");
       document.getElementById('requestForm').reset();
     } else {
       const err = await res.json();
@@ -551,6 +550,24 @@ window.submitDesignRequest = async function() {
     btn.textContent = "Submit Request";
     btn.style.backgroundColor = "";
     btn.style.pointerEvents = "auto";
+  }
+};
+
+window.updateRequestStatus = async function(id, newStatus) {
+  try {
+    const res = await fetch(`${API_BASE}/requests/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    });
+    if(res.ok) {
+       alert("Order status successfully updated!");
+       fetchAdminRequests(); 
+    } else {
+       alert("Failed to update status.");
+    }
+  } catch(e) {
+     alert("Error connecting to server.");
   }
 };
 
@@ -570,13 +587,27 @@ async function fetchAdminRequests() {
       const linkHtml = req.reference_link && req.reference_link !== "None provided" && req.reference_link !== ""
         ? `<a href="${req.reference_link}" target="_blank">View Attached Files (Google Drive)</a>`
         : `<span style="color:var(--text-muted)">No files attached</span>`;
+      
+      // Determine Badge Color for Admin view
+      let badgeClass = "status-pending";
+      if(req.status === "In Progress") badgeClass = "status-progress";
+      if(req.status === "Completed") badgeClass = "status-completed";
 
       list.innerHTML += `
         <div class="admin-req-card">
-          <p><strong>Email:</strong> ${req.user_email}</p>
+          <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border);">
+             <span class="status-badge ${badgeClass}" style="margin:0">${req.status}</span>
+             
+             <select onchange="updateRequestStatus('${req.id}', this.value)" style="padding: 6px; border-radius: 5px; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); cursor:pointer;">
+                <option value="Pending" ${req.status === 'Pending' ? 'selected' : ''}>Status: Pending</option>
+                <option value="In Progress" ${req.status === 'In Progress' ? 'selected' : ''}>Status: In Progress</option>
+                <option value="Completed" ${req.status === 'Completed' ? 'selected' : ''}>Status: Completed</option>
+             </select>
+          </div>
+          <p><strong>Client:</strong> ${req.user_email}</p>
           <p><strong>Phone:</strong> ${req.phone}</p>
-          <p><strong>Details:</strong> ${req.details}</p>
-          <p style="margin-top: 10px;">${linkHtml}</p>
+          <p><strong>Requirements:</strong> ${req.details}</p>
+          <p style="margin-top: 15px;">${linkHtml}</p>
         </div>
       `;
     });
@@ -584,6 +615,49 @@ async function fetchAdminRequests() {
     console.warn("Could not fetch requests.");
   }
 }
+
+// User checking their own orders
+document.getElementById('orderHistoryBtn').addEventListener('click', () => {
+  toggleSidebar();
+  if(!currentUser || !currentUser.email) {
+    return alert("Please sign in to view your order history.");
+  }
+  
+  const list = document.getElementById('ordersList');
+  list.innerHTML = '<p style="color:var(--text-muted)">Loading your requests...</p>';
+  document.getElementById('ordersModal').classList.remove('hidden');
+
+  fetch(`${API_BASE}/requests`)
+    .then(res => res.json())
+    .then(allReqs => {
+      // Filter so users ONLY see their own requests based on their Google email
+      const myReqs = allReqs.filter(r => r.user_email === currentUser.email);
+
+      if(myReqs.length === 0) {
+        list.innerHTML = '<p style="color:var(--text-muted)">You have no active orders or design requests yet.</p>';
+        return;
+      }
+
+      list.innerHTML = '';
+      myReqs.forEach(req => {
+        let badgeClass = "status-pending";
+        if(req.status === "In Progress") badgeClass = "status-progress";
+        if(req.status === "Completed") badgeClass = "status-completed";
+
+        list.innerHTML += `
+          <div class="admin-req-card">
+            <span class="status-badge ${badgeClass}">${req.status}</span>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom: 5px;">Order Details:</p>
+            <p> ${req.details}</p>
+          </div>
+        `;
+      });
+    })
+    .catch(() => {
+      list.innerHTML = '<p style="color:#ef4444">Failed to load orders. Are you offline?</p>';
+    });
+});
+
 
 // --- CART & CHECKOUT LOGIC ---
 window.addToCart = function(id, name, price, download_url) {
@@ -704,6 +778,7 @@ document.getElementById('wishlistBtn').addEventListener('click', () => {
   renderWishlist();
   document.getElementById('wishlistModal').classList.remove('hidden');
 });
+
 
 // --- COMMENTS LOGIC ---
 let currentCommentProductId = null;
