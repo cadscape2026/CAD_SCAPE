@@ -361,24 +361,17 @@ async function loadProducts() {
     
     allProducts = await response.json();
 
-    // --- NEW: AUTO-CLEANUP GHOST ITEMS ---
-    // Extract a list of valid IDs that currently exist in the database
     const validIds = allProducts.map(p => p.id);
     
-    // Check wishlist against valid IDs
     const oldWishlistLen = wishlist.length;
     wishlist = wishlist.filter(id => validIds.includes(id));
     if (wishlist.length !== oldWishlistLen) localStorage.setItem('cadWishlist', JSON.stringify(wishlist));
 
-    // Check cart against valid IDs
     const oldCartLen = cart.length;
     cart = cart.filter(item => validIds.includes(item.id));
     if (cart.length !== oldCartLen) localStorage.setItem('cadCart', JSON.stringify(cart));
     
-    // Update the counter bubbles in the navigation bar
     updateCounters();
-    // -------------------------------------
-
     initCarousel(allProducts);
     renderGrid(allProducts);
   } catch (error) {
@@ -515,7 +508,7 @@ window.deleteProduct = async function(id) {
   }
 }
 
-// --- SUBMITTING REQUESTS ---
+// --- SUBMITTING REQUESTS (BULLETPROOFED) ---
 window.submitDesignRequest = async function() {
   const btn = document.getElementById('requestBtn');
   const phone = document.getElementById('reqPhone').value;
@@ -528,11 +521,14 @@ window.submitDesignRequest = async function() {
   btn.style.backgroundColor = "#f59e0b";
   btn.style.pointerEvents = "none";
 
+  // Safely extract email to prevent crash
+  const safeEmail = (currentUser && currentUser.email) ? currentUser.email : 'guest@example.com';
+  
   const data = {
     details: details,
     reference_link: link, 
     phone: phone,         
-    user_email: currentUser.email || 'guest@example.com'
+    user_email: safeEmail
   };
 
   try {
@@ -546,10 +542,11 @@ window.submitDesignRequest = async function() {
       alert("Request Submitted! We will review your CAD requirements.");
       document.getElementById('requestForm').reset();
     } else {
-      alert("Failed to submit request.");
+      const err = await res.json();
+      alert("Server Rejected Request: " + (err.error || "Check backend logs."));
     }
   } catch (error) {
-    alert("Error submitting request.");
+    alert("Network Error: Could not connect to Render Database. Ensure your backend is live!");
   } finally {
     btn.textContent = "Submit Request";
     btn.style.backgroundColor = "";
