@@ -1,5 +1,14 @@
 const API_BASE = "https://procad-backend.onrender.com/api"; 
 
+// --- GLOBAL STATE ---
+// Hoisted to the top so they are always available in memory to prevent crashes
+let cart = [];
+let wishlist = [];
+let allProducts = [];
+
+try { cart = JSON.parse(localStorage.getItem('cadCart')) || []; } catch(e){}
+try { wishlist = JSON.parse(localStorage.getItem('cadWishlist')) || []; } catch(e){}
+
 // --- NAVIGATION ---
 const views = {
   home: document.getElementById('viewHome'),
@@ -69,17 +78,10 @@ document.getElementById('themeToggleBtn').addEventListener('click', () => {
 });
 
 
-// --- AUTHENTICATION (BULLETPROOFED) ---
+// --- AUTHENTICATION ---
 const adminEmails = ["deekshith123pi@gmail.com", "cadscape2026@gmail.com"]; 
-
-// Safely parse Local Storage to prevent crashes
 let savedUser = null;
-try {
-  savedUser = JSON.parse(localStorage.getItem('cadUser'));
-} catch(e) {
-  console.warn("Cleared corrupted user data.");
-  localStorage.removeItem('cadUser');
-}
+try { savedUser = JSON.parse(localStorage.getItem('cadUser')); } catch(e) { localStorage.removeItem('cadUser'); }
 let currentUser = (savedUser && savedUser.email) ? savedUser : { name: "Guest", email: null };
 let tokenClient; 
 
@@ -95,19 +97,18 @@ function handleSuccessfulLogin(name, email, avatarUrl) {
   document.getElementById('userEmailDisplay').textContent = email;
   document.getElementById('logoutBtn').classList.remove('hidden');
 
-  // Safely reveal admin links if the email matches
   if (adminEmails.includes(email)) {
     if(navs.admin) navs.admin.classList.remove('hidden');
     const sideAdminBtn = document.getElementById('sidebarNavAdmin');
     if(sideAdminBtn) sideAdminBtn.classList.remove('hidden');
   } else {
-    // Force hide them if a normal user logs in
     if(navs.admin) navs.admin.classList.add('hidden');
     const sideAdminBtn = document.getElementById('sidebarNavAdmin');
     if(sideAdminBtn) sideAdminBtn.classList.add('hidden');
   }
   
-  renderGrid(allProducts);
+  // Safely refresh store only if products exist
+  if(allProducts.length > 0) renderGrid(allProducts);
 }
 
 if (currentUser.email) {
@@ -144,7 +145,6 @@ document.getElementById('customLoginBtn').addEventListener('click', () => {
   }
 });
 
-// Forceful Sign Out logic
 document.getElementById('logoutBtn').addEventListener('click', () => {
   try {
     currentUser = { name: "Guest", email: null };
@@ -161,18 +161,13 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
     
     switchView('home');
     toggleSidebar();
-    renderGrid(allProducts);
+    
+    if(allProducts.length > 0) renderGrid(allProducts);
   } catch (error) {
-    // If anything fails during the UI update, hard refresh the page to guarantee a logout
+    // Failsafe: Hard refresh if UI bugs out during logout
     window.location.reload(); 
   }
 });
-
-
-// --- STATE: CART & WISHLIST ---
-let cart = JSON.parse(localStorage.getItem('cadCart')) || [];
-let wishlist = JSON.parse(localStorage.getItem('cadWishlist')) || [];
-let allProducts = []; 
 
 function updateCounters() {
   document.getElementById('cartCount').textContent = cart.length;
@@ -312,7 +307,6 @@ function renderGrid(products) {
     return;
   }
 
-  // Safely check if the user is an admin without crashing
   const isAdmin = (currentUser && currentUser.email) ? adminEmails.includes(currentUser.email) : false;
 
   products.forEach(p => {
