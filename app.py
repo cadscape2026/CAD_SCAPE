@@ -106,24 +106,33 @@ def get_requests():
     for doc in requests_collection.find():
         reqs.append({
             "id": str(doc["_id"]),
+            "req_type": doc.get("req_type", "Custom Design"),
             "user_email": doc.get("user_email"),
             "phone": doc.get("phone", "N/A"),
             "details": doc.get("details"),
-            "reference_link": doc.get("reference_link", "None provided"),
-            "status": doc.get("status", "Pending") # Added Status Property
+            "reference_link": doc.get("reference_link", ""),
+            "status": doc.get("status", "Pending"),
+            "price": doc.get("price", 0.0),
+            "payment_status": doc.get("payment_status", "Unpaid"),
+            "completed_link": doc.get("completed_link", "")
         })
     return jsonify(reqs[::-1]), 200
 
-# NEW ROUTE: Updates the Order Status
+# ADMIN ROUTE: Updates Status, Payment, Price, and Links
 @app.route('/api/requests/<req_id>', methods=['PUT', 'OPTIONS'])
 def update_request_status(req_id):
     if request.method == 'OPTIONS':
         return jsonify({}), 200
     try:
         data = request.json
-        new_status = data.get('status')
-        requests_collection.update_one({"_id": ObjectId(req_id)}, {"$set": {"status": new_status}})
-        return jsonify({"message": "Status updated successfully"}), 200
+        update_fields = {}
+        if 'status' in data: update_fields['status'] = data['status']
+        if 'payment_status' in data: update_fields['payment_status'] = data['payment_status']
+        if 'price' in data: update_fields['price'] = float(data['price'])
+        if 'completed_link' in data: update_fields['completed_link'] = data['completed_link']
+
+        requests_collection.update_one({"_id": ObjectId(req_id)}, {"$set": update_fields})
+        return jsonify({"message": "Order updated successfully"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
@@ -135,16 +144,21 @@ def submit_request():
     try:
         data = request.json
         new_req = {
+            "req_type": data.get("req_type", "Custom Design"),
             "details": data.get('details', ''),
             "reference_link": data.get('reference_link', ''),
             "phone": data.get('phone', ''),
             "user_email": data.get('user_email', 'guest@example.com'),
-            "status": "Pending" # Defaults all new requests to Pending
+            "status": data.get('status', 'Pending'),
+            "price": float(data.get('price', 0.0)),
+            "payment_status": data.get('payment_status', 'Unpaid'),
+            "completed_link": data.get('completed_link', '')
         }
         
         requests_collection.insert_one(new_req)
 
-        if ADMIN_EMAIL and ADMIN_EMAIL_PASSWORD:
+        # Only send Email alert if it's a Custom Design (not a store checkout)
+        if new_req["req_type"] == "Custom Design" and ADMIN_EMAIL and ADMIN_EMAIL_PASSWORD:
             try:
                 msg = MIMEMultipart()
                 msg['From'] = ADMIN_EMAIL
@@ -152,15 +166,12 @@ def submit_request():
                 msg['Subject'] = "New Client Custom Build Request!"
                 
                 body = f"""You have a new client request for a custom build:
-                
 Client Email: {new_req['user_email']}
 Phone/WhatsApp: {new_req['phone']}
 
 Requirements: 
 {new_req['details']}
-
-Reference/Drive Link: {new_req['reference_link']}
-                """
+Reference/Drive Link: {new_req['reference_link']}"""
                 msg.attach(MIMEText(body, 'plain'))
                 
                 server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -169,9 +180,9 @@ Reference/Drive Link: {new_req['reference_link']}
                 server.send_message(msg)
                 server.quit()
             except Exception as e:
-                print(f"Warning: Database saved, but Email failed to send. Reason: {e}")
+                print(f"Email failed to send. Reason: {e}")
 
-        return jsonify({"message": "Custom request submitted successfully"}), 201
+        return jsonify({"message": "Saved successfully"}), 201
         
     except Exception as server_error:
         print(f"CRITICAL SERVER ERROR: {server_error}")
