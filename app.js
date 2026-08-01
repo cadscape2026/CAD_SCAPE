@@ -362,7 +362,6 @@ async function loadProducts() {
     allProducts = await response.json();
 
     const validIds = allProducts.map(p => p.id);
-    
     const oldWishlistLen = wishlist.length;
     wishlist = wishlist.filter(id => validIds.includes(id));
     if (wishlist.length !== oldWishlistLen) localStorage.setItem('cadWishlist', JSON.stringify(wishlist));
@@ -424,7 +423,6 @@ window.submitNewProduct = async function() {
 };
 
 let currentEditId = null;
-
 window.openEditModal = function(id) {
   const product = allProducts.find(p => p.id === id);
   if(!product) return;
@@ -493,7 +491,6 @@ window.submitEditProduct = async function() {
 
 window.deleteProduct = async function(id) {
   if(!confirm("Are you sure you want to permanently delete this product?")) return;
-  
   try {
     const res = await fetch(`${API_BASE}/products/${id}`, { method: 'DELETE' });
     if(res.ok) {
@@ -524,6 +521,7 @@ window.submitDesignRequest = async function() {
   const safeEmail = (currentUser && currentUser.email) ? currentUser.email : 'guest@example.com';
   
   const data = {
+    req_type: "Custom Design",
     details: details,
     reference_link: link, 
     phone: phone,         
@@ -538,7 +536,7 @@ window.submitDesignRequest = async function() {
     });
     
     if(res.ok) {
-      alert("Request Submitted! You can track it in your Order History.");
+      alert("Request Submitted! You can track its progress in your Order History.");
       document.getElementById('requestForm').reset();
     } else {
       const err = await res.json();
@@ -553,18 +551,28 @@ window.submitDesignRequest = async function() {
   }
 };
 
-window.updateRequestStatus = async function(id, newStatus) {
+window.saveAdminUpdate = async function(id) {
+  const status = document.getElementById(`status_${id}`).value;
+  const payStatus = document.getElementById(`pay_${id}`).value;
+  const price = document.getElementById(`price_${id}`).value;
+  const link = document.getElementById(`link_${id}`).value;
+
   try {
     const res = await fetch(`${API_BASE}/requests/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: newStatus })
+      body: JSON.stringify({
+         status: status,
+         payment_status: payStatus,
+         price: price,
+         completed_link: link
+      })
     });
     if(res.ok) {
-       alert("Order status successfully updated!");
+       alert("Order saved successfully!");
        fetchAdminRequests(); 
     } else {
-       alert("Failed to update status.");
+       alert("Failed to update Order.");
     }
   } catch(e) {
      alert("Error connecting to server.");
@@ -579,35 +587,57 @@ async function fetchAdminRequests() {
     list.innerHTML = '';
 
     if(requests.length === 0) {
-      list.innerHTML = "<p>No custom requests yet.</p>";
+      list.innerHTML = "<p>No custom requests or orders yet.</p>";
       return;
     }
 
     requests.forEach(req => {
       const linkHtml = req.reference_link && req.reference_link !== "None provided" && req.reference_link !== ""
-        ? `<a href="${req.reference_link}" target="_blank">View Attached Files (Google Drive)</a>`
+        ? `<a href="${req.reference_link}" target="_blank">View Attached Files (Drive)</a>`
         : `<span style="color:var(--text-muted)">No files attached</span>`;
       
-      // Determine Badge Color for Admin view
       let badgeClass = "status-pending";
       if(req.status === "In Progress") badgeClass = "status-progress";
       if(req.status === "Completed") badgeClass = "status-completed";
+      
+      let typeBadge = req.req_type === "Store Checkout" 
+        ? `<span class="status-badge" style="background:#8b5cf6; color:#fff; border-color:#8b5cf6;">Store Order</span>` 
+        : `<span class="status-badge" style="background:#0ea5e9; color:#fff; border-color:#0ea5e9;">Custom Design</span>`;
 
       list.innerHTML += `
         <div class="admin-req-card">
-          <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border);">
+          <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom: 10px;">
+             ${typeBadge}
              <span class="status-badge ${badgeClass}" style="margin:0">${req.status}</span>
-             
-             <select onchange="updateRequestStatus('${req.id}', this.value)" style="padding: 6px; border-radius: 5px; background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border); cursor:pointer;">
-                <option value="Pending" ${req.status === 'Pending' ? 'selected' : ''}>Status: Pending</option>
-                <option value="In Progress" ${req.status === 'In Progress' ? 'selected' : ''}>Status: In Progress</option>
-                <option value="Completed" ${req.status === 'Completed' ? 'selected' : ''}>Status: Completed</option>
-             </select>
           </div>
+
           <p><strong>Client:</strong> ${req.user_email}</p>
           <p><strong>Phone:</strong> ${req.phone}</p>
-          <p><strong>Requirements:</strong> ${req.details}</p>
-          <p style="margin-top: 15px;">${linkHtml}</p>
+          <p style="margin-top: 5px;"><strong>Details:</strong><br>${req.details.replace(/\n/g, '<br>')}</p>
+          <p style="margin-top: 10px;">${linkHtml}</p>
+
+          <div style="background:var(--bg-main); padding: 15px; border-radius: 8px; margin-top: 15px; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--border);">
+             <label style="font-size:0.85rem; color:var(--text-muted);">Admin Controls:</label>
+             
+             <div style="display:flex; gap: 10px;">
+                <select id="status_${req.id}" class="admin-input" style="flex:1;">
+                   <option value="Pending" ${req.status === 'Pending' ? 'selected' : ''}>Status: Pending</option>
+                   <option value="In Progress" ${req.status === 'In Progress' ? 'selected' : ''}>Status: In Progress</option>
+                   <option value="Completed" ${req.status === 'Completed' ? 'selected' : ''}>Status: Completed</option>
+                </select>
+                
+                <select id="pay_${req.id}" class="admin-input" style="flex:1;">
+                   <option value="Unpaid" ${req.payment_status === 'Unpaid' ? 'selected' : ''}>Payment: Unpaid</option>
+                   <option value="Paid" ${req.payment_status === 'Paid' ? 'selected' : ''}>Payment: Paid</option>
+                </select>
+             </div>
+
+             <input type="number" id="price_${req.id}" value="${req.price || 0}" step="0.01" class="admin-input" placeholder="Price ($)">
+             
+             <textarea id="link_${req.id}" class="admin-input" rows="2" placeholder="Paste Completed Drive Links here...">${req.completed_link || ''}</textarea>
+
+             <button onclick="saveAdminUpdate('${req.id}')" class="btn-blue-large" style="margin-top:5px; padding: 8px;">Save Settings</button>
+          </div>
         </div>
       `;
     });
@@ -616,7 +646,7 @@ async function fetchAdminRequests() {
   }
 }
 
-// User checking their own orders
+// User Checking their Order History
 document.getElementById('orderHistoryBtn').addEventListener('click', () => {
   toggleSidebar();
   if(!currentUser || !currentUser.email) {
@@ -630,7 +660,6 @@ document.getElementById('orderHistoryBtn').addEventListener('click', () => {
   fetch(`${API_BASE}/requests`)
     .then(res => res.json())
     .then(allReqs => {
-      // Filter so users ONLY see their own requests based on their Google email
       const myReqs = allReqs.filter(r => r.user_email === currentUser.email);
 
       if(myReqs.length === 0) {
@@ -644,11 +673,35 @@ document.getElementById('orderHistoryBtn').addEventListener('click', () => {
         if(req.status === "In Progress") badgeClass = "status-progress";
         if(req.status === "Completed") badgeClass = "status-completed";
 
+        let actionHtml = '';
+        const waText = encodeURIComponent(`Hello! I want to pay for my CAD order.\nEmail: ${currentUser.email}\nOrder Details: ${req.details}\nTotal: $${req.price}`);
+        const waLink = `https://wa.me/919446308229?text=${waText}`;
+
+        // Determines what the customer sees based on Payment Status
+        if (req.payment_status === 'Paid') {
+           actionHtml = `
+             <div style="margin-top:10px; padding:10px; background:rgba(34, 197, 94, 0.1); border:1px solid var(--green-free); border-radius:6px;">
+                <p style="color:var(--green-free); font-weight:bold; margin-bottom:5px;">✅ Payment Confirmed</p>
+                <p style="word-break: break-all;"><strong>Your Files:</strong><br>${(req.completed_link || 'No links attached.').replace(/\n/g, '<br>')}</p>
+             </div>
+           `;
+        } else if (req.price > 0 && req.payment_status === 'Unpaid') {
+           actionHtml = `
+             <div style="margin-top:10px; padding:10px; background:rgba(245, 158, 11, 0.1); border:1px solid #f59e0b; border-radius:6px;">
+                <p style="color:#f59e0b; font-weight:bold; margin-bottom:5px;">⚠️ Pending Payment: $${req.price}</p>
+                <a href="${waLink}" target="_blank" class="btn-small" style="background:#25D366; display:inline-block; margin-top:5px; text-decoration:none;">Pay via WhatsApp</a>
+             </div>
+           `;
+        } else {
+           actionHtml = `<p style="margin-top:10px; color:var(--text-muted); font-size: 0.9rem;"><em>Waiting for Admin to review and quote price.</em></p>`;
+        }
+
         list.innerHTML += `
           <div class="admin-req-card">
             <span class="status-badge ${badgeClass}">${req.status}</span>
-            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom: 5px;">Order Details:</p>
-            <p> ${req.details}</p>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom: 5px; text-transform: uppercase;">${req.req_type}</p>
+            <p style="font-size: 0.95rem;">${req.details.replace(/\n/g, '<br>')}</p>
+            ${actionHtml}
           </div>
         `;
       });
@@ -708,28 +761,81 @@ document.getElementById('cartBtn').addEventListener('click', () => {
   document.getElementById('cartModal').classList.remove('hidden');
 });
 
-window.checkoutCart = function() {
+// NEW CHECKOUT SYSTEM
+window.checkoutCart = async function() {
   if (cart.length === 0) return alert("Your cart is empty!");
   
+  const safeEmail = (currentUser && currentUser.email) ? currentUser.email : 'guest@example.com';
+  let total = cart.reduce((sum, item) => sum + item.price, 0);
   const cartItemsDiv = document.getElementById('cartItems');
-  let html = `<h3 style="color:var(--green-free); margin-bottom: 15px;">Checkout Successful! Here are your files:</h3>`;
-  
-  cart.forEach(item => {
-    const dlLink = item.download_url ? item.download_url : '#';
-    html += `
-      <div style="margin-bottom: 10px; padding: 10px; background: rgba(34, 197, 94, 0.1); border: 1px solid var(--green-free); border-radius: 6px; display:flex; justify-content:space-between; align-items:center;">
-        <span style="font-weight:500;">${item.name}</span>
-        <a href="${dlLink}" target="_blank" class="btn-small" style="background:var(--green-free);">Download File</a>
-      </div>
-    `;
-  });
-  
-  cartItemsDiv.innerHTML = html;
-  document.getElementById('cartTotalContainer').classList.add('hidden');
-  
-  cart = [];
-  localStorage.setItem('cadCart', JSON.stringify(cart));
-  updateCounters();
+
+  if (total === 0) {
+    // SCENARIO 1: Free items. Instant download access.
+    let html = `<h3 style="color:var(--green-free); margin-bottom: 15px;">Success! Here are your free files:</h3>`;
+    cart.forEach(item => {
+      const dlLink = item.download_url ? item.download_url : '#';
+      html += `
+        <div style="margin-bottom: 10px; padding: 10px; background: rgba(34, 197, 94, 0.1); border: 1px solid var(--green-free); border-radius: 6px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:500;">${item.name}</span>
+          <a href="${dlLink}" target="_blank" class="btn-small" style="background:var(--green-free);">Download File</a>
+        </div>
+      `;
+    });
+    cartItemsDiv.innerHTML = html;
+    document.getElementById('cartTotalContainer').classList.add('hidden');
+    cart = [];
+    localStorage.setItem('cadCart', JSON.stringify(cart));
+    updateCounters();
+    
+  } else {
+    // SCENARIO 2: Paid items. Routes to Database and WhatsApp.
+    const btn = document.querySelector('#cartTotalContainer button');
+    btn.textContent = "Processing Order...";
+    btn.disabled = true;
+
+    const itemNames = cart.map(i => i.name).join(", ");
+    // Links are hidden in the DB until the Admin marks it as "Paid"
+    const dlLinks = cart.map(i => `${i.name}:\n${i.download_url}`).join("\n\n");
+
+    const data = {
+      req_type: "Store Checkout",
+      details: `Store Purchase:\n${itemNames}`,
+      phone: "N/A",
+      user_email: safeEmail,
+      price: total,
+      completed_link: dlLinks,
+      payment_status: "Unpaid",
+      status: "Pending"
+    };
+
+    try {
+      const res = await fetch(`${API_BASE}/requests`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      
+      if(res.ok) {
+        cart = [];
+        localStorage.setItem('cadCart', JSON.stringify(cart));
+        updateCounters();
+        document.getElementById('cartModal').classList.add('hidden');
+        
+        // Open WhatsApp instantly for payment
+        const waText = encodeURIComponent(`Hello! I want to pay for my CAD order.\nEmail: ${safeEmail}\nItems: ${itemNames}\nTotal: $${total}`);
+        window.open(`https://wa.me/919446308229?text=${waText}`, '_blank');
+        
+        alert("Order placed! Complete your payment on WhatsApp. You can track this in your Order History.");
+      } else {
+        alert("Error saving order to backend. Try again.");
+      }
+    } catch(e) {
+      alert("Network Error.");
+    } finally {
+      btn.textContent = "Checkout";
+      btn.disabled = false;
+    }
+  }
 }
 
 // --- WISHLIST LOGIC ---
@@ -778,7 +884,6 @@ document.getElementById('wishlistBtn').addEventListener('click', () => {
   renderWishlist();
   document.getElementById('wishlistModal').classList.remove('hidden');
 });
-
 
 // --- COMMENTS LOGIC ---
 let currentCommentProductId = null;
