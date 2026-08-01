@@ -114,11 +114,11 @@ def get_requests():
             "status": doc.get("status", "Pending"),
             "price": doc.get("price", 0.0),
             "payment_status": doc.get("payment_status", "Unpaid"),
-            "completed_link": doc.get("completed_link", "")
+            "completed_link": doc.get("completed_link", ""),
+            "completed_image": doc.get("completed_image", "") # Allows images to be sent to frontend
         })
     return jsonify(reqs[::-1]), 200
 
-# ADMIN ROUTE: Updates Status, Payment, Price, and Links
 @app.route('/api/requests/<req_id>', methods=['PUT', 'OPTIONS'])
 def update_request_status(req_id):
     if request.method == 'OPTIONS':
@@ -130,6 +130,7 @@ def update_request_status(req_id):
         if 'payment_status' in data: update_fields['payment_status'] = data['payment_status']
         if 'price' in data: update_fields['price'] = float(data['price'])
         if 'completed_link' in data: update_fields['completed_link'] = data['completed_link']
+        if 'completed_image' in data: update_fields['completed_image'] = data['completed_image'] # Saves uploaded preview image
 
         requests_collection.update_one({"_id": ObjectId(req_id)}, {"$set": update_fields})
         return jsonify({"message": "Order updated successfully"}), 200
@@ -152,12 +153,12 @@ def submit_request():
             "status": data.get('status', 'Pending'),
             "price": float(data.get('price', 0.0)),
             "payment_status": data.get('payment_status', 'Unpaid'),
-            "completed_link": data.get('completed_link', '')
+            "completed_link": data.get('completed_link', ''),
+            "completed_image": ""
         }
         
         requests_collection.insert_one(new_req)
 
-        # Only send Email alert if it's a Custom Design (not a store checkout)
         if new_req["req_type"] == "Custom Design" and ADMIN_EMAIL and ADMIN_EMAIL_PASSWORD:
             try:
                 msg = MIMEMultipart()
