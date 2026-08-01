@@ -109,14 +109,28 @@ def get_requests():
             "user_email": doc.get("user_email"),
             "phone": doc.get("phone", "N/A"),
             "details": doc.get("details"),
-            "reference_link": doc.get("reference_link", "None provided")
+            "reference_link": doc.get("reference_link", "None provided"),
+            "status": doc.get("status", "Pending") # Added Status Property
         })
     return jsonify(reqs[::-1]), 200
+
+# NEW ROUTE: Updates the Order Status
+@app.route('/api/requests/<req_id>', methods=['PUT', 'OPTIONS'])
+def update_request_status(req_id):
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    try:
+        data = request.json
+        new_status = data.get('status')
+        requests_collection.update_one({"_id": ObjectId(req_id)}, {"$set": {"status": new_status}})
+        return jsonify({"message": "Status updated successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 @app.route('/api/requests', methods=['POST', 'OPTIONS'])
 def submit_request():
     if request.method == 'OPTIONS':
-        return jsonify({}), 200 # Automatically approves browser security checks
+        return jsonify({}), 200 
     
     try:
         data = request.json
@@ -124,13 +138,12 @@ def submit_request():
             "details": data.get('details', ''),
             "reference_link": data.get('reference_link', ''),
             "phone": data.get('phone', ''),
-            "user_email": data.get('user_email', 'guest@example.com')
+            "user_email": data.get('user_email', 'guest@example.com'),
+            "status": "Pending" # Defaults all new requests to Pending
         }
         
-        # 1. Save to Database first (Most important step)
         requests_collection.insert_one(new_req)
 
-        # 2. Try sending the email silently
         if ADMIN_EMAIL and ADMIN_EMAIL_PASSWORD:
             try:
                 msg = MIMEMultipart()
@@ -156,7 +169,6 @@ Reference/Drive Link: {new_req['reference_link']}
                 server.send_message(msg)
                 server.quit()
             except Exception as e:
-                # If email fails, print it to Render logs but DON'T crash the server!
                 print(f"Warning: Database saved, but Email failed to send. Reason: {e}")
 
         return jsonify({"message": "Custom request submitted successfully"}), 201
