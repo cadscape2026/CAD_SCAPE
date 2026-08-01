@@ -24,9 +24,9 @@ function switchView(target) {
 }
 
 document.getElementById('logoHomeBtn').addEventListener('click', (e) => { e.preventDefault(); switchView('home'); });
-navs.market.addEventListener('click', (e) => { e.preventDefault(); switchView('market'); });
-navs.requests.addEventListener('click', (e) => { e.preventDefault(); switchView('requests'); });
-navs.admin.addEventListener('click', (e) => { e.preventDefault(); switchView('admin'); });
+if(navs.market) navs.market.addEventListener('click', (e) => { e.preventDefault(); switchView('market'); });
+if(navs.requests) navs.requests.addEventListener('click', (e) => { e.preventDefault(); switchView('requests'); });
+if(navs.admin) navs.admin.addEventListener('click', (e) => { e.preventDefault(); switchView('admin'); });
 document.getElementById('heroBrowseBtn').addEventListener('click', () => switchView('market'));
 
 
@@ -87,7 +87,8 @@ function handleSuccessfulLogin(name, email, avatarUrl) {
   document.getElementById('logoutBtn').classList.remove('hidden');
 
   if (adminEmails.includes(email)) {
-    navs.admin.classList.remove('hidden');
+    if(navs.admin) navs.admin.classList.remove('hidden');
+    document.getElementById('sidebarNavAdmin').classList.remove('hidden');
   }
   renderGrid(allProducts);
 }
@@ -133,7 +134,8 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
   document.getElementById('sidebarUserInfo').classList.add('hidden');
   document.getElementById('sidebarGuestInfo').classList.remove('hidden');
   document.getElementById('logoutBtn').classList.add('hidden');
-  navs.admin.classList.add('hidden');
+  if(navs.admin) navs.admin.classList.add('hidden');
+  document.getElementById('sidebarNavAdmin').classList.add('hidden');
   switchView('home');
   toggleSidebar();
   renderGrid(allProducts);
@@ -169,17 +171,12 @@ function setupDropZone(dropZoneId, inputId, isEdit = false) {
   const dropZoneElement = document.getElementById(dropZoneId);
   const inputElement = document.getElementById(inputId);
 
-  // Clicking the zone opens the file browser
   dropZoneElement.addEventListener("click", (e) => {
-    if(e.target !== inputElement) {
-      inputElement.click();
-    }
+    if(e.target !== inputElement) inputElement.click();
   });
 
   inputElement.addEventListener("change", () => {
-    if (inputElement.files.length) {
-      updateThumbnail(dropZoneElement, inputElement.files[0], isEdit);
-    }
+    if (inputElement.files.length) updateThumbnail(dropZoneElement, inputElement.files[0], isEdit);
   });
 
   dropZoneElement.addEventListener("dragover", (e) => {
@@ -188,9 +185,7 @@ function setupDropZone(dropZoneId, inputId, isEdit = false) {
   });
 
   ["dragleave", "dragend"].forEach((type) => {
-    dropZoneElement.addEventListener(type, () => {
-      dropZoneElement.classList.remove("drop-zone--over");
-    });
+    dropZoneElement.addEventListener(type, () => dropZoneElement.classList.remove("drop-zone--over"));
   });
 
   dropZoneElement.addEventListener("drop", (e) => {
@@ -205,45 +200,34 @@ function setupDropZone(dropZoneId, inputId, isEdit = false) {
 
 function updateThumbnail(dropZoneElement, file, isEdit) {
   let thumbnailElement = dropZoneElement.querySelector(".drop-zone__thumb");
+  if (dropZoneElement.querySelector(".drop-zone__prompt")) dropZoneElement.querySelector(".drop-zone__prompt").remove();
 
-  // Remove the prompt text
-  if (dropZoneElement.querySelector(".drop-zone__prompt")) {
-    dropZoneElement.querySelector(".drop-zone__prompt").remove();
-  }
-
-  // Create thumbnail element if missing
   if (!thumbnailElement) {
     thumbnailElement = document.createElement("div");
     thumbnailElement.classList.add("drop-zone__thumb");
     dropZoneElement.appendChild(thumbnailElement);
   }
 
-  // Convert Image to Base64 String
   if (file.type.startsWith("image/")) {
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => {
       thumbnailElement.style.backgroundImage = `url('${reader.result}')`;
-      if (isEdit) {
-        currentEditBase64 = reader.result;
-      } else {
-        currentUploadBase64 = reader.result;
-      }
+      if (isEdit) currentEditBase64 = reader.result;
+      else currentUploadBase64 = reader.result;
     };
   } else {
     alert("Please upload an image file (JPG, PNG, etc).");
   }
 }
 
-// Reset function that clears the form properly
 function resetDropZone(dropZoneId, isEdit = false) {
   const dropZoneElement = document.getElementById(dropZoneId);
   const inputElement = dropZoneElement.querySelector(".drop-zone__input");
-  
-  if(inputElement) inputElement.value = ""; // clear file
+  if(inputElement) inputElement.value = ""; 
   
   const thumb = dropZoneElement.querySelector(".drop-zone__thumb");
-  if(thumb) thumb.remove(); // remove preview image
+  if(thumb) thumb.remove(); 
 
   let prompt = dropZoneElement.querySelector(".drop-zone__prompt");
   if(!prompt) {
@@ -253,14 +237,10 @@ function resetDropZone(dropZoneId, isEdit = false) {
     dropZoneElement.insertBefore(prompt, inputElement);
   }
 
-  if (isEdit) {
-    currentEditBase64 = "";
-  } else {
-    currentUploadBase64 = "";
-  }
+  if (isEdit) currentEditBase64 = "";
+  else currentUploadBase64 = "";
 }
 
-// Initialize the two drop zones on page load
 setupDropZone("uploadDropZone", "modelImageFile", false);
 setupDropZone("editDropZone", "editModelImageFile", true);
 
@@ -281,7 +261,7 @@ function initCarousel(products) {
         <img src="${getDirectImageUrl(p.image_url)}" alt="${p.name}">
         <div class="carousel-info">
           <h2 style="margin-bottom:10px;">${p.name}</h2>
-          <button class="btn-blue-large" onclick="addToCart('${p.id}', '${p.name}', ${p.price})">Add to Cart</button>
+          <button class="btn-blue-large" onclick="addToCart('${p.id}', '${p.name}', ${p.price}, '${p.download_url}')">Add to Cart</button>
         </div>
       </div>
     `;
@@ -312,9 +292,8 @@ function renderGrid(products) {
       ? `<span class="price text-green">Free</span>` 
       : `<span class="price">$${p.price.toFixed(2)}</span>`;
 
-    const actionHtml = p.price === 0 
-      ? `<a href="${p.download_url}" target="_blank" class="btn-small">Get File</a>`
-      : `<button onclick="addToCart('${p.id}', '${p.name}', ${p.price})" class="btn-small">Add to Cart</button>`;
+    // FIX: Removed Direct Download link. ALL items must be added to Cart first to get the file.
+    const actionHtml = `<button onclick="addToCart('${p.id}', '${p.name}', ${p.price}, '${p.download_url}')" class="btn-small">Add to Cart</button>`;
 
     const isWishlisted = wishlist.includes(p.id) ? 'Remove' : 'Wishlist';
     const commentsLength = p.comments ? p.comments.length : 0;
@@ -399,7 +378,7 @@ window.submitNewProduct = async function() {
     if (response.ok) {
       alert("Product Uploaded Successfully!");
       document.getElementById('uploadForm').reset();
-      resetDropZone("uploadDropZone", false); // Clears the image preview UI perfectly
+      resetDropZone("uploadDropZone", false); 
       loadProducts(); 
     } else {
       alert("Failed to upload product. Check backend connection.");
@@ -427,15 +406,12 @@ window.openEditModal = function(id) {
   document.getElementById('editModelPrice').value = product.price;
   document.getElementById('editModelFile').value = product.download_url;
   
-  // Display the existing image in the drop zone
   currentEditBase64 = product.image_url;
   const dropZoneElement = document.getElementById('editDropZone');
   
-  // Remove prompt if it exists
   const prompt = dropZoneElement.querySelector(".drop-zone__prompt");
   if(prompt) prompt.remove();
 
-  // Show image thumbnail
   let thumb = dropZoneElement.querySelector(".drop-zone__thumb");
   if(!thumb) {
     thumb = document.createElement("div");
@@ -575,9 +551,9 @@ async function fetchAdminRequests() {
   }
 }
 
-// --- CART LOGIC ---
-window.addToCart = function(id, name, price) {
-  cart.push({ id, name, price: parseFloat(price) });
+// --- CART & CHECKOUT LOGIC ---
+window.addToCart = function(id, name, price, download_url) {
+  cart.push({ id, name, price: parseFloat(price), download_url });
   localStorage.setItem('cadCart', JSON.stringify(cart));
   updateCounters();
   alert(`${name} added to cart!`);
@@ -593,8 +569,13 @@ window.removeFromCart = function(index) {
 function renderCart() {
   const cartItemsDiv = document.getElementById('cartItems');
   const cartTotalSpan = document.getElementById('cartTotal');
+  const cartTotalContainer = document.getElementById('cartTotalContainer');
+  
   cartItemsDiv.innerHTML = '';
   let total = 0;
+
+  // Make sure the checkout button area is visible when they open the cart normally
+  cartTotalContainer.classList.remove('hidden');
 
   if (cart.length === 0) {
     cartItemsDiv.innerHTML = '<p style="color:var(--text-muted);">Your cart is empty.</p>';
@@ -620,19 +601,81 @@ document.getElementById('cartBtn').addEventListener('click', () => {
   document.getElementById('cartModal').classList.remove('hidden');
 });
 
+// FIX: Generate download links directly inside the Cart upon Checkout
+window.checkoutCart = function() {
+  if (cart.length === 0) return alert("Your cart is empty!");
+  
+  const cartItemsDiv = document.getElementById('cartItems');
+  let html = `<h3 style="color:var(--green-free); margin-bottom: 15px;">Checkout Successful! Here are your files:</h3>`;
+  
+  cart.forEach(item => {
+    // Fallback if the user has an old item in their localStorage without a download link
+    const dlLink = item.download_url ? item.download_url : '#';
+    html += `
+      <div style="margin-bottom: 10px; padding: 10px; background: rgba(34, 197, 94, 0.1); border: 1px solid var(--green-free); border-radius: 6px; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-weight:500;">${item.name}</span>
+        <a href="${dlLink}" target="_blank" class="btn-small" style="background:var(--green-free);">Download File</a>
+      </div>
+    `;
+  });
+  
+  cartItemsDiv.innerHTML = html;
+  
+  // Hide the total/checkout button since the transaction is complete
+  document.getElementById('cartTotalContainer').classList.add('hidden');
+  
+  // Empty the cart so they don't buy it twice
+  cart = [];
+  localStorage.setItem('cadCart', JSON.stringify(cart));
+  updateCounters();
+}
+
 // --- WISHLIST LOGIC ---
-window.toggleWishlist = function(id, btnElement) {
+window.toggleWishlist = function(id, btnElement, fromModal = false) {
   const index = wishlist.indexOf(id);
   if (index > -1) {
     wishlist.splice(index, 1);
-    btnElement.textContent = '★ Wishlist';
+    if(btnElement) btnElement.textContent = '★ Wishlist';
   } else {
     wishlist.push(id);
-    btnElement.textContent = '★ Remove';
+    if(btnElement) btnElement.textContent = '★ Remove';
   }
   localStorage.setItem('cadWishlist', JSON.stringify(wishlist));
   updateCounters();
+  
+  if (fromModal) renderWishlist(); // Live update inside modal
+  renderGrid(allProducts);         // Keep main store grid in sync
 }
+
+function renderWishlist() {
+  const wishlistItemsDiv = document.getElementById('wishlistItems');
+  wishlistItemsDiv.innerHTML = '';
+  
+  if (wishlist.length === 0) {
+    wishlistItemsDiv.innerHTML = '<p style="color:var(--text-muted);">Your wishlist is empty.</p>';
+  } else {
+    wishlist.forEach(id => {
+      const item = allProducts.find(p => p.id === id);
+      if(item) {
+        wishlistItemsDiv.innerHTML += `
+          <div class="cart-item" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+            <span style="font-weight: 500;">${item.name}</span>
+            <div>
+              <span style="color:var(--green-free); font-weight:bold; margin-right:10px;">$${item.price.toFixed(2)}</span>
+              <button onclick="addToCart('${item.id}', '${item.name}', ${item.price}, '${item.download_url}')" class="btn-small">To Cart</button>
+              <button onclick="toggleWishlist('${item.id}', null, true)" style="background:none; border:none; color:#ef4444; margin-left:10px; cursor:pointer; font-weight:bold;">X</button>
+            </div>
+          </div>
+        `;
+      }
+    });
+  }
+}
+
+document.getElementById('wishlistBtn').addEventListener('click', () => {
+  renderWishlist();
+  document.getElementById('wishlistModal').classList.remove('hidden');
+});
 
 // --- COMMENTS LOGIC ---
 let currentCommentProductId = null;
