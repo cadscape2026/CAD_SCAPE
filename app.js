@@ -4,6 +4,7 @@ const API_BASE = "https://procad-backend.onrender.com/api";
 let cart = [];
 let wishlist = [];
 let allProducts = [];
+let requestImages = {}; // Holds temporary image uploads for custom requests
 
 try { cart = JSON.parse(localStorage.getItem('cadCart')) || []; } catch(e){}
 try { wishlist = JSON.parse(localStorage.getItem('cadWishlist')) || []; } catch(e){}
@@ -536,8 +537,13 @@ window.submitDesignRequest = async function() {
     });
     
     if(res.ok) {
-      alert("Request Submitted! You can track its progress in your Order History.");
       document.getElementById('requestForm').reset();
+      
+      // WhatsApp Discussion Trigger
+      const waText = encodeURIComponent(`Hi, I just submitted a new CAD design request.\nEmail: ${safeEmail}\nDetails: ${details}`);
+      if(confirm("Request Submitted Successfully! \n\nWould you like to open WhatsApp now to discuss your project details with us?")) {
+          window.open(`https://wa.me/919446308229?text=${waText}`, '_blank');
+      }
     } else {
       const err = await res.json();
       alert("Server Rejected Request: " + (err.error || "Check backend logs."));
@@ -551,22 +557,42 @@ window.submitDesignRequest = async function() {
   }
 };
 
+window.encodeRequestImage = function(input, reqId) {
+    if(input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            requestImages[reqId] = e.target.result;
+            const preview = document.getElementById(`preview_${reqId}`);
+            preview.src = e.target.result;
+            preview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
 window.saveAdminUpdate = async function(id) {
   const status = document.getElementById(`status_${id}`).value;
   const payStatus = document.getElementById(`pay_${id}`).value;
   const price = document.getElementById(`price_${id}`).value;
   const link = document.getElementById(`link_${id}`).value;
+  const imageBase64 = requestImages[id] || null;
+
+  const payload = {
+      status: status,
+      payment_status: payStatus,
+      price: price,
+      completed_link: link
+  };
+
+  if(imageBase64) {
+      payload.completed_image = imageBase64;
+  }
 
   try {
     const res = await fetch(`${API_BASE}/requests/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-         status: status,
-         payment_status: payStatus,
-         price: price,
-         completed_link: link
-      })
+      body: JSON.stringify(payload)
     });
     if(res.ok) {
        alert("Order saved successfully!");
@@ -617,7 +643,7 @@ async function fetchAdminRequests() {
           <p style="margin-top: 10px;">${linkHtml}</p>
 
           <div style="background:var(--bg-main); padding: 15px; border-radius: 8px; margin-top: 15px; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--border);">
-             <label style="font-size:0.85rem; color:var(--text-muted);">Admin Controls:</label>
+             <label style="font-size:0.85rem; color:var(--text-muted);">Admin Controls (Price, Files, Image):</label>
              
              <div style="display:flex; gap: 10px;">
                 <select id="status_${req.id}" class="admin-input" style="flex:1;">
@@ -635,6 +661,14 @@ async function fetchAdminRequests() {
              <input type="number" id="price_${req.id}" value="${req.price || 0}" step="0.01" class="admin-input" placeholder="Price ($)">
              
              <textarea id="link_${req.id}" class="admin-input" rows="2" placeholder="Paste Completed Drive Links here...">${req.completed_link || ''}</textarea>
+
+             <div style="border: 1px dashed var(--border); padding: 10px; border-radius: 6px; text-align: center; margin-top: 5px;">
+                 <label style="cursor: pointer; color: var(--blue-primary); font-size: 0.9rem; display: block;">
+                     📷 Click to Upload Preview Image
+                     <input type="file" accept="image/*" class="hidden" onchange="encodeRequestImage(this, '${req.id}')">
+                 </label>
+                 <img id="preview_${req.id}" src="${req.completed_image || ''}" class="${req.completed_image ? '' : 'hidden'}" style="max-width: 100%; height: 120px; object-fit: cover; border-radius: 6px; margin-top: 10px;">
+             </div>
 
              <button onclick="saveAdminUpdate('${req.id}')" class="btn-blue-large" style="margin-top:5px; padding: 8px;">Save Settings</button>
           </div>
@@ -674,33 +708,46 @@ document.getElementById('orderHistoryBtn').addEventListener('click', () => {
         if(req.status === "Completed") badgeClass = "status-completed";
 
         let actionHtml = '';
-        const waText = encodeURIComponent(`Hello! I want to pay for my CAD order.\nEmail: ${currentUser.email}\nOrder Details: ${req.details}\nTotal: $${req.price}`);
-        const waLink = `https://wa.me/919446308229?text=${waText}`;
+        let imagePreviewHtml = req.completed_image ? `<img src="${req.completed_image}" style="width:100%; max-height:200px; object-fit:cover; border-radius:8px; margin-bottom:10px; border:1px solid var(--border);">` : '';
+        
+        const waPayText = encodeURIComponent(`Hello! I want to pay for my CAD order.\nEmail: ${currentUser.email}\nOrder Details: ${req.details}\nTotal: $${req.price}`);
+        const waPayLink = `https://wa.me/919446308229?text=${waPayText}`;
 
-        // Determines what the customer sees based on Payment Status
+        const waDiscussText = encodeURIComponent(`Hello! I'd like to discuss my CAD request.\nEmail: ${currentUser.email}\nOrder Details: ${req.details}`);
+        const waDiscussLink = `https://wa.me/919446308229?text=${waDiscussText}`;
+        const discussBtn = `<a href="${waDiscussLink}" target="_blank" class="btn-small" style="background:#25D366; display:inline-block; margin-top:5px; margin-right:10px; text-decoration:none;">💬 Discuss on WhatsApp</a>`;
+
         if (req.payment_status === 'Paid') {
            actionHtml = `
+             ${imagePreviewHtml}
              <div style="margin-top:10px; padding:10px; background:rgba(34, 197, 94, 0.1); border:1px solid var(--green-free); border-radius:6px;">
                 <p style="color:var(--green-free); font-weight:bold; margin-bottom:5px;">✅ Payment Confirmed</p>
                 <p style="word-break: break-all;"><strong>Your Files:</strong><br>${(req.completed_link || 'No links attached.').replace(/\n/g, '<br>')}</p>
              </div>
+             ${discussBtn}
            `;
         } else if (req.price > 0 && req.payment_status === 'Unpaid') {
            actionHtml = `
+             ${imagePreviewHtml}
              <div style="margin-top:10px; padding:10px; background:rgba(245, 158, 11, 0.1); border:1px solid #f59e0b; border-radius:6px;">
                 <p style="color:#f59e0b; font-weight:bold; margin-bottom:5px;">⚠️ Pending Payment: $${req.price}</p>
-                <a href="${waLink}" target="_blank" class="btn-small" style="background:#25D366; display:inline-block; margin-top:5px; text-decoration:none;">Pay via WhatsApp</a>
+                <a href="${waPayLink}" target="_blank" class="btn-small" style="background:#f59e0b; display:inline-block; margin-top:5px; margin-right:10px; text-decoration:none;">Pay via WhatsApp</a>
              </div>
+             ${discussBtn}
            `;
         } else {
-           actionHtml = `<p style="margin-top:10px; color:var(--text-muted); font-size: 0.9rem;"><em>Waiting for Admin to review and quote price.</em></p>`;
+           actionHtml = `
+             ${imagePreviewHtml}
+             <p style="margin-top:10px; color:var(--text-muted); font-size: 0.9rem;"><em>Waiting for Admin to review and quote price.</em></p>
+             ${discussBtn}
+           `;
         }
 
         list.innerHTML += `
           <div class="admin-req-card">
             <span class="status-badge ${badgeClass}">${req.status}</span>
             <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom: 5px; text-transform: uppercase;">${req.req_type}</p>
-            <p style="font-size: 0.95rem;">${req.details.replace(/\n/g, '<br>')}</p>
+            <p style="font-size: 0.95rem; margin-bottom: 10px;">${req.details.replace(/\n/g, '<br>')}</p>
             ${actionHtml}
           </div>
         `;
@@ -761,7 +808,6 @@ document.getElementById('cartBtn').addEventListener('click', () => {
   document.getElementById('cartModal').classList.remove('hidden');
 });
 
-// NEW CHECKOUT SYSTEM
 window.checkoutCart = async function() {
   if (cart.length === 0) return alert("Your cart is empty!");
   
@@ -770,7 +816,6 @@ window.checkoutCart = async function() {
   const cartItemsDiv = document.getElementById('cartItems');
 
   if (total === 0) {
-    // SCENARIO 1: Free items. Instant download access.
     let html = `<h3 style="color:var(--green-free); margin-bottom: 15px;">Success! Here are your free files:</h3>`;
     cart.forEach(item => {
       const dlLink = item.download_url ? item.download_url : '#';
@@ -788,13 +833,11 @@ window.checkoutCart = async function() {
     updateCounters();
     
   } else {
-    // SCENARIO 2: Paid items. Routes to Database and WhatsApp.
     const btn = document.querySelector('#cartTotalContainer button');
     btn.textContent = "Processing Order...";
     btn.disabled = true;
 
     const itemNames = cart.map(i => i.name).join(", ");
-    // Links are hidden in the DB until the Admin marks it as "Paid"
     const dlLinks = cart.map(i => `${i.name}:\n${i.download_url}`).join("\n\n");
 
     const data = {
@@ -821,7 +864,6 @@ window.checkoutCart = async function() {
         updateCounters();
         document.getElementById('cartModal').classList.add('hidden');
         
-        // Open WhatsApp instantly for payment
         const waText = encodeURIComponent(`Hello! I want to pay for my CAD order.\nEmail: ${safeEmail}\nItems: ${itemNames}\nTotal: $${total}`);
         window.open(`https://wa.me/919446308229?text=${waText}`, '_blank');
         
