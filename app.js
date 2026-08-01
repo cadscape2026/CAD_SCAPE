@@ -69,9 +69,18 @@ document.getElementById('themeToggleBtn').addEventListener('click', () => {
 });
 
 
-// --- AUTHENTICATION ---
+// --- AUTHENTICATION (BULLETPROOFED) ---
 const adminEmails = ["deekshith123pi@gmail.com", "cadscape2026@gmail.com"]; 
-let currentUser = JSON.parse(localStorage.getItem('cadUser')) || { name: "Guest", email: null };
+
+// Safely parse Local Storage to prevent crashes
+let savedUser = null;
+try {
+  savedUser = JSON.parse(localStorage.getItem('cadUser'));
+} catch(e) {
+  console.warn("Cleared corrupted user data.");
+  localStorage.removeItem('cadUser');
+}
+let currentUser = (savedUser && savedUser.email) ? savedUser : { name: "Guest", email: null };
 let tokenClient; 
 
 function handleSuccessfulLogin(name, email, avatarUrl) {
@@ -86,10 +95,18 @@ function handleSuccessfulLogin(name, email, avatarUrl) {
   document.getElementById('userEmailDisplay').textContent = email;
   document.getElementById('logoutBtn').classList.remove('hidden');
 
+  // Safely reveal admin links if the email matches
   if (adminEmails.includes(email)) {
     if(navs.admin) navs.admin.classList.remove('hidden');
-    document.getElementById('sidebarNavAdmin').classList.remove('hidden');
+    const sideAdminBtn = document.getElementById('sidebarNavAdmin');
+    if(sideAdminBtn) sideAdminBtn.classList.remove('hidden');
+  } else {
+    // Force hide them if a normal user logs in
+    if(navs.admin) navs.admin.classList.add('hidden');
+    const sideAdminBtn = document.getElementById('sidebarNavAdmin');
+    if(sideAdminBtn) sideAdminBtn.classList.add('hidden');
   }
+  
   renderGrid(allProducts);
 }
 
@@ -127,18 +144,28 @@ document.getElementById('customLoginBtn').addEventListener('click', () => {
   }
 });
 
+// Forceful Sign Out logic
 document.getElementById('logoutBtn').addEventListener('click', () => {
-  currentUser = { name: "Guest", email: null };
-  localStorage.removeItem('cadUser'); 
-  document.getElementById('customLoginBtn').classList.remove('hidden');
-  document.getElementById('sidebarUserInfo').classList.add('hidden');
-  document.getElementById('sidebarGuestInfo').classList.remove('hidden');
-  document.getElementById('logoutBtn').classList.add('hidden');
-  if(navs.admin) navs.admin.classList.add('hidden');
-  document.getElementById('sidebarNavAdmin').classList.add('hidden');
-  switchView('home');
-  toggleSidebar();
-  renderGrid(allProducts);
+  try {
+    currentUser = { name: "Guest", email: null };
+    localStorage.removeItem('cadUser'); 
+    
+    document.getElementById('customLoginBtn').classList.remove('hidden');
+    document.getElementById('sidebarUserInfo').classList.add('hidden');
+    document.getElementById('sidebarGuestInfo').classList.remove('hidden');
+    document.getElementById('logoutBtn').classList.add('hidden');
+    
+    if(navs.admin) navs.admin.classList.add('hidden');
+    const sideAdminBtn = document.getElementById('sidebarNavAdmin');
+    if(sideAdminBtn) sideAdminBtn.classList.add('hidden');
+    
+    switchView('home');
+    toggleSidebar();
+    renderGrid(allProducts);
+  } catch (error) {
+    // If anything fails during the UI update, hard refresh the page to guarantee a logout
+    window.location.reload(); 
+  }
 });
 
 
@@ -285,14 +312,14 @@ function renderGrid(products) {
     return;
   }
 
-  const isAdmin = adminEmails.includes(currentUser.email);
+  // Safely check if the user is an admin without crashing
+  const isAdmin = (currentUser && currentUser.email) ? adminEmails.includes(currentUser.email) : false;
 
   products.forEach(p => {
     const priceDisplay = p.price === 0 
       ? `<span class="price text-green">Free</span>` 
       : `<span class="price">$${p.price.toFixed(2)}</span>`;
 
-    // FIX: Removed Direct Download link. ALL items must be added to Cart first to get the file.
     const actionHtml = `<button onclick="addToCart('${p.id}', '${p.name}', ${p.price}, '${p.download_url}')" class="btn-small">Add to Cart</button>`;
 
     const isWishlisted = wishlist.includes(p.id) ? 'Remove' : 'Wishlist';
@@ -574,7 +601,6 @@ function renderCart() {
   cartItemsDiv.innerHTML = '';
   let total = 0;
 
-  // Make sure the checkout button area is visible when they open the cart normally
   cartTotalContainer.classList.remove('hidden');
 
   if (cart.length === 0) {
@@ -601,7 +627,6 @@ document.getElementById('cartBtn').addEventListener('click', () => {
   document.getElementById('cartModal').classList.remove('hidden');
 });
 
-// FIX: Generate download links directly inside the Cart upon Checkout
 window.checkoutCart = function() {
   if (cart.length === 0) return alert("Your cart is empty!");
   
@@ -609,7 +634,6 @@ window.checkoutCart = function() {
   let html = `<h3 style="color:var(--green-free); margin-bottom: 15px;">Checkout Successful! Here are your files:</h3>`;
   
   cart.forEach(item => {
-    // Fallback if the user has an old item in their localStorage without a download link
     const dlLink = item.download_url ? item.download_url : '#';
     html += `
       <div style="margin-bottom: 10px; padding: 10px; background: rgba(34, 197, 94, 0.1); border: 1px solid var(--green-free); border-radius: 6px; display:flex; justify-content:space-between; align-items:center;">
@@ -620,11 +644,8 @@ window.checkoutCart = function() {
   });
   
   cartItemsDiv.innerHTML = html;
-  
-  // Hide the total/checkout button since the transaction is complete
   document.getElementById('cartTotalContainer').classList.add('hidden');
   
-  // Empty the cart so they don't buy it twice
   cart = [];
   localStorage.setItem('cadCart', JSON.stringify(cart));
   updateCounters();
@@ -643,8 +664,8 @@ window.toggleWishlist = function(id, btnElement, fromModal = false) {
   localStorage.setItem('cadWishlist', JSON.stringify(wishlist));
   updateCounters();
   
-  if (fromModal) renderWishlist(); // Live update inside modal
-  renderGrid(allProducts);         // Keep main store grid in sync
+  if (fromModal) renderWishlist(); 
+  renderGrid(allProducts);         
 }
 
 function renderWishlist() {
