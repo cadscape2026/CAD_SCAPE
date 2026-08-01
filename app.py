@@ -9,21 +9,16 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 app = Flask(__name__)
-# Enable CORS so the HTML/JS frontend can communicate with this API
 CORS(app)
 
-# --- Database & Config (MongoDB Atlas) ---
+# --- Database & Config ---
 MONGO_URI = os.getenv("MONGO_URI")
-
-# Email credentials for Admin Notifications (Set these in Render later)
 ADMIN_EMAIL = os.getenv("ADMIN_EMAIL") 
 ADMIN_EMAIL_PASSWORD = os.getenv("ADMIN_EMAIL_PASSWORD")
 
-# Initialize MongoDB Client
 client = MongoClient(MONGO_URI, server_api=ServerApi('1'))
 db = client['procad_db'] 
 
-# Define the collections
 products_collection = db['products']
 comments_collection = db['comments']
 requests_collection = db['custom_requests']
@@ -49,7 +44,6 @@ def format_product(doc):
     }
 
 # --- API Endpoints ---
-
 @app.route('/api/products', methods=['GET'])
 def get_products():
     products = []
@@ -72,7 +66,6 @@ def add_product():
 
 @app.route('/api/products/<product_id>', methods=['PUT'])
 def update_product(product_id):
-    """Admin route to edit an existing product."""
     data = request.json
     try:
         updated_data = {
@@ -89,7 +82,6 @@ def update_product(product_id):
 
 @app.route('/api/products/<product_id>', methods=['DELETE'])
 def delete_product(product_id):
-    """Admin route to delete a product and its comments."""
     try:
         products_collection.delete_one({"_id": ObjectId(product_id)})
         comments_collection.delete_many({"product_id": product_id})
@@ -108,11 +100,8 @@ def add_comment():
     comments_collection.insert_one(new_comment)
     return jsonify({"message": "Comment added successfully"}), 201
 
-# --- NEW/UPDATED: Custom Requests Logic ---
-
 @app.route('/api/requests', methods=['GET'])
 def get_requests():
-    """Admin route to view incoming requests."""
     reqs = []
     for doc in requests_collection.find():
         reqs.append({
@@ -122,33 +111,35 @@ def get_requests():
             "details": doc.get("details"),
             "reference_link": doc.get("reference_link", "None provided")
         })
-    # Return in reverse order so newest are first
     return jsonify(reqs[::-1]), 200
 
-@app.route('/api/requests', methods=['POST'])
+@app.route('/api/requests', methods=['POST', 'OPTIONS'])
 def submit_request():
-    """Handle custom CAD design requests from the public and email Admin."""
-    data = request.json
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200 # Automatically approves browser security checks
     
-    new_req = {
-        "details": data.get('details'),
-        "reference_link": data.get('reference_link', ''),
-        "phone": data.get('phone', ''),
-        "user_email": data.get('user_email', 'guest@example.com')
-    }
-    
-    requests_collection.insert_one(new_req)
+    try:
+        data = request.json
+        new_req = {
+            "details": data.get('details', ''),
+            "reference_link": data.get('reference_link', ''),
+            "phone": data.get('phone', ''),
+            "user_email": data.get('user_email', 'guest@example.com')
+        }
+        
+        # 1. Save to Database first (Most important step)
+        requests_collection.insert_one(new_req)
 
-    # Automatically send email to Admin
-    if ADMIN_EMAIL and ADMIN_EMAIL_PASSWORD:
-        try:
-            msg = MIMEMultipart()
-            msg['From'] = ADMIN_EMAIL
-            msg['To'] = ADMIN_EMAIL
-            msg['Subject'] = "New CAD Design Request Received!"
-            
-            body = f"""You have a new client request for a custom build:
-            
+        # 2. Try sending the email silently
+        if ADMIN_EMAIL and ADMIN_EMAIL_PASSWORD:
+            try:
+                msg = MIMEMultipart()
+                msg['From'] = ADMIN_EMAIL
+                msg['To'] = ADMIN_EMAIL
+                msg['Subject'] = "New Client Custom Build Request!"
+                
+                body = f"""You have a new client request for a custom build:
+                
 Client Email: {new_req['user_email']}
 Phone/WhatsApp: {new_req['phone']}
 
@@ -156,18 +147,23 @@ Requirements:
 {new_req['details']}
 
 Reference/Drive Link: {new_req['reference_link']}
-            """
-            msg.attach(MIMEText(body, 'plain'))
-            
-            server = smtplib.SMTP('smtp.gmail.com', 587)
-            server.starttls()
-            server.login(ADMIN_EMAIL, ADMIN_EMAIL_PASSWORD)
-            server.send_message(msg)
-            server.quit()
-        except Exception as e:
-            print("Email failed to send. Error:", e)
+                """
+                msg.attach(MIMEText(body, 'plain'))
+                
+                server = smtplib.SMTP('smtp.gmail.com', 587)
+                server.starttls()
+                server.login(ADMIN_EMAIL, ADMIN_EMAIL_PASSWORD)
+                server.send_message(msg)
+                server.quit()
+            except Exception as e:
+                # If email fails, print it to Render logs but DON'T crash the server!
+                print(f"Warning: Database saved, but Email failed to send. Reason: {e}")
 
-    return jsonify({"message": "Custom request submitted successfully"}), 201
+        return jsonify({"message": "Custom request submitted successfully"}), 201
+        
+    except Exception as server_error:
+        print(f"CRITICAL SERVER ERROR: {server_error}")
+        return jsonify({"error": str(server_error)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
