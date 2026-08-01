@@ -57,7 +57,6 @@
       </div>
 
       <div class="sidebar-menu">
-        <!-- Mobile Navigation Links (Visible mostly on mobile) -->
         <div class="mobile-only-nav">
           <button class="sidebar-link" onclick="switchView('home'); toggleSidebar();">🏠 Home</button>
           <button class="sidebar-link" onclick="switchView('market'); toggleSidebar();">🛒 Store</button>
@@ -67,7 +66,8 @@
         </div>
 
         <button id="themeToggleBtn" class="sidebar-link">☀️ Toggle Light/Dark Mode</button>
-        <button class="sidebar-link">📦 Order History</button>
+        <!-- ADDED ID TO THIS BUTTON -->
+        <button id="orderHistoryBtn" class="sidebar-link">📦 Order History</button>
         <button id="logoutBtn" class="sidebar-link text-red hidden">🚪 Sign Out</button>
       </div>
     </div>
@@ -224,6 +224,17 @@
     </div>
   </div>
 
-  <script src="app.js?v=responsive"></script>
+  <!-- 5. NEW: ORDER HISTORY MODAL -->
+  <div id="ordersModal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Order & Request History</h3>
+        <button class="close-modal" onclick="document.getElementById('ordersModal').classList.add('hidden')">&times;</button>
+      </div>
+      <div id="ordersList" style="max-height: 400px; overflow-y: auto; margin-top: 15px;"></div>
+    </div>
+  </div>
+
+  <script src="app.js?v=order_history"></script>
 </body>
 </html>
