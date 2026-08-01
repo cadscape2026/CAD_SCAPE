@@ -1,7 +1,6 @@
 const API_BASE = "https://procad-backend.onrender.com/api"; 
 
 // --- GLOBAL STATE ---
-// Hoisted to the top so they are always available in memory to prevent crashes
 let cart = [];
 let wishlist = [];
 let allProducts = [];
@@ -107,7 +106,6 @@ function handleSuccessfulLogin(name, email, avatarUrl) {
     if(sideAdminBtn) sideAdminBtn.classList.add('hidden');
   }
   
-  // Safely refresh store only if products exist
   if(allProducts.length > 0) renderGrid(allProducts);
 }
 
@@ -164,7 +162,6 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
     
     if(allProducts.length > 0) renderGrid(allProducts);
   } catch (error) {
-    // Failsafe: Hard refresh if UI bugs out during logout
     window.location.reload(); 
   }
 });
@@ -363,6 +360,25 @@ async function loadProducts() {
     if (!response.ok) return; 
     
     allProducts = await response.json();
+
+    // --- NEW: AUTO-CLEANUP GHOST ITEMS ---
+    // Extract a list of valid IDs that currently exist in the database
+    const validIds = allProducts.map(p => p.id);
+    
+    // Check wishlist against valid IDs
+    const oldWishlistLen = wishlist.length;
+    wishlist = wishlist.filter(id => validIds.includes(id));
+    if (wishlist.length !== oldWishlistLen) localStorage.setItem('cadWishlist', JSON.stringify(wishlist));
+
+    // Check cart against valid IDs
+    const oldCartLen = cart.length;
+    cart = cart.filter(item => validIds.includes(item.id));
+    if (cart.length !== oldCartLen) localStorage.setItem('cadCart', JSON.stringify(cart));
+    
+    // Update the counter bubbles in the navigation bar
+    updateCounters();
+    // -------------------------------------
+
     initCarousel(allProducts);
     renderGrid(allProducts);
   } catch (error) {
