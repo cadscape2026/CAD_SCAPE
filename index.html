@@ -220,7 +220,9 @@
       <form id="uploadForm">
         <input type="text" id="modelName" placeholder="Product Name" required>
         <textarea id="modelDesc" rows="3" placeholder="Product Description..." required></textarea>
-        <input type="number" id="modelPrice" step="1" value="0" placeholder="Price in ₹ (0 for Free)" required>
+        
+        <!-- EXPLICITLY REMOVED VALUE="0", ADDED CLEAR PLACEHOLDER -->
+        <input type="number" id="modelPrice" step="1" placeholder="Price in ₹ (Enter 0 for Free)" required>
         
         <div class="drop-zone" id="uploadDropZone">
           <span class="drop-zone__prompt">Drag & Drop Main Thumbnail Image</span>
@@ -308,7 +310,10 @@
       <form id="editForm" class="modal-form" style="margin-top: 15px;">
         <input type="text" id="editModelName" placeholder="Product Name" required>
         <textarea id="editModelDesc" rows="3" placeholder="Product Description..." required></textarea>
-        <input type="number" id="editModelPrice" step="1" placeholder="Price in ₹ (0 for Free)" required>
+        
+        <!-- EXPLICITLY REMOVED VALUE="0", ADDED CLEAR PLACEHOLDER -->
+        <input type="number" id="editModelPrice" step="1" placeholder="Price in ₹ (Enter 0 for Free)" required>
+        
         <div class="drop-zone" id="editDropZone">
           <span class="drop-zone__prompt">Drag & Drop New Image</span>
           <input type="file" id="editModelImageFile" class="drop-zone__input" accept="image/*">
@@ -330,7 +335,7 @@
     </div>
   </div>
 
-  <!-- CACHE BUSTER UPDATE -->
-  <script src="app.js?v=responsive_engine"></script>
+  <!-- CACHE BUSTER UPDATE TO FORCE BROWSER TO FORGET THE OLD FORM -->
+  <script src="app.js?v=placeholder_fix_final"></script>
 </body>
 </html>
