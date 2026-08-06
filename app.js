@@ -33,59 +33,60 @@ function switchView(target) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-document.getElementById('logoHomeBtn').addEventListener('click', (e) => { e.preventDefault(); switchView('home'); });
+// BULLETPROOF EVENT LISTENERS (Using Optional Chaining ?.)
+document.getElementById('logoHomeBtn')?.addEventListener('click', (e) => { e.preventDefault(); switchView('home'); });
 if(navs.market) navs.market.addEventListener('click', (e) => { e.preventDefault(); switchView('market'); });
 if(navs.requests) navs.requests.addEventListener('click', (e) => { e.preventDefault(); switchView('requests'); });
 if(navs.admin) navs.admin.addEventListener('click', (e) => { e.preventDefault(); switchView('admin'); });
-document.getElementById('heroBrowseBtn').addEventListener('click', () => switchView('market'));
-
+document.getElementById('heroBrowseBtn')?.addEventListener('click', () => switchView('market'));
 
 // --- ADMIN TABS ---
-document.getElementById('btnShowUpload').addEventListener('click', () => {
-  document.getElementById('adminUploadSection').classList.remove('hidden');
-  document.getElementById('adminRequestsSection').classList.add('hidden');
-  document.getElementById('btnShowUpload').className = "btn-blue-large";
-  document.getElementById('btnShowRequests').className = "btn-glass-large";
+document.getElementById('btnShowUpload')?.addEventListener('click', () => {
+  document.getElementById('adminUploadSection')?.classList.remove('hidden');
+  document.getElementById('adminRequestsSection')?.classList.add('hidden');
+  const btnUp = document.getElementById('btnShowUpload');
+  const btnReq = document.getElementById('btnShowRequests');
+  if(btnUp) btnUp.className = "btn-blue-large";
+  if(btnReq) btnReq.className = "btn-glass-large";
 });
 
-document.getElementById('btnShowRequests').addEventListener('click', () => {
-  document.getElementById('adminUploadSection').classList.add('hidden');
-  document.getElementById('adminRequestsSection').classList.remove('hidden');
-  document.getElementById('btnShowRequests').className = "btn-blue-large";
-  document.getElementById('btnShowUpload').className = "btn-glass-large";
+document.getElementById('btnShowRequests')?.addEventListener('click', () => {
+  document.getElementById('adminUploadSection')?.classList.add('hidden');
+  document.getElementById('adminRequestsSection')?.classList.remove('hidden');
+  const btnUp = document.getElementById('btnShowUpload');
+  const btnReq = document.getElementById('btnShowRequests');
+  if(btnReq) btnReq.className = "btn-blue-large";
+  if(btnUp) btnUp.className = "btn-glass-large";
   fetchAdminRequests();
 });
 
 
 // --- SIDEBAR & THEME TOGGLE (DEFAULT LIGHT MODE) ---
-const sidebar = document.getElementById('sidebar');
-const sidebarOverlay = document.getElementById('sidebarOverlay');
-
 function toggleSidebar() {
-  sidebar.classList.toggle('open');
-  sidebarOverlay.classList.toggle('hidden');
+  document.getElementById('sidebar')?.classList.toggle('open');
+  document.getElementById('sidebarOverlay')?.classList.toggle('hidden');
 }
 
-document.getElementById('menuBtn').addEventListener('click', toggleSidebar);
-document.getElementById('closeSidebar').addEventListener('click', toggleSidebar);
-sidebarOverlay.addEventListener('click', toggleSidebar);
-
-const themeToggleBtn = document.getElementById('themeToggleBtn');
-const mainLogoImg = document.getElementById('mainLogoImg');
+document.getElementById('menuBtn')?.addEventListener('click', toggleSidebar);
+document.getElementById('closeSidebar')?.addEventListener('click', toggleSidebar);
+document.getElementById('sidebarOverlay')?.addEventListener('click', toggleSidebar);
 
 function updateThemeUI(isDark) {
+  const themeToggleBtn = document.getElementById('themeToggleBtn');
+  const mainLogoImg = document.getElementById('mainLogoImg');
+  
   if (isDark) {
     document.body.classList.replace('light-mode', 'dark-mode');
-    themeToggleBtn.textContent = '☀️ Switch to Light Mode';
-    mainLogoImg.src = 'logo_4.png';
+    if(themeToggleBtn) themeToggleBtn.textContent = '☀️ Switch to Light Mode';
+    if(mainLogoImg) mainLogoImg.src = 'logo_4.png';
   } else {
     document.body.classList.replace('dark-mode', 'light-mode');
-    themeToggleBtn.textContent = '🌙 Switch to Dark Mode';
-    mainLogoImg.src = 'logo_light.png';
+    if(themeToggleBtn) themeToggleBtn.textContent = '🌙 Switch to Dark Mode';
+    if(mainLogoImg) mainLogoImg.src = 'logo_light.png';
   }
 }
 
-themeToggleBtn.addEventListener('click', () => {
+document.getElementById('themeToggleBtn')?.addEventListener('click', () => {
   const isDark = document.body.classList.contains('light-mode');
   updateThemeUI(isDark);
 });
@@ -102,13 +103,20 @@ function handleSuccessfulLogin(name, email, avatarUrl) {
   currentUser = { name: name, email: email, avatar: avatarUrl };
   localStorage.setItem('cadUser', JSON.stringify(currentUser)); 
 
-  document.getElementById('customLoginBtn').classList.add('hidden');
-  document.getElementById('sidebarGuestInfo').classList.add('hidden');
-  document.getElementById('sidebarUserInfo').classList.remove('hidden');
-  if(avatarUrl) document.getElementById('userAvatar').src = avatarUrl;
-  document.getElementById('userNameDisplay').textContent = name;
-  document.getElementById('userEmailDisplay').textContent = email;
-  document.getElementById('logoutBtn').classList.remove('hidden');
+  document.getElementById('customLoginBtn')?.classList.add('hidden');
+  document.getElementById('sidebarGuestInfo')?.classList.add('hidden');
+  document.getElementById('sidebarUserInfo')?.classList.remove('hidden');
+  
+  const avatarEl = document.getElementById('userAvatar');
+  if(avatarEl && avatarUrl) avatarEl.src = avatarUrl;
+  
+  const nameEl = document.getElementById('userNameDisplay');
+  if(nameEl) nameEl.textContent = name;
+  
+  const emailEl = document.getElementById('userEmailDisplay');
+  if(emailEl) emailEl.textContent = email;
+  
+  document.getElementById('logoutBtn')?.classList.remove('hidden');
 
   if (adminEmails.includes(email)) {
     if(navs.admin) navs.admin.classList.remove('hidden');
@@ -145,7 +153,7 @@ window.onload = function () {
   }
 };
 
-document.getElementById('customLoginBtn').addEventListener('click', () => {
+document.getElementById('customLoginBtn')?.addEventListener('click', () => {
   if (tokenClient) {
      tokenClient.requestAccessToken(); 
   } else {
@@ -153,15 +161,15 @@ document.getElementById('customLoginBtn').addEventListener('click', () => {
   }
 });
 
-document.getElementById('logoutBtn').addEventListener('click', () => {
+document.getElementById('logoutBtn')?.addEventListener('click', () => {
   try {
     currentUser = { name: "Guest", email: null };
     localStorage.removeItem('cadUser'); 
     
-    document.getElementById('customLoginBtn').classList.remove('hidden');
-    document.getElementById('sidebarUserInfo').classList.add('hidden');
-    document.getElementById('sidebarGuestInfo').classList.remove('hidden');
-    document.getElementById('logoutBtn').classList.add('hidden');
+    document.getElementById('customLoginBtn')?.classList.remove('hidden');
+    document.getElementById('sidebarUserInfo')?.classList.add('hidden');
+    document.getElementById('sidebarGuestInfo')?.classList.remove('hidden');
+    document.getElementById('logoutBtn')?.classList.add('hidden');
     
     if(navs.admin) navs.admin.classList.add('hidden');
     switchView('home');
@@ -174,8 +182,10 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
 });
 
 function updateCounters() {
-  document.getElementById('cartCount').textContent = cart.length;
-  document.getElementById('wishlistCount').textContent = wishlist.length;
+  const cc = document.getElementById('cartCount');
+  if(cc) cc.textContent = cart.length;
+  const wc = document.getElementById('wishlistCount');
+  if(wc) wc.textContent = wishlist.length;
 }
 
 function getDirectImageUrl(url) {
@@ -197,6 +207,7 @@ let currentEditBase64 = "";
 function setupDropZone(dropZoneId, inputId, isEdit = false) {
   const dropZoneElement = document.getElementById(dropZoneId);
   const inputElement = document.getElementById(inputId);
+  if(!dropZoneElement || !inputElement) return;
 
   dropZoneElement.addEventListener("click", (e) => {
     if(e.target !== inputElement) inputElement.click();
@@ -227,7 +238,8 @@ function setupDropZone(dropZoneId, inputId, isEdit = false) {
 
 function updateThumbnail(dropZoneElement, file, isEdit) {
   let thumbnailElement = dropZoneElement.querySelector(".drop-zone__thumb");
-  if (dropZoneElement.querySelector(".drop-zone__prompt")) dropZoneElement.querySelector(".drop-zone__prompt").remove();
+  const promptEl = dropZoneElement.querySelector(".drop-zone__prompt");
+  if (promptEl) promptEl.remove();
 
   if (!thumbnailElement) {
     thumbnailElement = document.createElement("div");
@@ -250,6 +262,7 @@ function updateThumbnail(dropZoneElement, file, isEdit) {
 
 function resetDropZone(dropZoneId, isEdit = false) {
   const dropZoneElement = document.getElementById(dropZoneId);
+  if(!dropZoneElement) return;
   const inputElement = dropZoneElement.querySelector(".drop-zone__input");
   if(inputElement) inputElement.value = ""; 
   
@@ -261,7 +274,7 @@ function resetDropZone(dropZoneId, isEdit = false) {
     prompt = document.createElement("span");
     prompt.classList.add("drop-zone__prompt");
     prompt.textContent = isEdit ? "Drag & Drop New Image Here or Click to Browse" : "Drag & Drop Image Here or Click to Browse";
-    dropZoneElement.insertBefore(prompt, inputElement);
+    if(inputElement) dropZoneElement.insertBefore(prompt, inputElement);
   }
 
   if (isEdit) currentEditBase64 = "";
@@ -278,6 +291,7 @@ let carouselInterval;
 
 function initCarousel(products) {
   const track = document.getElementById('carouselTrack');
+  if(!track) return;
   track.innerHTML = '';
   if(products.length === 0) return;
 
@@ -307,24 +321,26 @@ window.openLightbox = function(id) {
   const product = allProducts.find(p => p.id === id);
   if(!product) return;
 
-  document.getElementById('lightboxTitle').textContent = product.name;
-  const imgContainer = document.getElementById('lightboxImgContainer');
-  const threeDContainer = document.getElementById('lightbox3DContainer');
-  const toggles = document.getElementById('lightboxToggles');
+  const titleEl = document.getElementById('lightboxTitle');
+  if(titleEl) titleEl.textContent = product.name;
   
-  document.getElementById('lightboxMainImg').src = getDirectImageUrl(product.image_url);
+  const mainImgEl = document.getElementById('lightboxMainImg');
+  if(mainImgEl) mainImgEl.src = getDirectImageUrl(product.image_url);
   
   toggleLightboxView('img');
 
-  if (product.model_3d_url) {
+  const toggles = document.getElementById('lightboxToggles');
+  const viewer = document.getElementById('lightbox3DViewer');
+
+  if (product.model_3d_url && toggles && viewer) {
     toggles.classList.remove('hidden');
-    document.getElementById('lightbox3DViewer').src = product.model_3d_url;
-  } else {
+    viewer.src = product.model_3d_url;
+  } else if (toggles && viewer) {
     toggles.classList.add('hidden');
-    document.getElementById('lightbox3DViewer').src = '';
+    viewer.src = '';
   }
 
-  document.getElementById('lightboxModal').classList.remove('hidden');
+  document.getElementById('lightboxModal')?.classList.remove('hidden');
 };
 
 window.toggleLightboxView = function(view) {
@@ -333,22 +349,23 @@ window.toggleLightboxView = function(view) {
   const btnImg = document.getElementById('btnViewImg');
   const btn3D = document.getElementById('btnView3D');
 
+  if(!imgContainer || !threeDContainer) return;
+
   if (view === '3d') {
     imgContainer.classList.add('hidden');
     threeDContainer.classList.remove('hidden');
-    btn3D.classList.add('active');
-    btnImg.classList.remove('active');
+    if(btn3D) btn3D.classList.add('active');
+    if(btnImg) btnImg.classList.remove('active');
   } else {
     threeDContainer.classList.add('hidden');
     imgContainer.classList.remove('hidden');
-    btnImg.classList.add('active');
-    btn3D.classList.remove('active');
+    if(btnImg) btnImg.classList.add('active');
+    if(btn3D) btn3D.classList.remove('active');
   }
 };
 
 
 // --- RENDER PRODUCTS GRID ---
-// This function generates HTML cards for products. Reusable anywhere.
 function generateProductCardHTML(p, isAdmin, isWishlisted) {
   const priceDisplay = p.price === 0 
     ? `<span class="price text-green">Free</span>` 
@@ -394,11 +411,11 @@ function generateProductCardHTML(p, isAdmin, isWishlisted) {
 function renderGrid(products) {
   const grid = document.getElementById('productGrid');
   const homeGrid = document.getElementById('homeRecentGrid');
-  grid.innerHTML = '';
+  if(grid) grid.innerHTML = '';
   if(homeGrid) homeGrid.innerHTML = '';
   
   if (products.length === 0) {
-    grid.innerHTML = '<p style="color:var(--text-muted)">No models found.</p>';
+    if(grid) grid.innerHTML = '<p style="color:var(--text-muted)">No models found.</p>';
     return;
   }
 
@@ -408,17 +425,12 @@ function renderGrid(products) {
     const isWishlisted = wishlist.includes(p.id) ? 'Remove' : 'Wishlist';
     const cardHTML = generateProductCardHTML(p, isAdmin, isWishlisted);
     
-    // Add to main store
-    grid.innerHTML += cardHTML;
-
-    // Add only the 3 newest products to the Scrolling Home Page Section
-    if (homeGrid && index < 3) {
-       homeGrid.innerHTML += cardHTML;
-    }
+    if(grid) grid.innerHTML += cardHTML;
+    if(homeGrid && index < 3) homeGrid.innerHTML += cardHTML;
   });
 }
 
-document.getElementById('searchInput').addEventListener('input', (e) => {
+document.getElementById('searchInput')?.addEventListener('input', (e) => {
   const term = e.target.value.toLowerCase();
   const filtered = allProducts.filter(p => p.name.toLowerCase().includes(term));
   renderGrid(filtered);
@@ -454,16 +466,18 @@ window.submitNewProduct = async function() {
   const desc = document.getElementById('modelDesc').value;
   const price = document.getElementById('modelPrice').value;
   const file = document.getElementById('modelFile').value;
-  const url3d = document.getElementById('model3dUrl').value;
+  const url3d = document.getElementById('model3dUrl')?.value || '';
 
   if (!name || !desc || !currentUploadBase64 || !file) {
     alert("Please fill in all required fields!");
     return;
   }
 
-  btn.textContent = "Uploading... Please wait";
-  btn.style.backgroundColor = "#f59e0b";
-  btn.style.pointerEvents = "none"; 
+  if(btn) {
+      btn.textContent = "Uploading... Please wait";
+      btn.style.backgroundColor = "#f59e0b";
+      btn.style.pointerEvents = "none"; 
+  }
 
   const data = { 
     name, 
@@ -483,7 +497,7 @@ window.submitNewProduct = async function() {
 
     if (response.ok) {
       alert("Product Uploaded Successfully!");
-      document.getElementById('uploadForm').reset();
+      document.getElementById('uploadForm')?.reset();
       resetDropZone("uploadDropZone", false); 
       loadProducts(); 
     } else {
@@ -492,9 +506,11 @@ window.submitNewProduct = async function() {
   } catch (error) {
     alert("Error uploading product.");
   } finally {
-    btn.textContent = "Upload to Database";
-    btn.style.backgroundColor = ""; 
-    btn.style.pointerEvents = "auto";
+    if(btn){
+        btn.textContent = "Upload to Database";
+        btn.style.backgroundColor = ""; 
+        btn.style.pointerEvents = "auto";
+    }
   }
 };
 
@@ -504,42 +520,53 @@ window.openEditModal = function(id) {
   if(!product) return;
   
   currentEditId = id;
-  document.getElementById('editModelName').value = product.name;
-  document.getElementById('editModelDesc').value = product.description;
-  document.getElementById('editModelPrice').value = product.price;
-  document.getElementById('editModelFile').value = product.download_url;
-  document.getElementById('editModel3dUrl').value = product.model_3d_url || '';
+  
+  const nameEl = document.getElementById('editModelName');
+  const descEl = document.getElementById('editModelDesc');
+  const priceEl = document.getElementById('editModelPrice');
+  const fileEl = document.getElementById('editModelFile');
+  const url3dEl = document.getElementById('editModel3dUrl');
+  
+  if(nameEl) nameEl.value = product.name;
+  if(descEl) descEl.value = product.description;
+  if(priceEl) priceEl.value = product.price;
+  if(fileEl) fileEl.value = product.download_url;
+  if(url3dEl) url3dEl.value = product.model_3d_url || '';
   
   currentEditBase64 = product.image_url;
   const dropZoneElement = document.getElementById('editDropZone');
   
-  const prompt = dropZoneElement.querySelector(".drop-zone__prompt");
-  if(prompt) prompt.remove();
+  if(dropZoneElement) {
+      const prompt = dropZoneElement.querySelector(".drop-zone__prompt");
+      if(prompt) prompt.remove();
 
-  let thumb = dropZoneElement.querySelector(".drop-zone__thumb");
-  if(!thumb) {
-    thumb = document.createElement("div");
-    thumb.classList.add("drop-zone__thumb");
-    dropZoneElement.appendChild(thumb);
+      let thumb = dropZoneElement.querySelector(".drop-zone__thumb");
+      if(!thumb) {
+        thumb = document.createElement("div");
+        thumb.classList.add("drop-zone__thumb");
+        dropZoneElement.appendChild(thumb);
+      }
+      thumb.style.backgroundImage = `url('${getDirectImageUrl(product.image_url)}')`;
   }
-  thumb.style.backgroundImage = `url('${getDirectImageUrl(product.image_url)}')`;
 
-  document.getElementById('editModal').classList.remove('hidden');
+  document.getElementById('editModal')?.classList.remove('hidden');
 }
 
 window.submitEditProduct = async function() {
   const btn = document.getElementById('editBtn');
-  const name = document.getElementById('editModelName').value;
-  const desc = document.getElementById('editModelDesc').value;
-  const price = document.getElementById('editModelPrice').value;
-  const file = document.getElementById('editModelFile').value;
-  const url3d = document.getElementById('editModel3dUrl').value;
+  const name = document.getElementById('editModelName')?.value;
+  const desc = document.getElementById('editModelDesc')?.value;
+  const price = document.getElementById('editModelPrice')?.value;
+  const file = document.getElementById('editModelFile')?.value;
+  const url3d = document.getElementById('editModel3dUrl')?.value || '';
 
   if (!name || !desc || !currentEditBase64 || !file) return alert("Fill all fields!");
 
-  btn.textContent = "Saving...";
-  btn.style.backgroundColor = "#f59e0b";
-  btn.style.pointerEvents = "none";
+  if(btn){
+      btn.textContent = "Saving...";
+      btn.style.backgroundColor = "#f59e0b";
+      btn.style.pointerEvents = "none";
+  }
 
   const data = { 
     name, 
@@ -559,7 +586,7 @@ window.submitEditProduct = async function() {
 
     if(res.ok) {
       alert("Product updated successfully!");
-      document.getElementById('editModal').classList.add('hidden');
+      document.getElementById('editModal')?.classList.add('hidden');
       resetDropZone('editDropZone', true);
       loadProducts();
     } else {
@@ -568,9 +595,11 @@ window.submitEditProduct = async function() {
   } catch (error) {
     alert("Error communicating with server.");
   } finally {
-    btn.textContent = "Save Changes";
-    btn.style.backgroundColor = "";
-    btn.style.pointerEvents = "auto";
+    if(btn){
+        btn.textContent = "Save Changes";
+        btn.style.backgroundColor = "";
+        btn.style.pointerEvents = "auto";
+    }
   }
 };
 
@@ -593,15 +622,17 @@ window.deleteProduct = async function(id) {
 // --- REQUESTS, ORDERS & ADMIN GRID VIEW ---
 window.submitDesignRequest = async function() {
   const btn = document.getElementById('requestBtn');
-  const phone = document.getElementById('reqPhone').value;
-  const details = document.getElementById('reqDetails').value;
-  const link = document.getElementById('reqLink').value;
+  const phone = document.getElementById('reqPhone')?.value;
+  const details = document.getElementById('reqDetails')?.value;
+  const link = document.getElementById('reqLink')?.value;
 
   if(!phone || !details) return alert("Please provide your phone number and requirements.");
 
-  btn.textContent = "Submitting...";
-  btn.style.backgroundColor = "#f59e0b";
-  btn.style.pointerEvents = "none";
+  if(btn) {
+      btn.textContent = "Submitting...";
+      btn.style.backgroundColor = "#f59e0b";
+      btn.style.pointerEvents = "none";
+  }
 
   const safeEmail = (currentUser && currentUser.email) ? currentUser.email : 'guest@example.com';
   
@@ -621,7 +652,7 @@ window.submitDesignRequest = async function() {
     });
     
     if(res.ok) {
-      document.getElementById('requestForm').reset();
+      document.getElementById('requestForm')?.reset();
       
       const waText = encodeURIComponent(`Hi, I just submitted a new CAD design request.\nEmail: ${safeEmail}\nDetails: ${details}`);
       if(confirm("Request Submitted Successfully!\n\nWould you like to open WhatsApp now to discuss your project details with us?")) {
@@ -633,9 +664,11 @@ window.submitDesignRequest = async function() {
   } catch (error) {
     alert("Network Error.");
   } finally {
-    btn.textContent = "Submit Request";
-    btn.style.backgroundColor = "";
-    btn.style.pointerEvents = "auto";
+    if(btn){
+        btn.textContent = "Submit Request";
+        btn.style.backgroundColor = "";
+        btn.style.pointerEvents = "auto";
+    }
   }
 };
 
@@ -645,18 +678,20 @@ window.encodeRequestImage = function(input, reqId) {
         reader.onload = (e) => {
             requestImages[reqId] = e.target.result;
             const preview = document.getElementById(`preview_${reqId}`);
-            preview.src = e.target.result;
-            preview.classList.remove('hidden');
+            if(preview) {
+                preview.src = e.target.result;
+                preview.classList.remove('hidden');
+            }
         };
         reader.readAsDataURL(input.files[0]);
     }
 }
 
 window.saveAdminUpdate = async function(id) {
-  const status = document.getElementById(`status_${id}`).value;
-  const payStatus = document.getElementById(`pay_${id}`).value;
-  const price = document.getElementById(`price_${id}`).value;
-  const link = document.getElementById(`link_${id}`).value;
+  const status = document.getElementById(`status_${id}`)?.value;
+  const payStatus = document.getElementById(`pay_${id}`)?.value;
+  const price = document.getElementById(`price_${id}`)?.value;
+  const link = document.getElementById(`link_${id}`)?.value;
   const imageBase64 = requestImages[id] || null;
 
   const payload = {
@@ -690,6 +725,7 @@ async function fetchAdminRequests() {
     const res = await fetch(`${API_BASE}/requests`);
     const requests = await res.json();
     const list = document.getElementById('adminRequestsList');
+    if(!list) return;
     list.innerHTML = '';
 
     if(requests.length === 0) {
@@ -698,7 +734,6 @@ async function fetchAdminRequests() {
     }
 
     requests.forEach(req => {
-      // Date and Time Formatting for Admin Panel
       const dateStr = req.created_at ? new Date(req.created_at).toLocaleString('en-IN') : 'Date Unknown';
 
       const linkHtml = req.reference_link && req.reference_link !== "None provided" && req.reference_link !== ""
@@ -765,15 +800,17 @@ async function fetchAdminRequests() {
 }
 
 // User Checking Order History
-document.getElementById('orderHistoryBtn').addEventListener('click', () => {
+document.getElementById('orderHistoryBtn')?.addEventListener('click', () => {
   toggleSidebar();
   if(!currentUser || !currentUser.email) {
     return alert("Please sign in to view your order history.");
   }
   
   const list = document.getElementById('ordersList');
+  if(!list) return;
+  
   list.innerHTML = '<p style="color:var(--text-muted)">Loading your requests...</p>';
-  document.getElementById('ordersModal').classList.remove('hidden');
+  document.getElementById('ordersModal')?.classList.remove('hidden');
 
   fetch(`${API_BASE}/requests`)
     .then(res => res.json())
@@ -868,10 +905,11 @@ function renderCart() {
   const cartTotalSpan = document.getElementById('cartTotal');
   const cartTotalContainer = document.getElementById('cartTotalContainer');
   
+  if(!cartItemsDiv) return;
   cartItemsDiv.innerHTML = '';
   let total = 0;
 
-  cartTotalContainer.classList.remove('hidden');
+  if(cartTotalContainer) cartTotalContainer.classList.remove('hidden');
 
   if (cart.length === 0) {
     cartItemsDiv.innerHTML = '<p style="color:var(--text-muted);">Your cart is empty.</p>';
@@ -889,12 +927,12 @@ function renderCart() {
       `;
     });
   }
-  cartTotalSpan.textContent = total.toFixed(2);
+  if(cartTotalSpan) cartTotalSpan.textContent = total.toFixed(2);
 }
 
-document.getElementById('cartBtn').addEventListener('click', () => {
+document.getElementById('cartBtn')?.addEventListener('click', () => {
   renderCart();
-  document.getElementById('cartModal').classList.remove('hidden');
+  document.getElementById('cartModal')?.classList.remove('hidden');
 });
 
 window.checkoutCart = async function() {
@@ -915,16 +953,18 @@ window.checkoutCart = async function() {
         </div>
       `;
     });
-    cartItemsDiv.innerHTML = html;
-    document.getElementById('cartTotalContainer').classList.add('hidden');
+    if(cartItemsDiv) cartItemsDiv.innerHTML = html;
+    document.getElementById('cartTotalContainer')?.classList.add('hidden');
     cart = [];
     localStorage.setItem('cadCart', JSON.stringify(cart));
     updateCounters();
     
   } else {
     const btn = document.querySelector('#cartTotalContainer button');
-    btn.textContent = "Processing Order...";
-    btn.disabled = true;
+    if(btn){
+        btn.textContent = "Processing Order...";
+        btn.disabled = true;
+    }
 
     const itemNames = cart.map(i => i.name).join(", ");
     const dlLinks = cart.map(i => `${i.name}:\n${i.download_url}`).join("\n\n");
@@ -951,7 +991,7 @@ window.checkoutCart = async function() {
         cart = [];
         localStorage.setItem('cadCart', JSON.stringify(cart));
         updateCounters();
-        document.getElementById('cartModal').classList.add('hidden');
+        document.getElementById('cartModal')?.classList.add('hidden');
         
         const waText = encodeURIComponent(`Hello! I want to pay for my CAD order.\nEmail: ${safeEmail}\nItems: ${itemNames}\nTotal: ₹${total}`);
         window.open(`https://wa.me/919446308229?text=${waText}`, '_blank');
@@ -963,8 +1003,10 @@ window.checkoutCart = async function() {
     } catch(e) {
       alert("Network Error.");
     } finally {
-      btn.textContent = "Checkout";
-      btn.disabled = false;
+      if(btn){
+          btn.textContent = "Checkout";
+          btn.disabled = false;
+      }
     }
   }
 }
@@ -988,6 +1030,7 @@ window.toggleWishlist = function(id, btnElement, fromModal = false) {
 
 function renderWishlist() {
   const wishlistItemsDiv = document.getElementById('wishlistItems');
+  if(!wishlistItemsDiv) return;
   wishlistItemsDiv.innerHTML = '';
   
   if (wishlist.length === 0) {
@@ -1011,9 +1054,9 @@ function renderWishlist() {
   }
 }
 
-document.getElementById('wishlistBtn').addEventListener('click', () => {
+document.getElementById('wishlistBtn')?.addEventListener('click', () => {
   renderWishlist();
-  document.getElementById('wishlistModal').classList.remove('hidden');
+  document.getElementById('wishlistModal')?.classList.remove('hidden');
 });
 
 // --- COMMENTS LOGIC ---
@@ -1023,6 +1066,7 @@ window.openComments = function(id) {
   currentCommentProductId = id;
   const product = allProducts.find(p => p.id === id);
   const commentsList = document.getElementById('commentsList');
+  if(!commentsList) return;
   commentsList.innerHTML = '';
 
   if (product && product.comments && product.comments.length > 0) {
@@ -1038,12 +1082,12 @@ window.openComments = function(id) {
     commentsList.innerHTML = '<p style="color:var(--text-muted)">No comments yet. Be the first!</p>';
   }
   
-  document.getElementById('commentsModal').classList.remove('hidden');
+  document.getElementById('commentsModal')?.classList.remove('hidden');
 }
 
-document.getElementById('submitCommentBtn').addEventListener('click', async () => {
+document.getElementById('submitCommentBtn')?.addEventListener('click', async () => {
   const textInput = document.getElementById('newCommentText');
-  const text = textInput.value.trim();
+  const text = textInput?.value.trim();
   if (!text || !currentCommentProductId) return;
 
   const data = {
@@ -1059,8 +1103,8 @@ document.getElementById('submitCommentBtn').addEventListener('click', async () =
       body: JSON.stringify(data)
     });
     
-    textInput.value = '';
-    document.getElementById('commentsModal').classList.add('hidden');
+    if(textInput) textInput.value = '';
+    document.getElementById('commentsModal')?.classList.add('hidden');
     alert("Comment posted successfully!");
     loadProducts(); 
   } catch (e) {
