@@ -11,6 +11,12 @@
 </head>
 <body class="light-mode">
 
+  <!-- UNIVERSAL BACKGROUND VIDEO & DIMMER -->
+  <video class="app-bg-video" autoplay loop muted playsinline>
+    <source src="background-video.mp4" type="video/mp4">
+  </video>
+  <div class="app-bg-dimmer"></div>
+
   <!-- Navigation Bar -->
   <header class="navbar">
     <a href="#" id="logoHomeBtn" class="logo">
@@ -98,22 +104,12 @@
 
   <!-- VIEW: PARALLAX HOMEPAGE WITH 3D SCROLL ANIMATION -->
   <section id="viewHome" class="view-section active">
-    
-    <!-- FULL PAGE VIDEO LAYER -->
-    <video class="hero-bg-video" autoplay loop muted playsinline>
-      <source src="background-video.mp4" type="video/mp4">
-    </video>
-    <div class="home-overlay-dimmer"></div>
-    
     <!-- This extremely tall track allows us to scroll "through" the animation -->
     <div class="scroll-track" id="heroScrollTrack">
-      
       <!-- This sticky layer stays perfectly on screen while scrolling -->
       <div class="sticky-hero">
-        
         <!-- Interactive 3D Model Layer (Floating on the right) -->
         <div class="hero-3d-container">
-          <!-- PUT YOUR ANIMATED .GLB LINK HERE -->
           <model-viewer 
             id="heroScrubModel" 
             src="https://modelviewer.dev/shared-assets/models/RobotExpressive.glb" 
@@ -284,7 +280,7 @@
       </div>
       <div id="commentsList" style="max-height: 300px; overflow-y: auto; margin: 15px 0;"></div>
       <div style="display:flex; gap:10px;">
-        <input type="text" id="newCommentText" placeholder="Add a comment..." style="flex:1; padding:10px; border-radius:6px; background:var(--bg-main); color:var(--text-main); border:1px solid var(--border);">
+        <input type="text" id="newCommentText" placeholder="Add a comment..." style="flex:1; padding:10px; border-radius:6px; background:var(--bg-input); color:var(--text-main); border:1px solid var(--border);">
         <button id="submitCommentBtn" class="btn-blue-large" style="padding:10px 20px;">Post</button>
       </div>
     </div>
@@ -322,6 +318,6 @@
   </div>
 
   <!-- CACHE BUSTER UPDATE -->
-  <script src="app.js?v=apple_glass"></script>
+  <script src="app.js?v=apple_glass_v2"></script>
 </body>
 </html>
