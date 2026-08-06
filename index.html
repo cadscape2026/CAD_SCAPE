@@ -114,7 +114,8 @@
         
         <!-- Interactive 3D Model Layer (Floating on the right) -->
         <div class="hero-3d-container">
-          <!-- LIVE ANIMATED MODEL RESTORED HERE -->
+          
+          <!-- EAGER LOADING ADDED HERE TO LOAD THE 3D MODEL INSTANTLY -->
           <model-viewer 
             id="heroScrubModel" 
             src="snowflake.glb" 
@@ -122,6 +123,8 @@
             shadow-intensity="1" 
             interaction-prompt="none"
             camera-orbit="0deg 75deg 105%"
+            loading="eager"
+            reveal="auto"
             alt="3D Interactive Assembly">
           </model-viewer>
         </div>
@@ -321,6 +324,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=animation_fix"></script>
+  <script src="app.js?v=speed_fix"></script>
 </body>
 </html>
