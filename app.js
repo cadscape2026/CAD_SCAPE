@@ -30,6 +30,7 @@ function switchView(target) {
   if(navs[target]) navs[target].classList.add('active');
 
   if(target === 'admin') fetchAdminRequests();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 document.getElementById('logoHomeBtn').addEventListener('click', (e) => { e.preventDefault(); switchView('home'); });
@@ -313,7 +314,6 @@ window.openLightbox = function(id) {
   
   document.getElementById('lightboxMainImg').src = getDirectImageUrl(product.image_url);
   
-  // Set default view back to Image
   toggleLightboxView('img');
 
   if (product.model_3d_url) {
@@ -348,9 +348,54 @@ window.toggleLightboxView = function(view) {
 
 
 // --- RENDER PRODUCTS GRID ---
+// This function generates HTML cards for products. Reusable anywhere.
+function generateProductCardHTML(p, isAdmin, isWishlisted) {
+  const priceDisplay = p.price === 0 
+    ? `<span class="price text-green">Free</span>` 
+    : `<span class="price">₹${p.price.toFixed(2)}</span>`;
+
+  const actionHtml = `<button onclick="addToCart('${p.id}', '${p.name}', ${p.price}, '${p.download_url}')" class="btn-small">Add to Cart</button>`;
+  const commentsLength = p.comments ? p.comments.length : 0;
+  
+  const previewBadge = p.model_3d_url ? `<div style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.7); color:#fff; padding:4px 8px; border-radius:12px; font-size:0.75rem; font-weight:bold;">3D VIEW</div>` : '';
+
+  const adminControls = isAdmin ? `
+    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; gap: 8px;">
+      <button onclick="openEditModal('${p.id}')" class="btn-small" style="background:#f59e0b; flex:1;">Edit</button>
+      <button onclick="deleteProduct('${p.id}')" class="btn-small" style="background:#ef4444; flex:1;">Delete</button>
+    </div>
+  ` : '';
+
+  return `
+    <div class="card">
+      <div class="card-img-wrapper" onclick="openLightbox('${p.id}')">
+        <img src="${getDirectImageUrl(p.image_url)}" alt="${p.name}">
+        ${previewBadge}
+      </div>
+      <div class="card-info">
+        <h3 class="card-title" onclick="openLightbox('${p.id}')" style="cursor:pointer;">${p.name}</h3>
+        <p class="card-desc">${p.description || 'No description provided.'}</p>
+        
+        <div class="card-social">
+          <button class="social-btn" onclick="toggleWishlist('${p.id}', this)">★ ${isWishlisted}</button>
+          <button class="social-btn" onclick="openComments('${p.id}')">💬 Comments (${commentsLength})</button>
+        </div>
+
+        <div class="card-footer">
+          ${priceDisplay}
+          ${actionHtml}
+        </div>
+        ${adminControls}
+      </div>
+    </div>
+  `;
+}
+
 function renderGrid(products) {
   const grid = document.getElementById('productGrid');
+  const homeGrid = document.getElementById('homeRecentGrid');
   grid.innerHTML = '';
+  if(homeGrid) homeGrid.innerHTML = '';
   
   if (products.length === 0) {
     grid.innerHTML = '<p style="color:var(--text-muted)">No models found.</p>';
@@ -359,48 +404,17 @@ function renderGrid(products) {
 
   const isAdmin = (currentUser && currentUser.email) ? adminEmails.includes(currentUser.email) : false;
 
-  products.forEach(p => {
-    const priceDisplay = p.price === 0 
-      ? `<span class="price text-green">Free</span>` 
-      : `<span class="price">$${p.price.toFixed(2)}</span>`;
-
-    const actionHtml = `<button onclick="addToCart('${p.id}', '${p.name}', ${p.price}, '${p.download_url}')" class="btn-small">Add to Cart</button>`;
+  products.forEach((p, index) => {
     const isWishlisted = wishlist.includes(p.id) ? 'Remove' : 'Wishlist';
-    const commentsLength = p.comments ? p.comments.length : 0;
+    const cardHTML = generateProductCardHTML(p, isAdmin, isWishlisted);
     
-    // Tiny badge to let users know a 3D preview exists
-    const previewBadge = p.model_3d_url ? `<div style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.7); color:#fff; padding:4px 8px; border-radius:12px; font-size:0.75rem; font-weight:bold;">3D VIEW</div>` : '';
+    // Add to main store
+    grid.innerHTML += cardHTML;
 
-    const adminControls = isAdmin ? `
-      <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; gap: 8px;">
-        <button onclick="openEditModal('${p.id}')" class="btn-small" style="background:#f59e0b; flex:1;">Edit</button>
-        <button onclick="deleteProduct('${p.id}')" class="btn-small" style="background:#ef4444; flex:1;">Delete</button>
-      </div>
-    ` : '';
-
-    grid.innerHTML += `
-      <div class="card">
-        <div class="card-img-wrapper" onclick="openLightbox('${p.id}')">
-          <img src="${getDirectImageUrl(p.image_url)}" alt="${p.name}">
-          ${previewBadge}
-        </div>
-        <div class="card-info">
-          <h3 class="card-title" onclick="openLightbox('${p.id}')" style="cursor:pointer;">${p.name}</h3>
-          <p class="card-desc">${p.description || 'No description provided.'}</p>
-          
-          <div class="card-social">
-            <button class="social-btn" onclick="toggleWishlist('${p.id}', this)">★ ${isWishlisted}</button>
-            <button class="social-btn" onclick="openComments('${p.id}')">💬 Comments (${commentsLength})</button>
-          </div>
-
-          <div class="card-footer">
-            ${priceDisplay}
-            ${actionHtml}
-          </div>
-          ${adminControls}
-        </div>
-      </div>
-    `;
+    // Add only the 3 newest products to the Scrolling Home Page Section
+    if (homeGrid && index < 3) {
+       homeGrid.innerHTML += cardHTML;
+    }
   });
 }
 
@@ -576,7 +590,7 @@ window.deleteProduct = async function(id) {
 }
 
 
-// --- REQUESTS & WHATSAPP DISCUSSIONS ---
+// --- REQUESTS, ORDERS & ADMIN GRID VIEW ---
 window.submitDesignRequest = async function() {
   const btn = document.getElementById('requestBtn');
   const phone = document.getElementById('reqPhone').value;
@@ -684,6 +698,9 @@ async function fetchAdminRequests() {
     }
 
     requests.forEach(req => {
+      // Date and Time Formatting for Admin Panel
+      const dateStr = req.created_at ? new Date(req.created_at).toLocaleString('en-IN') : 'Date Unknown';
+
       const linkHtml = req.reference_link && req.reference_link !== "None provided" && req.reference_link !== ""
         ? `<a href="${req.reference_link}" target="_blank">View Attached Files (Drive)</a>`
         : `<span style="color:var(--text-muted)">No files attached</span>`;
@@ -703,6 +720,7 @@ async function fetchAdminRequests() {
              <span class="status-badge ${badgeClass}" style="margin:0">${req.status}</span>
           </div>
 
+          <span class="timestamp">Ordered: ${dateStr}</span>
           <p><strong>Client:</strong> ${req.user_email}</p>
           <p><strong>Phone:</strong> ${req.phone}</p>
           <p style="margin-top: 5px;"><strong>Details:</strong><br>${req.details.replace(/\n/g, '<br>')}</p>
@@ -724,7 +742,7 @@ async function fetchAdminRequests() {
                 </select>
              </div>
 
-             <input type="number" id="price_${req.id}" value="${req.price || 0}" step="0.01" class="admin-input" placeholder="Price ($)">
+             <input type="number" id="price_${req.id}" value="${req.price || 0}" step="1" class="admin-input" placeholder="Price (₹)">
              
              <textarea id="link_${req.id}" class="admin-input" rows="2" placeholder="Paste Completed Drive Links here...">${req.completed_link || ''}</textarea>
 
@@ -769,6 +787,8 @@ document.getElementById('orderHistoryBtn').addEventListener('click', () => {
 
       list.innerHTML = '';
       myReqs.forEach(req => {
+        const dateStr = req.created_at ? new Date(req.created_at).toLocaleString('en-IN') : 'Date Unknown';
+        
         let badgeClass = "status-pending";
         if(req.status === "In Progress") badgeClass = "status-progress";
         if(req.status === "Completed") badgeClass = "status-completed";
@@ -776,7 +796,7 @@ document.getElementById('orderHistoryBtn').addEventListener('click', () => {
         let actionHtml = '';
         let imagePreviewHtml = req.completed_image ? `<img src="${req.completed_image}" style="width:100%; max-height:220px; object-fit:cover; border-radius:8px; margin-bottom:10px; border:1px solid var(--border);">` : '';
         
-        const waPayText = encodeURIComponent(`Hello! I want to pay for my CAD order.\nEmail: ${currentUser.email}\nOrder Details: ${req.details}\nTotal: $${req.price}`);
+        const waPayText = encodeURIComponent(`Hello! I want to pay for my CAD order.\nEmail: ${currentUser.email}\nOrder Details: ${req.details}\nTotal: ₹${req.price}`);
         const waPayLink = `https://wa.me/919446308229?text=${waPayText}`;
 
         const waDiscussText = encodeURIComponent(`Hello! I'd like to discuss my CAD request.\nEmail: ${currentUser.email}\nOrder Details: ${req.details}`);
@@ -796,7 +816,7 @@ document.getElementById('orderHistoryBtn').addEventListener('click', () => {
            actionHtml = `
              ${imagePreviewHtml}
              <div style="margin-top:8px; padding:10px; background:rgba(245, 158, 11, 0.1); border:1px solid #f59e0b; border-radius:6px;">
-                <p style="color:#f59e0b; font-weight:bold; margin-bottom:4px;">⚠️ Pending Payment: $${req.price}</p>
+                <p style="color:#f59e0b; font-weight:bold; margin-bottom:4px;">⚠️ Pending Payment: ₹${req.price}</p>
                 <a href="${waPayLink}" target="_blank" class="btn-small" style="background:#f59e0b; display:inline-block; margin-top:4px; margin-right:8px; text-decoration:none;">Pay via WhatsApp</a>
              </div>
              ${discussBtn}
@@ -811,7 +831,10 @@ document.getElementById('orderHistoryBtn').addEventListener('click', () => {
 
         list.innerHTML += `
           <div class="admin-req-card">
-            <span class="status-badge ${badgeClass}">${req.status}</span>
+            <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+              <span class="status-badge ${badgeClass}" style="margin-bottom:0;">${req.status}</span>
+              <span style="font-size:0.75rem; color:var(--text-muted); font-style:italic;">${dateStr}</span>
+            </div>
             <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom: 4px; text-transform: uppercase; font-weight:700;">${req.req_type}</p>
             <p style="font-size: 0.9rem; margin-bottom: 8px;">${req.details.replace(/\n/g, '<br>')}</p>
             ${actionHtml}
@@ -859,7 +882,7 @@ function renderCart() {
         <div class="cart-item" style="display:flex; justify-content:space-between; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
           <span style="font-weight: 500;">${item.name}</span>
           <div>
-            <span style="color:var(--green-free); font-weight:bold;">$${item.price.toFixed(2)}</span>
+            <span style="color:var(--green-free); font-weight:bold;">₹${item.price.toFixed(2)}</span>
             <button onclick="removeFromCart(${index})" style="background:none; border:none; color:#ef4444; margin-left:12px; cursor:pointer; font-weight:bold;">X</button>
           </div>
         </div>
@@ -930,7 +953,7 @@ window.checkoutCart = async function() {
         updateCounters();
         document.getElementById('cartModal').classList.add('hidden');
         
-        const waText = encodeURIComponent(`Hello! I want to pay for my CAD order.\nEmail: ${safeEmail}\nItems: ${itemNames}\nTotal: $${total}`);
+        const waText = encodeURIComponent(`Hello! I want to pay for my CAD order.\nEmail: ${safeEmail}\nItems: ${itemNames}\nTotal: ₹${total}`);
         window.open(`https://wa.me/919446308229?text=${waText}`, '_blank');
         
         alert("Order placed! Complete your payment on WhatsApp. You can track this in your Order History.");
@@ -977,7 +1000,7 @@ function renderWishlist() {
           <div class="cart-item" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
             <span style="font-weight: 500;">${item.name}</span>
             <div>
-              <span style="color:var(--green-free); font-weight:bold; margin-right:10px;">$${item.price.toFixed(2)}</span>
+              <span style="color:var(--green-free); font-weight:bold; margin-right:10px;">₹${item.price.toFixed(2)}</span>
               <button onclick="addToCart('${item.id}', '${item.name}', ${item.price}, '${item.download_url}')" class="btn-small">To Cart</button>
               <button onclick="toggleWishlist('${item.id}', null, true)" style="background:none; border:none; color:#ef4444; margin-left:10px; cursor:pointer; font-weight:bold;">X</button>
             </div>
