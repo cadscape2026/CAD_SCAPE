@@ -33,7 +33,7 @@ function switchView(target) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// BULLETPROOF EVENT LISTENERS (Using Optional Chaining ?.)
+// BULLETPROOF EVENT LISTENERS 
 document.getElementById('logoHomeBtn')?.addEventListener('click', (e) => { e.preventDefault(); switchView('home'); });
 if(navs.market) navs.market.addEventListener('click', (e) => { e.preventDefault(); switchView('market'); });
 if(navs.requests) navs.requests.addEventListener('click', (e) => { e.preventDefault(); switchView('requests'); });
@@ -804,7 +804,7 @@ async function fetchAdminRequests() {
           <p style="margin-top: 5px;"><strong>Details:</strong><br>${req.details.replace(/\n/g, '<br>')}</p>
           <p style="margin-top: 10px;">${linkHtml}</p>
 
-          <div style="background:var(--bg-main); padding: 14px; border-radius: 8px; margin-top: 14px; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--border);">
+          <div style="background:var(--bg-dimmer); padding: 14px; border-radius: 8px; margin-top: 14px; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--border);">
              <label style="font-size:0.85rem; color:var(--text-muted);">Admin Controls (Price, Files, Image):</label>
              
              <div style="display:flex; gap: 10px;">
