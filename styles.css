@@ -6,7 +6,7 @@
 
 /* Default Theme: LIGHT MODE (APPLE GLASS) */
 body.light-mode {
-  --bg-dimmer: rgba(240, 244, 248, 0.55); 
+  --bg-dimmer: rgba(240, 244, 248, 0.4); 
   --bg-card: rgba(255, 255, 255, 0.65); 
   --bg-nav: rgba(255, 255, 255, 0.75); 
   --bg-input: rgba(255, 255, 255, 0.55);
@@ -15,13 +15,13 @@ body.light-mode {
   --border: rgba(15, 23, 42, 0.1); 
   --glass-border: rgba(255, 255, 255, 0.9); 
   --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-  --video-op: 0.7; 
-  --video-filter: grayscale(10%);
+  --video-op: 0.9; 
+  --video-filter: grayscale(0%);
 }
 
 /* Optional Theme: DARK MODE (APPLE GLASS) */
 body.dark-mode {
-  --bg-dimmer: rgba(5, 8, 15, 0.75); 
+  --bg-dimmer: rgba(5, 8, 15, 0.6); 
   --bg-card: rgba(20, 26, 35, 0.45); 
   --bg-nav: rgba(5, 8, 15, 0.75); 
   --bg-input: rgba(0, 0, 0, 0.35);
@@ -30,8 +30,8 @@ body.dark-mode {
   --border: rgba(255, 255, 255, 0.08);
   --glass-border: rgba(255, 255, 255, 0.12); 
   --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-  --video-op: 0.35; 
-  --video-filter: grayscale(30%);
+  --video-op: 0.65; 
+  --video-filter: grayscale(10%);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
@@ -65,6 +65,7 @@ body { background-color: var(--bg-dimmer); color: var(--text-main); transition: 
   box-shadow: var(--shadow);
 }
 
+
 /* NAVBAR & LOGO */
 .navbar {
   display: flex; justify-content: space-between; align-items: center;
@@ -78,8 +79,6 @@ body { background-color: var(--bg-dimmer); color: var(--text-main); transition: 
 }
 .logo { display: flex; align-items: center; text-decoration: none; cursor: pointer; }
 .logo-img { height: 32px; transition: transform 0.3s ease; }
-
-/* THIS SPECIFIC LINE DELETES THE WHITE BOX AROUND THE LOGO */
 body.light-mode .logo-img { mix-blend-mode: darken; }
 .logo:hover .logo-img { transform: scale(1.05); }
 
@@ -118,7 +117,16 @@ body.light-mode .logo-img { mix-blend-mode: darken; }
 .sticky-hero { position: sticky; top: 0; left: 0; width: 100%; height: 100vh; display: flex; align-items: center; overflow: hidden; }
 
 .hero-3d-container { position: absolute; top: 0; right: 0; width: 65%; height: 100%; z-index: 5; }
-.hero-3d-container model-viewer { width: 100%; height: 100%; background: transparent; outline: none; --poster-color: transparent; }
+
+/* THIS STRICT RULE FIXES THE GREY BOX AROUND THE ANIMATION */
+.hero-3d-container model-viewer { 
+  width: 100%; 
+  height: 100%; 
+  background-color: transparent !important; 
+  outline: none !important; 
+  border: none !important;
+  --poster-color: transparent; 
+}
 
 .hero-content-left { position: absolute; top: 50%; left: 8%; transform: translateY(-50%); z-index: 10; max-width: 500px; text-align: left; transition: opacity 0.1s linear, transform 0.1s linear; }
 .hero-badge { display: inline-block; background: rgba(0, 132, 255, 0.15); border: 1px solid rgba(0, 132, 255, 0.3); color: var(--blue-primary); padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 800; letter-spacing: 1px; margin-bottom: 1.5rem; backdrop-filter: blur(4px); }
@@ -182,7 +190,7 @@ body.light-mode .logo-img { mix-blend-mode: darken; }
   border-color: var(--blue-primary); background: var(--bg-card); 
 }
 
-/* NEW ADMIN GRID FOR REQUESTS */
+/* ADMIN GRID */
 .requests-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; align-items: start; }
 .admin-req-card { padding: 1.25rem; border-radius: 10px; }
 .admin-req-card p { margin-bottom: 6px; font-size: 0.9rem; }
@@ -208,7 +216,7 @@ body.light-mode .logo-img { mix-blend-mode: darken; }
 .status-progress { background: rgba(0, 132, 255, 0.15); color: var(--blue-primary); border: 1px solid rgba(0, 132, 255, 0.3); }
 .status-completed { background: rgba(34, 197, 94, 0.15); color: var(--green-free); border: 1px solid rgba(34, 197, 94, 0.3); }
 
-/* 3D Model Viewer Styles */
+/* GLOBAL 3D Model Viewer Styles (Popups only) */
 model-viewer { width: 100%; height: 420px; background-color: var(--bg-input); border-radius: 8px; margin-bottom: 12px; outline: none; }
 .view-toggles { display: flex; gap: 10px; }
 .view-toggles .btn-small { background: var(--bg-input); color: var(--text-muted); border: 1px solid var(--border); box-shadow: none;}
