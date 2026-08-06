@@ -827,7 +827,7 @@ async function fetchAdminRequests() {
              <div style="border: 1px dashed var(--border); padding: 10px; border-radius: 6px; text-align: center; margin-top: 4px;">
                  <label style="cursor: pointer; color: var(--blue-primary); font-size: 0.85rem; display: block;">
                      📷 Upload Finished Preview Image
-                     <input type="file" accept="image/*" class="hidden" onchange="encodeRequestImage(this, '${req.id}')">
+                     <input type="file" accept="image/*" class="hidden drop-zone__input" onchange="encodeRequestImage(this, '${req.id}')">
                  </label>
                  <img id="preview_${req.id}" src="${req.completed_image || ''}" class="${req.completed_image ? '' : 'hidden'}" style="max-width: 100%; height: 120px; object-fit: cover; border-radius: 6px; margin-top: 8px;">
              </div>
