@@ -3,22 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CAD SCAPE | Precision Engineering Models</title>
+  <title>CAD SCAPE | Precision Engineering Platform</title>
   <link rel="stylesheet" href="styles.css">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Google's 3D Model Viewer Engine -->
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
 </head>
-<body class="dark-mode">
+<body class="light-mode">
 
   <!-- Navigation Bar -->
   <header class="navbar">
     <a href="#" id="logoHomeBtn" class="logo">
-      <img src="logo_4.png" alt="CAD SCAPE" class="logo-img">
+      <img id="mainLogoImg" src="logo_light.png" alt="CAD SCAPE" class="logo-img" onerror="this.onerror=null; this.src='logo_4.png';">
     </a>
 
-    <!-- Center Nav (Hidden on Mobile) -->
     <nav class="main-nav">
-      <a href="#" id="navMarket">Store</a>
-      <a href="#" id="navRequests">Design Requests</a>
+      <a href="#" id="navMarket">Store & Models</a>
+      <a href="#" id="navRequests">Custom CAD Requests</a>
       <a href="#" id="navAdmin" class="hidden">Admin Console</a>
     </nav>
 
@@ -32,12 +33,11 @@
         </svg>
         Sign in
       </button>
-
       <button id="menuBtn" class="icon-btn">☰</button>
     </div>
   </header>
 
-  <!-- Sidebar -->
+  <!-- Sidebar (Hamburger Menu) -->
   <div id="sidebarOverlay" class="sidebar-overlay hidden"></div>
   <aside id="sidebar" class="sidebar">
     <div class="sidebar-header">
@@ -53,7 +53,7 @@
       </div>
       <div id="sidebarGuestInfo" class="sidebar-user">
         <h4>Guest User</h4>
-        <p style="font-size: 0.85rem; color: var(--text-muted);">Sign in to save files.</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Sign in to save files & order models.</p>
       </div>
 
       <div class="sidebar-menu">
@@ -65,38 +65,34 @@
           <hr style="border-color: var(--border); margin: 15px 0;">
         </div>
 
-        <button id="themeToggleBtn" class="sidebar-link">☀️ Toggle Light/Dark Mode</button>
-        <button id="orderHistoryBtn" class="sidebar-link">📦 Order History</button>
+        <button id="themeToggleBtn" class="sidebar-link">🌙 Toggle Dark Mode</button>
+        <button id="orderHistoryBtn" class="sidebar-link">📦 Order & Request History</button>
         <button id="logoutBtn" class="sidebar-link text-red hidden">🚪 Sign Out</button>
       </div>
     </div>
   </aside>
 
-  <!-- VIEW: HOME -->
+  <!-- VIEW: HOME WITH SCROLL ANIMATION -->
   <section id="viewHome" class="view-section active">
     <div class="hero">
-      <video class="hero-video" autoplay loop muted playsinline>
-        <source src="background-video.mp4" type="video/mp4">
-      </video>
-      <div class="hero-overlay"></div>
-      
+      <div class="hero-grid-pattern"></div>
       <div class="hero-content">
-        <span class="hero-badge">ENGINEERED PRECISION & ATMOSPHERIC DESIGN</span>
-        <h1>Precision CAD Models & Industrial Parts</h1>
-        <p>Production-ready SolidWorks assemblies, parametric parts, and cinematic 3D visual assets crafted<br>for aerospace, robotics, and industrial engineering.</p>
+        <span class="hero-badge">PRECISION ENGINEERING & 3D ASSETS</span>
+        <h1>Industrial CAD Models & Custom Assemblies</h1>
+        <p>Production-ready SolidWorks, STEP, and parametric assemblies crafted for industrial robotics, aerospace, and mechanical engineering.</p>
         <div class="hero-buttons">
-          <button id="heroBrowseBtn" class="btn-blue-large">Enter Store</button>
+          <button id="heroBrowseBtn" class="btn-blue-large">Explore Library</button>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- VIEW: MARKETPLACE -->
+  <!-- VIEW: MARKETPLACE / STORE -->
   <section id="viewMarketplace" class="view-section hidden">
     <div class="store-toolbar">
       <div class="container toolbar-inner">
-        <h2 class="store-title">FEATURED & RECOMMENDED</h2>
-        <input type="text" id="searchInput" class="search-bar" placeholder="Search the store...">
+        <h2>FEATURED & RECOMMENDED</h2>
+        <input type="text" id="searchInput" class="search-bar" placeholder="Search models or STEP files...">
       </div>
     </div>
 
@@ -105,15 +101,15 @@
         <div class="carousel-track" id="carouselTrack"></div>
       </div>
 
-      <h2 style="margin: 40px 0 20px 0; border-bottom: 1px solid var(--border); padding-bottom: 10px;">All Products</h2>
+      <h2 style="margin: 36px 0 18px 0; border-bottom: 1px solid var(--border); padding-bottom: 10px;">All CAD Models</h2>
       <div class="grid" id="productGrid"></div>
     </div>
   </section>
 
   <!-- VIEW: CUSTOM REQUESTS -->
   <section id="viewRequests" class="view-section hidden container">
-    <div class="form-card" style="margin-top: 50px;">
-      <h2>Request Custom CAD Assembly</h2>
+    <div class="form-card" style="margin-top: 40px;">
+      <h2>Request Custom CAD Build</h2>
       <p style="color:var(--text-muted); margin-bottom: 20px;">Describe your engineering requirements. We will review and provide a quote.</p>
       
       <form id="requestForm">
@@ -127,39 +123,67 @@
 
   <!-- VIEW: ADMIN CONSOLE -->
   <section id="viewAdmin" class="view-section hidden container">
-    
-    <div style="display:flex; justify-content:center; flex-wrap: wrap; gap: 20px; margin-top:40px; margin-bottom: 20px;">
+    <div style="display:flex; justify-content:center; flex-wrap: wrap; gap: 16px; margin-top:30px; margin-bottom: 20px;">
       <button id="btnShowUpload" class="btn-blue-large">Publish New Product</button>
       <button id="btnShowRequests" class="btn-glass-large">View Incoming Requests</button>
     </div>
 
     <!-- Upload Section -->
     <div id="adminUploadSection" class="form-card">
-      <h2>Publish New Product</h2>
-      
+      <h2>Publish New CAD Product</h2>
       <form id="uploadForm">
         <input type="text" id="modelName" placeholder="Product Name" required>
         <textarea id="modelDesc" rows="3" placeholder="Product Description..." required></textarea>
         <input type="number" id="modelPrice" step="0.01" value="0" placeholder="Price (0 for Free)" required>
         
         <div class="drop-zone" id="uploadDropZone">
-          <span class="drop-zone__prompt">Drag & Drop Image Here or Click to Browse</span>
+          <span class="drop-zone__prompt">Drag & Drop Main Thumbnail Image</span>
           <input type="file" id="modelImageFile" class="drop-zone__input" accept="image/*">
         </div>
 
-        <input type="url" id="modelFile" placeholder="Google Drive Link for CAD Download" required>
+        <input type="url" id="modelFile" placeholder="Drive Link to CAD Files (STEP, SLDPRT)" required>
+        <!-- NEW 3D LINK FIELD -->
+        <input type="url" id="model3dUrl" placeholder="Direct Link to .GLB file for 3D Preview (Optional)">
+        
         <button type="button" id="uploadBtn" class="btn-blue-large" style="width:100%" onclick="submitNewProduct()">Upload to Database</button>
       </form>
     </div>
 
     <!-- Requests Review Section -->
     <div id="adminRequestsSection" class="hidden" style="max-width: 800px; margin: 0 auto;">
-      <h2 style="margin-bottom: 20px;">Client Custom Requests</h2>
+      <h2 style="margin-bottom: 20px;">Client Custom Requests & Orders</h2>
       <div id="adminRequestsList"></div>
     </div>
   </section>
 
   <!-- MODALS -->
+
+  <!-- 1. MULTI-IMAGE & 3D LIGHTBOX MODAL -->
+  <div id="lightboxModal" class="modal-overlay hidden">
+    <div class="modal-content lightbox-modal">
+      <div class="modal-header">
+        <h3 id="lightboxTitle">Model Preview</h3>
+        <div class="view-toggles hidden" id="lightboxToggles">
+          <button class="btn-small active" id="btnViewImg" onclick="toggleLightboxView('img')">2D Image</button>
+          <button class="btn-small" id="btnView3D" onclick="toggleLightboxView('3d')">3D Viewer</button>
+        </div>
+        <button class="close-modal" onclick="document.getElementById('lightboxModal').classList.add('hidden')">&times;</button>
+      </div>
+      
+      <!-- 2D Image View -->
+      <div id="lightboxImgContainer">
+        <img id="lightboxMainImg" class="lightbox-main-img" src="" alt="Model Preview">
+      </div>
+      
+      <!-- 3D Interactive View -->
+      <div id="lightbox3DContainer" class="hidden">
+        <model-viewer id="lightbox3DViewer" alt="3D Interactive Model" src="" auto-rotate camera-controls shadow-intensity="1"></model-viewer>
+      </div>
+      
+    </div>
+  </div>
+
+  <!-- 2. CART MODAL -->
   <div id="cartModal" class="modal-overlay hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -174,6 +198,7 @@
     </div>
   </div>
 
+  <!-- 3. WISHLIST MODAL -->
   <div id="wishlistModal" class="modal-overlay hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -184,6 +209,7 @@
     </div>
   </div>
 
+  <!-- 4. COMMENTS MODAL -->
   <div id="commentsModal" class="modal-overlay hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -198,6 +224,7 @@
     </div>
   </div>
 
+  <!-- 5. EDIT PRODUCT MODAL -->
   <div id="editModal" class="modal-overlay hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -209,26 +236,28 @@
         <textarea id="editModelDesc" rows="3" placeholder="Product Description..." required></textarea>
         <input type="number" id="editModelPrice" step="0.01" placeholder="Price (0 for Free)" required>
         <div class="drop-zone" id="editDropZone">
-          <span class="drop-zone__prompt">Drag & Drop New Image Here or Click to Browse</span>
+          <span class="drop-zone__prompt">Drag & Drop New Image</span>
           <input type="file" id="editModelImageFile" class="drop-zone__input" accept="image/*">
         </div>
-        <input type="url" id="editModelFile" placeholder="Google Drive Link for CAD Download" required>
+        <input type="url" id="editModelFile" placeholder="Drive Link to CAD Files (STEP, SLDPRT)" required>
+        <!-- NEW 3D LINK FIELD -->
+        <input type="url" id="editModel3dUrl" placeholder="Direct Link to .GLB file for 3D Preview (Optional)">
         <button type="button" id="editBtn" class="btn-blue-large" style="width:100%" onclick="submitEditProduct()">Save Changes</button>
       </form>
     </div>
   </div>
 
+  <!-- 6. ORDER HISTORY MODAL -->
   <div id="ordersModal" class="modal-overlay hidden">
     <div class="modal-content">
       <div class="modal-header">
         <h3>Order & Request History</h3>
         <button class="close-modal" onclick="document.getElementById('ordersModal').classList.add('hidden')">&times;</button>
       </div>
-      <div id="ordersList" style="max-height: 600px; overflow-y: auto; margin-top: 15px;"></div>
+      <div id="ordersList" style="max-height: 550px; overflow-y: auto; margin-top: 15px;"></div>
     </div>
   </div>
 
-  <!-- CACHE BUSTER ADDED HERE -->
-  <script src="app.js?v=ultimate"></script>
+  <script src="app.js?v=grabcad_3d"></script>
 </body>
 </html>
