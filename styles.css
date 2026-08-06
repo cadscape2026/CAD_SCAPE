@@ -191,3 +191,8 @@ body.light-mode .hero-overlay { background: rgba(255, 255, 255, 0.7); }
   #viewAdmin > div:first-child { flex-direction: column; gap: 10px; }
   #btnShowUpload, #btnShowRequests { width: 100%; }
 }
+/* 3D Model Viewer Styles */
+model-viewer { width: 100%; height: 420px; background-color: var(--bg-main); border-radius: 8px; margin-bottom: 12px; outline: none; }
+.view-toggles { display: flex; gap: 10px; }
+.view-toggles .btn-small { background: var(--bg-main); color: var(--text-muted); border: 1px solid var(--border); box-shadow: none;}
+.view-toggles .btn-small.active { background: var(--blue-primary); color: #fff; border-color: var(--blue-primary); }
