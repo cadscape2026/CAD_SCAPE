@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CAD SCAPE | Precision Engineering Platform</title>
   
-  <!-- NEW: This replaces the generic globe with your logo! -->
   <link rel="icon" type="image/png" href="logo_4.png">
   
   <link rel="stylesheet" href="styles.css">
@@ -115,23 +114,22 @@
         
         <!-- Interactive 3D Model Layer (Floating on the right) -->
         <div class="hero-3d-container">
-          
-          <!-- NEW: Put your animated aircraft file link right here -->
+          <!-- PUBLIC ROBOTICS ANIMATION LINK INCLUDED -->
           <model-viewer 
             id="heroScrubModel" 
-            src="aircraft.glb" 
+            src="https://modelviewer.dev/shared-assets/models/RobotExpressive.glb" 
             camera-controls 
             shadow-intensity="1" 
             interaction-prompt="none"
             camera-orbit="0deg 75deg 105%"
-            alt="3D Interactive Aircraft Assembly">
+            alt="3D Interactive Assembly">
           </model-viewer>
         </div>
 
         <div class="hero-content-left" id="heroTextOverlay">
           <span class="hero-badge">PRECISION ENGINEERING</span>
           <h1 class="hero-title">Industrial CAD & Custom Assemblies</h1>
-          <p class="hero-subtitle">Scroll down to assemble the aircraft model. Click and drag to rotate it.</p>
+          <p class="hero-subtitle">Scroll down to assemble the model. Click and drag to rotate it.</p>
           <div style="display:flex; gap:15px; margin-top:30px;">
             <button class="btn-blue-large" onclick="switchView('market')">Explore Library</button>
             <button class="btn-glass-large" onclick="switchView('requests')">Custom Design</button>
@@ -323,6 +321,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=favicon_fix"></script>
+  <!-- CACHE BUSTER UPDATE -->
+  <script src="app.js?v=logo_fix"></script>
 </body>
 </html>
