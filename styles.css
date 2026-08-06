@@ -65,7 +65,6 @@ body { background-color: var(--bg-dimmer); color: var(--text-main); transition: 
   box-shadow: var(--shadow);
 }
 
-
 /* NAVBAR & LOGO */
 .navbar {
   display: flex; justify-content: space-between; align-items: center;
@@ -91,8 +90,10 @@ body.light-mode .logo-img { mix-blend-mode: darken; }
 .main-nav a:hover, .main-nav a.active { color: var(--blue-primary); border-bottom-color: var(--blue-primary); }
 
 .nav-actions { display: flex; align-items: center; gap: 16px; }
-.nav-link { background: none; border: none; color: var(--text-main); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.nav-link { display: flex; align-items: center; gap: 6px; background: none; border: none; color: var(--text-main); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.nav-link svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .nav-link:hover { color: var(--blue-primary); }
+
 .g-signin-btn { display: flex; align-items: center; gap: 8px; background-color: #1e293b; color: #ffffff; border: none; border-radius: 20px; padding: 8px 16px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
 .g-signin-btn:hover { background-color: var(--blue-primary); }
 .icon-btn { background: none; border: none; font-size: 1.4rem; color: var(--text-main); cursor: pointer; }
@@ -117,8 +118,6 @@ body.light-mode .logo-img { mix-blend-mode: darken; }
 .sticky-hero { position: sticky; top: 0; left: 0; width: 100%; height: 100vh; display: flex; align-items: center; overflow: hidden; }
 
 .hero-3d-container { position: absolute; top: 0; right: 0; width: 65%; height: 100%; z-index: 5; }
-
-/* THIS STRICT RULE FIXES THE GREY BOX AROUND THE ANIMATION */
 .hero-3d-container model-viewer { 
   width: 100%; 
   height: 100%; 
@@ -132,6 +131,7 @@ body.light-mode .logo-img { mix-blend-mode: darken; }
 .hero-badge { display: inline-block; background: rgba(0, 132, 255, 0.15); border: 1px solid rgba(0, 132, 255, 0.3); color: var(--blue-primary); padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 800; letter-spacing: 1px; margin-bottom: 1.5rem; backdrop-filter: blur(4px); }
 .hero-title { font-size: 3.8rem; font-weight: 800; line-height: 1.1; margin-bottom: 1.2rem; text-shadow: 0 4px 15px rgba(0,0,0,0.15); color: var(--text-main); }
 .hero-subtitle { font-size: 1.15rem; color: var(--text-main); font-weight: 600; opacity: 0.9; text-shadow: 0 2px 8px rgba(0,0,0,0.2); margin-bottom: 2rem;}
+.hero-btn-group { display: flex; gap: 15px; }
 
 .home-section { position: relative; z-index: 20; background: transparent; padding: 80px 20px; }
 
@@ -222,10 +222,31 @@ model-viewer { width: 100%; height: 420px; background-color: var(--bg-input); bo
 .view-toggles .btn-small { background: var(--bg-input); color: var(--text-muted); border: 1px solid var(--border); box-shadow: none;}
 .view-toggles .btn-small.active { background: var(--blue-primary); color: #fff; border-color: var(--blue-primary); }
 
-/* Mobile Adjustments */
-@media (max-width: 900px) {
-  .hero-3d-container { width: 100%; opacity: 0.4; }
-  .hero-content-left { left: 50%; transform: translate(-50%, -50%); text-align: center; width: 90%; }
-  .hero-title { font-size: 2.8rem; }
-  .hero-content-left div { justify-content: center; }
+/* --- MOBILE RESPONSIVENESS ENGINE --- */
+@media (max-width: 850px) {
+  /* Navbar Adjustments */
+  .main-nav { display: none; }
+  .nav-text { display: none; } /* Hides "Cart", "Wishlist", "Sign In" text, leaving only icons */
+  .nav-actions { gap: 10px; }
+  .g-signin-btn { padding: 8px; border-radius: 50%; } /* Makes sign-in button a perfect circle icon */
+  
+  /* Hero Section Adjustments */
+  .hero-content-left { left: 5%; width: 90%; top: 50%; transform: translateY(-50%); text-align: center; }
+  .hero-title { font-size: 2.2rem; }
+  .hero-subtitle { font-size: 1rem; }
+  .hero-3d-container { width: 100%; opacity: 0.25; } /* Dims the 3D model heavily so text is readable over it */
+  .hero-btn-group { flex-direction: column; gap: 12px; align-items: stretch; }
+  
+  /* General Layout */
+  .home-section { padding: 40px 15px; }
+  .glass-panel { padding: 20px; }
+  .toolbar-inner { flex-direction: column; align-items: stretch; gap: 15px; }
+  .search-bar { width: 100%; }
+  
+  /* Admin & Grid adjustments */
+  .requests-grid { grid-template-columns: 1fr; } /* Stacks all admin cards in 1 column */
+  .admin-req-card { padding: 1rem; }
+  
+  /* Modals */
+  .modal-content { padding: 1.5rem; width: 95%; }
 }
