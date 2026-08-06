@@ -7,6 +7,7 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -40,7 +41,7 @@ def format_product(doc):
         "price": doc.get("price", 0.0),
         "image_url": doc.get("image_url", ""),
         "download_url": doc.get("download_url", ""),
-        "model_3d_url": doc.get("model_3d_url", ""), # NEW 3D URL Field
+        "model_3d_url": doc.get("model_3d_url", ""),
         "comments": comments
     }
 
@@ -61,7 +62,7 @@ def add_product():
         "price": float(data.get('price', 0)),
         "image_url": data.get('image_url', ''),
         "download_url": data.get('download_url', ''),
-        "model_3d_url": data.get('model_3d_url', '') # Saves 3D Preview Link
+        "model_3d_url": data.get('model_3d_url', '') 
     }
     products_collection.insert_one(new_product)
     return jsonify({"message": "Product added successfully"}), 201
@@ -76,7 +77,7 @@ def update_product(product_id):
             "price": float(data.get('price', 0)),
             "image_url": data.get('image_url', ''),
             "download_url": data.get('download_url', ''),
-            "model_3d_url": data.get('model_3d_url', '') # Updates 3D Preview Link
+            "model_3d_url": data.get('model_3d_url', '')
         }
         products_collection.update_one({"_id": ObjectId(product_id)}, {"$set": updated_data})
         return jsonify({"message": "Product updated successfully"}), 200
@@ -118,7 +119,8 @@ def get_requests():
             "price": doc.get("price", 0.0),
             "payment_status": doc.get("payment_status", "Unpaid"),
             "completed_link": doc.get("completed_link", ""),
-            "completed_image": doc.get("completed_image", "") 
+            "completed_image": doc.get("completed_image", ""),
+            "created_at": doc.get("created_at", "") # Fetches timestamp
         })
     return jsonify(reqs[::-1]), 200
 
@@ -157,7 +159,8 @@ def submit_request():
             "price": float(data.get('price', 0.0)),
             "payment_status": data.get('payment_status', 'Unpaid'),
             "completed_link": data.get('completed_link', ''),
-            "completed_image": ""
+            "completed_image": "",
+            "created_at": datetime.datetime.utcnow().isoformat() # Timestamps the exact second
         }
         
         requests_collection.insert_one(new_req)
