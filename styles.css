@@ -4,43 +4,57 @@
   --grabcad-red: #da291c;
 }
 
-/* Default Theme: LIGHT MODE (APPLE GLASS STYLE) */
+/* Default Theme: LIGHT MODE (APPLE GLASS) */
 body.light-mode {
-  --bg-main: #eef2f6;
-  --bg-card: rgba(255, 255, 255, 0.65); /* Semi-transparent white */
+  --bg-dimmer: rgba(240, 244, 248, 0.55); /* Light frost to let video through */
+  --bg-card: rgba(255, 255, 255, 0.65); 
   --bg-nav: rgba(255, 255, 255, 0.75); 
+  --bg-input: rgba(255, 255, 255, 0.55);
   --text-main: #0f172a;
-  --text-muted: #64748b;
+  --text-muted: #475569;
   --border: rgba(15, 23, 42, 0.1); 
-  --glass-border: rgba(255, 255, 255, 0.8); /* White rim highlight */
-  --shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
-  --dimmer-bg: rgba(238, 242, 246, 0.8); /* Light frost over video */
+  --glass-border: rgba(255, 255, 255, 0.9); 
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  --video-op: 0.7; /* Bright video in light mode */
+  --video-filter: grayscale(10%);
 }
 
-/* Optional Theme: DARK MODE (APPLE GLASS STYLE) */
+/* Optional Theme: DARK MODE (APPLE GLASS) */
 body.dark-mode {
-  --bg-main: #020617;
-  --bg-card: rgba(15, 23, 42, 0.55); /* Semi-transparent dark blue/grey */
-  --bg-nav: rgba(2, 6, 23, 0.75); 
+  --bg-dimmer: rgba(5, 8, 15, 0.75); /* Dark frost */
+  --bg-card: rgba(20, 26, 35, 0.45); 
+  --bg-nav: rgba(5, 8, 15, 0.75); 
+  --bg-input: rgba(0, 0, 0, 0.35);
   --text-main: #f8fafc;
   --text-muted: #94a3b8;
   --border: rgba(255, 255, 255, 0.08);
-  --glass-border: rgba(255, 255, 255, 0.1); /* Subtle light rim */
+  --glass-border: rgba(255, 255, 255, 0.12); 
   --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-  --dimmer-bg: rgba(2, 6, 23, 0.94); /* Extremely dark frost over video */
+  --video-op: 0.35; /* Increased opacity so video is highly visible in dark mode! */
+  --video-filter: grayscale(30%);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
-body { background-color: var(--bg-main); color: var(--text-main); transition: background-color 0.3s, color 0.3s; }
+body { background-color: var(--bg-dimmer); color: var(--text-main); transition: color 0.3s; min-height: 100vh; }
 .hidden { display: none !important; }
 .container { max-width: 1300px; margin: 0 auto; padding: 0 1.5rem; }
 
-/* --- FULL PAGE BACKGROUND VIDEO & DIMMER --- */
-.hero-bg-video { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -2; pointer-events: none; transition: opacity 0.5s, filter 0.5s; opacity: 0.6; }
-body.dark-mode .hero-bg-video { opacity: 0.15; filter: grayscale(70%); } /* Dims and desaturates video heavily in dark mode */
+/* --- UNIVERSAL BACKGROUND VIDEO & DIMMER --- */
+.app-bg-video {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover;
+  z-index: -2; pointer-events: none;
+  transition: opacity 0.4s, filter 0.4s;
+  opacity: var(--video-op);
+  filter: var(--video-filter);
+}
 
-.home-overlay-dimmer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--dimmer-bg); z-index: -1; pointer-events: none; transition: background 0.3s; }
-
+.app-bg-dimmer {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: var(--bg-dimmer); z-index: -1; pointer-events: none;
+  backdrop-filter: blur(12px); /* Base blur for the entire app */
+  -webkit-backdrop-filter: blur(12px);
+  transition: background 0.4s;
+}
 
 /* --- UNIVERSAL GLASSMORPHISM CLASS --- */
 .card, .form-card, .sidebar, .modal-content, .admin-req-card, .glass-panel {
@@ -57,8 +71,8 @@ body.dark-mode .hero-bg-video { opacity: 0.15; filter: grayscale(70%); } /* Dims
   display: flex; justify-content: space-between; align-items: center;
   padding: 0.8rem 2rem; 
   background: var(--bg-nav); 
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
   border-bottom: 1px solid var(--border); 
   position: sticky; top: 0; z-index: 1000;
   box-shadow: var(--shadow);
@@ -97,7 +111,7 @@ body.dark-mode .hero-bg-video { opacity: 0.15; filter: grayscale(70%); } /* Dims
 .sidebar-link svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .text-red { color: #ef4444 !important; }
 
-/* --- 3D SCROLLING HERO SECTION (APPLE STYLE) --- */
+/* --- 3D SCROLLING HERO SECTION --- */
 .scroll-track { height: 300vh; position: relative; width: 100%; }
 .sticky-hero { position: sticky; top: 0; left: 0; width: 100%; height: 100vh; display: flex; align-items: center; overflow: hidden; }
 
@@ -124,11 +138,10 @@ body.dark-mode .hero-bg-video { opacity: 0.15; filter: grayscale(70%); } /* Dims
 .btn-glass-large:hover { background: rgba(100,116,139,0.2); }
 
 /* STORE / MARKETPLACE */
-.store-toolbar { background: var(--bg-nav); padding: 16px 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; box-shadow: var(--shadow); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);}
+.store-toolbar { background: var(--bg-nav); padding: 16px 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; box-shadow: var(--shadow); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);}
 .toolbar-inner { display: flex; justify-content: space-between; align-items: center; }
-.search-bar { width: 320px; padding: 10px 16px; border-radius: 20px; border: 1px solid var(--border); background: rgba(0,0,0,0.05); color: var(--text-main); font-size: 0.9rem; outline: none; transition: 0.2s;}
+.search-bar { width: 320px; padding: 10px 16px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); font-size: 0.9rem; outline: none; transition: 0.2s; backdrop-filter: blur(10px);}
 .search-bar:focus { background: var(--bg-card); border-color: var(--blue-primary); box-shadow: 0 0 0 3px rgba(0, 132, 255, 0.2);}
-body.dark-mode .search-bar { background: rgba(0,0,0,0.3); }
 
 .carousel-container { width: 100%; height: 380px; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; position: relative; box-shadow: var(--shadow); }
 .carousel-track { display: flex; width: 100%; height: 100%; transition: transform 0.5s ease-in-out; }
@@ -154,22 +167,23 @@ body.dark-mode .search-bar { background: rgba(0,0,0,0.3); }
 .btn-small:hover { background: var(--blue-primary); }
 
 /* DRAG & DROP ZONE */
-.drop-zone { width: 100%; height: 120px; padding: 10px; display: flex; align-items: center; justify-content: center; text-align: center; border: 2px dashed var(--border); border-radius: 8px; cursor: pointer; color: var(--text-muted); margin-bottom: 15px; position: relative; background: rgba(0,0,0,0.03); transition: 0.2s;}
-body.dark-mode .drop-zone { background: rgba(255,255,255,0.03); }
+.drop-zone { width: 100%; height: 120px; padding: 10px; display: flex; align-items: center; justify-content: center; text-align: center; border: 2px dashed var(--border); border-radius: 8px; cursor: pointer; color: var(--text-muted); margin-bottom: 15px; position: relative; background: var(--bg-input); transition: 0.2s;}
 .drop-zone--over { border-color: var(--blue-primary); background: rgba(0, 132, 255, 0.1) !important; }
-.drop-zone__input { display: none !important; } /* Force hides the ugly default button */
+.drop-zone__input { display: none !important; } 
 .drop-zone__thumb { width: 100%; height: 100%; border-radius: 6px; background-size: cover; background-position: center; }
 
 /* FORMS, MODALS & STATUS BADGES */
 .form-card { padding: 2rem; border-radius: 12px; max-width: 650px; margin: 0 auto; }
+
+/* Make all text inputs heavily blurred, glassy objects */
 .form-card input, .form-card textarea, .admin-input, #newCommentText { 
   display: block; width: 100%; margin-bottom: 14px; padding: 12px; border-radius: 6px; border: 1px solid var(--border); 
-  background: rgba(255, 255, 255, 0.4); color: var(--text-main); font-family: inherit; outline: none; transition: 0.2s;
+  background: var(--bg-input); color: var(--text-main); font-family: inherit; outline: none; transition: 0.2s;
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
 }
-body.dark-mode .form-card input, body.dark-mode .form-card textarea, body.dark-mode .admin-input, body.dark-mode #newCommentText {
-  background: rgba(0, 0, 0, 0.3);
+.form-card input:focus, .form-card textarea:focus, .admin-input:focus, #newCommentText:focus { 
+  border-color: var(--blue-primary); background: var(--bg-card); 
 }
-.form-card input:focus, .form-card textarea:focus, .admin-input:focus { border-color: var(--blue-primary); background: var(--bg-card); }
 
 /* NEW ADMIN GRID FOR REQUESTS */
 .requests-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; align-items: start; }
@@ -198,14 +212,12 @@ body.dark-mode .form-card input, body.dark-mode .form-card textarea, body.dark-m
 .status-completed { background: rgba(34, 197, 94, 0.15); color: var(--green-free); border: 1px solid rgba(34, 197, 94, 0.3); }
 
 /* 3D Model Viewer Styles */
-model-viewer { width: 100%; height: 420px; background-color: rgba(0,0,0,0.03); border-radius: 8px; margin-bottom: 12px; outline: none; }
-body.dark-mode model-viewer { background-color: rgba(0,0,0,0.3); }
+model-viewer { width: 100%; height: 420px; background-color: var(--bg-input); border-radius: 8px; margin-bottom: 12px; outline: none; }
 .view-toggles { display: flex; gap: 10px; }
-.view-toggles .btn-small { background: rgba(0,0,0,0.05); color: var(--text-muted); border: 1px solid var(--border); box-shadow: none;}
-body.dark-mode .view-toggles .btn-small { background: rgba(0,0,0,0.3); }
+.view-toggles .btn-small { background: var(--bg-input); color: var(--text-muted); border: 1px solid var(--border); box-shadow: none;}
 .view-toggles .btn-small.active { background: var(--blue-primary); color: #fff; border-color: var(--blue-primary); }
 
-/* Mobile Adjustments for Left-Aligned Hero */
+/* Mobile Adjustments */
 @media (max-width: 900px) {
   .hero-3d-container { width: 100%; opacity: 0.4; }
   .hero-content-left { left: 50%; transform: translate(-50%, -50%); text-align: center; width: 90%; }
