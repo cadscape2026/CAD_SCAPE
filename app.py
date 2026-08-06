@@ -38,8 +38,9 @@ def format_product(doc):
         "name": doc.get("name"),
         "description": doc.get("description", ""),
         "price": doc.get("price", 0.0),
-        "image_url": doc.get("image_url"),
-        "download_url": doc.get("download_url"),
+        "image_url": doc.get("image_url", ""),
+        "download_url": doc.get("download_url", ""),
+        "model_3d_url": doc.get("model_3d_url", ""), # NEW 3D URL Field
         "comments": comments
     }
 
@@ -58,8 +59,9 @@ def add_product():
         "name": data.get('name'),
         "description": data.get('description', ''),
         "price": float(data.get('price', 0)),
-        "image_url": data.get('image_url'),
-        "download_url": data.get('download_url')
+        "image_url": data.get('image_url', ''),
+        "download_url": data.get('download_url', ''),
+        "model_3d_url": data.get('model_3d_url', '') # Saves 3D Preview Link
     }
     products_collection.insert_one(new_product)
     return jsonify({"message": "Product added successfully"}), 201
@@ -72,8 +74,9 @@ def update_product(product_id):
             "name": data.get('name'),
             "description": data.get('description', ''),
             "price": float(data.get('price', 0)),
-            "image_url": data.get('image_url'),
-            "download_url": data.get('download_url')
+            "image_url": data.get('image_url', ''),
+            "download_url": data.get('download_url', ''),
+            "model_3d_url": data.get('model_3d_url', '') # Updates 3D Preview Link
         }
         products_collection.update_one({"_id": ObjectId(product_id)}, {"$set": updated_data})
         return jsonify({"message": "Product updated successfully"}), 200
@@ -115,7 +118,7 @@ def get_requests():
             "price": doc.get("price", 0.0),
             "payment_status": doc.get("payment_status", "Unpaid"),
             "completed_link": doc.get("completed_link", ""),
-            "completed_image": doc.get("completed_image", "") # Allows images to be sent to frontend
+            "completed_image": doc.get("completed_image", "") 
         })
     return jsonify(reqs[::-1]), 200
 
@@ -130,7 +133,7 @@ def update_request_status(req_id):
         if 'payment_status' in data: update_fields['payment_status'] = data['payment_status']
         if 'price' in data: update_fields['price'] = float(data['price'])
         if 'completed_link' in data: update_fields['completed_link'] = data['completed_link']
-        if 'completed_image' in data: update_fields['completed_image'] = data['completed_image'] # Saves uploaded preview image
+        if 'completed_image' in data: update_fields['completed_image'] = data['completed_image'] 
 
         requests_collection.update_one({"_id": ObjectId(req_id)}, {"$set": update_fields})
         return jsonify({"message": "Order updated successfully"}), 200
@@ -165,16 +168,8 @@ def submit_request():
                 msg['From'] = ADMIN_EMAIL
                 msg['To'] = ADMIN_EMAIL
                 msg['Subject'] = "New Client Custom Build Request!"
-                
-                body = f"""You have a new client request for a custom build:
-Client Email: {new_req['user_email']}
-Phone/WhatsApp: {new_req['phone']}
-
-Requirements: 
-{new_req['details']}
-Reference/Drive Link: {new_req['reference_link']}"""
+                body = f"Client Email: {new_req['user_email']}\nPhone: {new_req['phone']}\nRequirements:\n{new_req['details']}\nLink: {new_req['reference_link']}"
                 msg.attach(MIMEText(body, 'plain'))
-                
                 server = smtplib.SMTP('smtp.gmail.com', 587)
                 server.starttls()
                 server.login(ADMIN_EMAIL, ADMIN_EMAIL_PASSWORD)
