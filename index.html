@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CAD SCAPE | Precision Engineering Platform</title>
   
   <link rel="icon" type="image/png" href="logo_4.png">
@@ -26,21 +26,29 @@
       <img id="mainLogoImg" src="logo_light.png" alt="CAD SCAPE" class="logo-img" onerror="this.onerror=null; this.src='logo_4.png';">
     </a>
 
+    <!-- Hidden on Mobile -->
     <nav class="main-nav">
       <a href="#" id="navMarket">Store & Models</a>
       <a href="#" id="navRequests">Custom CAD Requests</a>
       <a href="#" id="navAdmin" class="hidden">Admin Console</a>
     </nav>
 
+    <!-- Mobile-Responsive Action Buttons -->
     <div class="nav-actions">
-      <button id="wishlistBtn" class="nav-link">Wishlist (<span id="wishlistCount">0</span>)</button>
-      <button id="cartBtn" class="nav-link">Cart (<span id="cartCount">0</span>)</button>
+      <button id="wishlistBtn" class="nav-link">
+        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+        <span class="nav-text">Wishlist</span> (<span id="wishlistCount">0</span>)
+      </button>
+      <button id="cartBtn" class="nav-link">
+        <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        <span class="nav-text">Cart</span> (<span id="cartCount">0</span>)
+      </button>
       
       <button id="customLoginBtn" class="g-signin-btn">
         <svg viewBox="0 0 48 48" width="18px" height="18px">
           <path fill="#ffffff" d="M23.49,20.59v6.86h11.41c-0.47,2.94-3.52,8.6-11.41,8.6c-6.86,0-12.48-5.71-12.48-12.76s5.62-12.76,12.48-12.76 c3.9,0,6.52,1.67,8.02,3.1l5.4-5.4C33.4,4.92,28.91,3,23.49,3C12.72,3,4,11.72,4,22.5S12.72,42,23.49,42 c11.27,0,18.77-7.93,18.77-19.1c0-1.29-0.12-2.31-0.34-3.31H23.49z"></path>
         </svg>
-        Sign in
+        <span class="nav-text">Sign in</span>
       </button>
 
       <button id="menuBtn" class="icon-btn">☰</button>
@@ -114,8 +122,6 @@
         
         <!-- Interactive 3D Model Layer (Floating on the right) -->
         <div class="hero-3d-container">
-          
-          <!-- EAGER LOADING ADDED HERE TO LOAD THE 3D MODEL INSTANTLY -->
           <model-viewer 
             id="heroScrubModel" 
             src="snowflake.glb" 
@@ -133,7 +139,7 @@
           <span class="hero-badge">PRECISION ENGINEERING</span>
           <h1 class="hero-title">Industrial CAD & Custom Assemblies</h1>
           <p class="hero-subtitle">Scroll down to assemble the model. Click and drag to rotate it.</p>
-          <div style="display:flex; gap:15px; margin-top:30px;">
+          <div class="hero-btn-group">
             <button class="btn-blue-large" onclick="switchView('market')">Explore Library</button>
             <button class="btn-glass-large" onclick="switchView('requests')">Custom Design</button>
           </div>
@@ -324,6 +330,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=speed_fix"></script>
+  <!-- CACHE BUSTER UPDATE -->
+  <script src="app.js?v=responsive_engine"></script>
 </body>
 </html>
