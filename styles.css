@@ -6,7 +6,7 @@
 
 /* Default Theme: LIGHT MODE (APPLE GLASS) */
 body.light-mode {
-  --bg-dimmer: rgba(240, 244, 248, 0.4); /* Reduced to make video pop */
+  --bg-dimmer: rgba(240, 244, 248, 0.55); 
   --bg-card: rgba(255, 255, 255, 0.65); 
   --bg-nav: rgba(255, 255, 255, 0.75); 
   --bg-input: rgba(255, 255, 255, 0.55);
@@ -15,13 +15,13 @@ body.light-mode {
   --border: rgba(15, 23, 42, 0.1); 
   --glass-border: rgba(255, 255, 255, 0.9); 
   --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-  --video-op: 0.9; /* Made video much brighter */
-  --video-filter: grayscale(0%);
+  --video-op: 0.7; 
+  --video-filter: grayscale(10%);
 }
 
 /* Optional Theme: DARK MODE (APPLE GLASS) */
 body.dark-mode {
-  --bg-dimmer: rgba(5, 8, 15, 0.6); /* Reduced darkness to let video shine */
+  --bg-dimmer: rgba(5, 8, 15, 0.75); 
   --bg-card: rgba(20, 26, 35, 0.45); 
   --bg-nav: rgba(5, 8, 15, 0.75); 
   --bg-input: rgba(0, 0, 0, 0.35);
@@ -30,8 +30,8 @@ body.dark-mode {
   --border: rgba(255, 255, 255, 0.08);
   --glass-border: rgba(255, 255, 255, 0.12); 
   --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-  --video-op: 0.65; /* Made video MUCH brighter in dark mode */
-  --video-filter: grayscale(10%);
+  --video-op: 0.35; 
+  --video-filter: grayscale(30%);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
@@ -51,7 +51,7 @@ body { background-color: var(--bg-dimmer); color: var(--text-main); transition: 
 .app-bg-dimmer {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
   background: var(--bg-dimmer); z-index: -1; pointer-events: none;
-  backdrop-filter: blur(12px); /* Base blur for the entire app */
+  backdrop-filter: blur(12px); 
   -webkit-backdrop-filter: blur(12px);
   transition: background 0.4s;
 }
@@ -64,7 +64,6 @@ body { background-color: var(--bg-dimmer); color: var(--text-main); transition: 
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow);
 }
-
 
 /* NAVBAR & LOGO */
 .navbar {
@@ -79,6 +78,9 @@ body { background-color: var(--bg-dimmer); color: var(--text-main); transition: 
 }
 .logo { display: flex; align-items: center; text-decoration: none; cursor: pointer; }
 .logo-img { height: 32px; transition: transform 0.3s ease; }
+
+/* THIS SPECIFIC LINE DELETES THE WHITE BOX AROUND THE LOGO */
+body.light-mode .logo-img { mix-blend-mode: darken; }
 .logo:hover .logo-img { transform: scale(1.05); }
 
 .main-nav { display: flex; gap: 24px; }
@@ -115,17 +117,14 @@ body { background-color: var(--bg-dimmer); color: var(--text-main); transition: 
 .scroll-track { height: 300vh; position: relative; width: 100%; }
 .sticky-hero { position: sticky; top: 0; left: 0; width: 100%; height: 100vh; display: flex; align-items: center; overflow: hidden; }
 
-/* The 3D model takes up the right side */
 .hero-3d-container { position: absolute; top: 0; right: 0; width: 65%; height: 100%; z-index: 5; }
 .hero-3d-container model-viewer { width: 100%; height: 100%; background: transparent; outline: none; --poster-color: transparent; }
 
-/* The Sleek Left-Aligned Text */
 .hero-content-left { position: absolute; top: 50%; left: 8%; transform: translateY(-50%); z-index: 10; max-width: 500px; text-align: left; transition: opacity 0.1s linear, transform 0.1s linear; }
 .hero-badge { display: inline-block; background: rgba(0, 132, 255, 0.15); border: 1px solid rgba(0, 132, 255, 0.3); color: var(--blue-primary); padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 800; letter-spacing: 1px; margin-bottom: 1.5rem; backdrop-filter: blur(4px); }
 .hero-title { font-size: 3.8rem; font-weight: 800; line-height: 1.1; margin-bottom: 1.2rem; text-shadow: 0 4px 15px rgba(0,0,0,0.15); color: var(--text-main); }
 .hero-subtitle { font-size: 1.15rem; color: var(--text-main); font-weight: 600; opacity: 0.9; text-shadow: 0 2px 8px rgba(0,0,0,0.2); margin-bottom: 2rem;}
 
-/* Other sections sit below the huge scroll track with transparent backgrounds */
 .home-section { position: relative; z-index: 20; background: transparent; padding: 80px 20px; }
 
 .glass-panel { padding: 40px; max-width: 1200px; margin: 0 auto; width: 100%; border-radius: 16px; }
@@ -174,8 +173,6 @@ body { background-color: var(--bg-dimmer); color: var(--text-main); transition: 
 
 /* FORMS, MODALS & STATUS BADGES */
 .form-card { padding: 2rem; border-radius: 12px; max-width: 650px; margin: 0 auto; }
-
-/* Make all text inputs heavily blurred, glassy objects */
 .form-card input, .form-card textarea, .admin-input, #newCommentText { 
   display: block; width: 100%; margin-bottom: 14px; padding: 12px; border-radius: 6px; border: 1px solid var(--border); 
   background: var(--bg-input); color: var(--text-main); font-family: inherit; outline: none; transition: 0.2s;
