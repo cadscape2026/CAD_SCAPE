@@ -73,57 +73,66 @@
     </div>
   </aside>
 
-  <!-- VIEW: PARALLAX HOMEPAGE -->
+  <!-- VIEW: PARALLAX HOMEPAGE WITH 3D SCROLL ANIMATION -->
   <section id="viewHome" class="view-section active">
-    <div class="home-wrapper">
+    
+    <!-- This extremely tall track allows us to scroll "through" the animation -->
+    <div class="scroll-track" id="heroScrollTrack">
       
-      <!-- FIXED BACKGROUND VIDEO LAYER -->
-      <video class="hero-bg-video" autoplay loop muted playsinline>
-        <source src="background-video.mp4" type="video/mp4">
-      </video>
+      <!-- This sticky layer stays perfectly on screen while scrolling -->
+      <div class="sticky-hero">
+        <video class="hero-bg-video" autoplay loop muted playsinline>
+          <source src="background-video.mp4" type="video/mp4">
+        </video>
+        
+        <!-- Interactive 3D Model Layer -->
+        <div class="hero-3d-container">
+          <!-- PUT YOUR ANIMATED .GLB LINK HERE -->
+          <model-viewer 
+            id="heroScrubModel" 
+            src="https://modelviewer.dev/shared-assets/models/RobotExpressive.glb" 
+            camera-controls 
+            shadow-intensity="1" 
+            interaction-prompt="auto"
+            camera-orbit="0deg 75deg 105%"
+            alt="3D Interactive Assembly">
+          </model-viewer>
+        </div>
 
-      <!-- SECTION 1: HERO & 3D MODEL -->
-      <div class="home-section" style="min-height: 90vh;">
-        <div class="home-hero-content">
-          <div class="hero-text">
-            <span class="hero-badge">PRECISION ENGINEERING & 3D ASSETS</span>
-            <h1>Industrial CAD Models & Custom Assemblies</h1>
-            <p>Production-ready SolidWorks, STEP, and parametric assemblies crafted for industrial robotics, aerospace, and mechanical engineering.</p>
-            <div style="display:flex; gap:15px; margin-top:30px;">
-              <button class="btn-blue-large" onclick="switchView('market')">Explore Library</button>
-              <button class="btn-glass-large" onclick="switchView('requests')">Custom Design</button>
-            </div>
-          </div>
-          <div class="hero-3d">
-            <!-- REPLACE THIS SRC WITH YOUR OWN .GLB CAD FILE LINK -->
-            <model-viewer src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" auto-rotate camera-controls shadow-intensity="1" interaction-prompt="none" disable-zoom></model-viewer>
+        <!-- Fading Text Layer -->
+        <div class="hero-content-overlay" id="heroTextOverlay">
+          <span class="hero-badge">PRECISION ENGINEERING & 3D ASSETS</span>
+          <h1 style="font-size: 3.5rem; font-weight: 800; line-height: 1.15; margin-bottom: 1.2rem; text-shadow: 0 4px 10px rgba(0,0,0,0.1);">Industrial CAD Models & Custom Assemblies</h1>
+          <p style="font-size: 1.15rem; color: var(--text-main); font-weight: 600; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto; text-shadow: 0 2px 5px rgba(0,0,0,0.2);">Scroll down to disassemble the model. Click and drag to rotate it.</p>
+          <div style="display:flex; gap:15px; justify-content: center; margin-top:30px;">
+            <button class="btn-blue-large" onclick="switchView('market')">Explore Library</button>
+            <button class="btn-glass-large" onclick="switchView('requests')">Custom Design</button>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- SECTION 2: STORE HIGHLIGHTS -->
-      <div class="home-section">
-        <div class="glass-panel">
-          <h2>Latest Additions to the Store</h2>
-          <p>Instantly download high-quality mechanical components and cinematic 3D models.</p>
-          <div class="grid" id="homeRecentGrid">
-            <!-- JS will populate the 3 newest models here -->
-          </div>
-          <div style="text-align: center; margin-top: 30px;">
-             <button class="btn-glass-large" onclick="switchView('market')">View Entire Store</button>
-          </div>
+    <!-- SECTION 2: STORE HIGHLIGHTS -->
+    <div class="home-section">
+      <div class="glass-panel">
+        <h2>Latest Additions to the Store</h2>
+        <p>Instantly download high-quality mechanical components and cinematic 3D models.</p>
+        <div class="grid" id="homeRecentGrid">
+          <!-- JS will populate the 3 newest models here -->
+        </div>
+        <div style="text-align: center; margin-top: 30px;">
+           <button class="btn-glass-large" onclick="switchView('market')">View Entire Store</button>
         </div>
       </div>
+    </div>
 
-      <!-- SECTION 3: CUSTOM SERVICES -->
-      <div class="home-section">
-        <div class="glass-panel" style="text-align:center; padding: 60px 40px;">
-          <h2>Need a Custom Part?</h2>
-          <p style="max-width: 600px; margin: 0 auto 30px auto;">We provide bespoke 3D modeling and SolidWorks engineering services. Upload your sketches, dimensions, or reference files, and we will build the perfect digital assembly for your project.</p>
-          <button class="btn-blue-large" onclick="switchView('requests')">Submit a Design Request</button>
-        </div>
+    <!-- SECTION 3: CUSTOM SERVICES -->
+    <div class="home-section">
+      <div class="glass-panel" style="text-align:center; padding: 60px 40px;">
+        <h2>Need a Custom Part?</h2>
+        <p style="max-width: 600px; margin: 0 auto 30px auto;">We provide bespoke 3D modeling and SolidWorks engineering services. Upload your sketches, dimensions, or reference files, and we will build the perfect digital assembly for your project.</p>
+        <button class="btn-blue-large" onclick="switchView('requests')">Submit a Design Request</button>
       </div>
-
     </div>
   </section>
 
@@ -174,7 +183,6 @@
       <form id="uploadForm">
         <input type="text" id="modelName" placeholder="Product Name" required>
         <textarea id="modelDesc" rows="3" placeholder="Product Description..." required></textarea>
-        <!-- CHANGED DOLLARS TO RUPEES -->
         <input type="number" id="modelPrice" step="1" value="0" placeholder="Price in ₹ (0 for Free)" required>
         
         <div class="drop-zone" id="uploadDropZone">
@@ -192,13 +200,11 @@
     <!-- Requests Review Section -->
     <div id="adminRequestsSection" class="hidden">
       <h2 style="margin-bottom: 20px; text-align: center;">Client Custom Requests & Orders</h2>
-      <!-- CHANGED TO GRID -->
       <div id="adminRequestsList" class="requests-grid"></div>
     </div>
   </section>
 
   <!-- MODALS -->
-
   <div id="lightboxModal" class="modal-overlay hidden">
     <div class="modal-content lightbox-modal">
       <div class="modal-header">
@@ -226,7 +232,6 @@
       </div>
       <div id="cartItems"></div>
       <div id="cartTotalContainer" class="modal-footer" style="margin-top: 20px;">
-        <!-- CHANGED DOLLARS TO RUPEES -->
         <h3>Total: ₹<span id="cartTotal">0.00</span></h3>
         <button class="btn-blue-large" onclick="checkoutCart()">Checkout</button>
       </div>
@@ -288,6 +293,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=grabcad_rupees_final"></script>
+  <!-- CACHE BUSTER ADDED -->
+  <script src="app.js?v=apple_scroll"></script>
 </body>
 </html>
