@@ -210,7 +210,7 @@ function getDirectImageUrl(url) {
 }
 
 
-// --- 3D SCROLL-SCRUB ANIMATION LOGIC (APPLE STYLE) ---
+// --- 3D SCROLL-SCRUB ANIMATION LOGIC ---
 const heroScrollTrack = document.getElementById('heroScrollTrack');
 const heroScrubModel = document.getElementById('heroScrubModel');
 const heroTextOverlay = document.getElementById('heroTextOverlay');
@@ -342,7 +342,7 @@ function initCarousel(products) {
   featured.forEach(p => {
     track.innerHTML += `
       <div class="carousel-slide">
-        <img src="${getDirectImageUrl(p.image_url)}" alt="${p.name}">
+        <img src="${getDirectImageUrl(p.image_url)}" alt="${p.name}" loading="lazy">
         <div class="carousel-info">
           <h2 style="margin-bottom:8px;">${p.name}</h2>
           <button class="btn-blue-large" onclick="addToCart('${p.id}', '${p.name}', ${p.price}, '${p.download_url}')">Add to Cart</button>
@@ -408,7 +408,7 @@ window.toggleLightboxView = function(view) {
 };
 
 
-// --- RENDER PRODUCTS GRID ---
+// --- RENDER PRODUCTS GRID (LAZY LOADING ADDED) ---
 function generateProductCardHTML(p, isAdmin, isWishlisted) {
   const priceDisplay = p.price === 0 
     ? `<span class="price text-green">Free</span>` 
@@ -429,7 +429,7 @@ function generateProductCardHTML(p, isAdmin, isWishlisted) {
   return `
     <div class="card">
       <div class="card-img-wrapper" onclick="openLightbox('${p.id}')">
-        <img src="${getDirectImageUrl(p.image_url)}" alt="${p.name}">
+        <img src="${getDirectImageUrl(p.image_url)}" alt="${p.name}" loading="lazy">
         ${previewBadge}
       </div>
       <div class="card-info">
@@ -887,8 +887,8 @@ document.getElementById('orderHistoryBtn')?.addEventListener('click', () => {
            actionHtml = `
              ${imagePreviewHtml}
              <div style="margin-top:8px; padding:10px; background:rgba(34, 197, 94, 0.1); border:1px solid var(--green-free); border-radius:6px;">
-                <p style="color:var(--green-free); font-weight:bold; margin-bottom:4px;">✅ Payment Confirmed</p>
-                <p style="word-break: break-all;"><strong>Your Download Files:</strong><br>${(req.completed_link || 'No links attached.').replace(/\n/g, '<br>')}</p>
+                 <p style="color:var(--green-free); font-weight:bold; margin-bottom:4px;">✅ Payment Confirmed</p>
+                 <p style="word-break: break-all;"><strong>Your Download Files:</strong><br>${(req.completed_link || 'No links attached.').replace(/\n/g, '<br>')}</p>
              </div>
              ${discussBtn}
            `;
