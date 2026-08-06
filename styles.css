@@ -6,7 +6,7 @@
 
 /* Default Theme: LIGHT MODE (APPLE GLASS) */
 body.light-mode {
-  --bg-dimmer: rgba(240, 244, 248, 0.55); /* Light frost to let video through */
+  --bg-dimmer: rgba(240, 244, 248, 0.4); /* Reduced to make video pop */
   --bg-card: rgba(255, 255, 255, 0.65); 
   --bg-nav: rgba(255, 255, 255, 0.75); 
   --bg-input: rgba(255, 255, 255, 0.55);
@@ -15,13 +15,13 @@ body.light-mode {
   --border: rgba(15, 23, 42, 0.1); 
   --glass-border: rgba(255, 255, 255, 0.9); 
   --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-  --video-op: 0.7; /* Bright video in light mode */
-  --video-filter: grayscale(10%);
+  --video-op: 0.9; /* Made video much brighter */
+  --video-filter: grayscale(0%);
 }
 
 /* Optional Theme: DARK MODE (APPLE GLASS) */
 body.dark-mode {
-  --bg-dimmer: rgba(5, 8, 15, 0.75); /* Dark frost */
+  --bg-dimmer: rgba(5, 8, 15, 0.6); /* Reduced darkness to let video shine */
   --bg-card: rgba(20, 26, 35, 0.45); 
   --bg-nav: rgba(5, 8, 15, 0.75); 
   --bg-input: rgba(0, 0, 0, 0.35);
@@ -30,8 +30,8 @@ body.dark-mode {
   --border: rgba(255, 255, 255, 0.08);
   --glass-border: rgba(255, 255, 255, 0.12); 
   --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-  --video-op: 0.35; /* Increased opacity so video is highly visible in dark mode! */
-  --video-filter: grayscale(30%);
+  --video-op: 0.65; /* Made video MUCH brighter in dark mode */
+  --video-filter: grayscale(10%);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
