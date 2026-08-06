@@ -33,11 +33,12 @@
         </svg>
         Sign in
       </button>
+
       <button id="menuBtn" class="icon-btn">☰</button>
     </div>
   </header>
 
-  <!-- Sidebar (Hamburger Menu) -->
+  <!-- Sidebar -->
   <div id="sidebarOverlay" class="sidebar-overlay hidden"></div>
   <aside id="sidebar" class="sidebar">
     <div class="sidebar-header">
@@ -72,18 +73,57 @@
     </div>
   </aside>
 
-  <!-- VIEW: HOME WITH SCROLL ANIMATION -->
+  <!-- VIEW: PARALLAX HOMEPAGE -->
   <section id="viewHome" class="view-section active">
-    <div class="hero">
-      <div class="hero-grid-pattern"></div>
-      <div class="hero-content">
-        <span class="hero-badge">PRECISION ENGINEERING & 3D ASSETS</span>
-        <h1>Industrial CAD Models & Custom Assemblies</h1>
-        <p>Production-ready SolidWorks, STEP, and parametric assemblies crafted for industrial robotics, aerospace, and mechanical engineering.</p>
-        <div class="hero-buttons">
-          <button id="heroBrowseBtn" class="btn-blue-large">Explore Library</button>
+    <div class="home-wrapper">
+      
+      <!-- FIXED BACKGROUND VIDEO LAYER -->
+      <video class="hero-bg-video" autoplay loop muted playsinline>
+        <source src="background-video.mp4" type="video/mp4">
+      </video>
+
+      <!-- SECTION 1: HERO & 3D MODEL -->
+      <div class="home-section" style="min-height: 90vh;">
+        <div class="home-hero-content">
+          <div class="hero-text">
+            <span class="hero-badge">PRECISION ENGINEERING & 3D ASSETS</span>
+            <h1>Industrial CAD Models & Custom Assemblies</h1>
+            <p>Production-ready SolidWorks, STEP, and parametric assemblies crafted for industrial robotics, aerospace, and mechanical engineering.</p>
+            <div style="display:flex; gap:15px; margin-top:30px;">
+              <button class="btn-blue-large" onclick="switchView('market')">Explore Library</button>
+              <button class="btn-glass-large" onclick="switchView('requests')">Custom Design</button>
+            </div>
+          </div>
+          <div class="hero-3d">
+            <!-- REPLACE THIS SRC WITH YOUR OWN .GLB CAD FILE LINK -->
+            <model-viewer src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" auto-rotate camera-controls shadow-intensity="1" interaction-prompt="none" disable-zoom></model-viewer>
+          </div>
         </div>
       </div>
+
+      <!-- SECTION 2: STORE HIGHLIGHTS -->
+      <div class="home-section">
+        <div class="glass-panel">
+          <h2>Latest Additions to the Store</h2>
+          <p>Instantly download high-quality mechanical components and cinematic 3D models.</p>
+          <div class="grid" id="homeRecentGrid">
+            <!-- JS will populate the 3 newest models here -->
+          </div>
+          <div style="text-align: center; margin-top: 30px;">
+             <button class="btn-glass-large" onclick="switchView('market')">View Entire Store</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: CUSTOM SERVICES -->
+      <div class="home-section">
+        <div class="glass-panel" style="text-align:center; padding: 60px 40px;">
+          <h2>Need a Custom Part?</h2>
+          <p style="max-width: 600px; margin: 0 auto 30px auto;">We provide bespoke 3D modeling and SolidWorks engineering services. Upload your sketches, dimensions, or reference files, and we will build the perfect digital assembly for your project.</p>
+          <button class="btn-blue-large" onclick="switchView('requests')">Submit a Design Request</button>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -134,7 +174,8 @@
       <form id="uploadForm">
         <input type="text" id="modelName" placeholder="Product Name" required>
         <textarea id="modelDesc" rows="3" placeholder="Product Description..." required></textarea>
-        <input type="number" id="modelPrice" step="0.01" value="0" placeholder="Price (0 for Free)" required>
+        <!-- CHANGED DOLLARS TO RUPEES -->
+        <input type="number" id="modelPrice" step="1" value="0" placeholder="Price in ₹ (0 for Free)" required>
         
         <div class="drop-zone" id="uploadDropZone">
           <span class="drop-zone__prompt">Drag & Drop Main Thumbnail Image</span>
@@ -142,7 +183,6 @@
         </div>
 
         <input type="url" id="modelFile" placeholder="Drive Link to CAD Files (STEP, SLDPRT)" required>
-        <!-- NEW 3D LINK FIELD -->
         <input type="url" id="model3dUrl" placeholder="Direct Link to .GLB file for 3D Preview (Optional)">
         
         <button type="button" id="uploadBtn" class="btn-blue-large" style="width:100%" onclick="submitNewProduct()">Upload to Database</button>
@@ -150,15 +190,15 @@
     </div>
 
     <!-- Requests Review Section -->
-    <div id="adminRequestsSection" class="hidden" style="max-width: 800px; margin: 0 auto;">
-      <h2 style="margin-bottom: 20px;">Client Custom Requests & Orders</h2>
-      <div id="adminRequestsList"></div>
+    <div id="adminRequestsSection" class="hidden">
+      <h2 style="margin-bottom: 20px; text-align: center;">Client Custom Requests & Orders</h2>
+      <!-- CHANGED TO GRID -->
+      <div id="adminRequestsList" class="requests-grid"></div>
     </div>
   </section>
 
   <!-- MODALS -->
 
-  <!-- 1. MULTI-IMAGE & 3D LIGHTBOX MODAL -->
   <div id="lightboxModal" class="modal-overlay hidden">
     <div class="modal-content lightbox-modal">
       <div class="modal-header">
@@ -169,21 +209,15 @@
         </div>
         <button class="close-modal" onclick="document.getElementById('lightboxModal').classList.add('hidden')">&times;</button>
       </div>
-      
-      <!-- 2D Image View -->
       <div id="lightboxImgContainer">
         <img id="lightboxMainImg" class="lightbox-main-img" src="" alt="Model Preview">
       </div>
-      
-      <!-- 3D Interactive View -->
       <div id="lightbox3DContainer" class="hidden">
         <model-viewer id="lightbox3DViewer" alt="3D Interactive Model" src="" auto-rotate camera-controls shadow-intensity="1"></model-viewer>
       </div>
-      
     </div>
   </div>
 
-  <!-- 2. CART MODAL -->
   <div id="cartModal" class="modal-overlay hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -192,13 +226,13 @@
       </div>
       <div id="cartItems"></div>
       <div id="cartTotalContainer" class="modal-footer" style="margin-top: 20px;">
-        <h3>Total: $<span id="cartTotal">0.00</span></h3>
+        <!-- CHANGED DOLLARS TO RUPEES -->
+        <h3>Total: ₹<span id="cartTotal">0.00</span></h3>
         <button class="btn-blue-large" onclick="checkoutCart()">Checkout</button>
       </div>
     </div>
   </div>
 
-  <!-- 3. WISHLIST MODAL -->
   <div id="wishlistModal" class="modal-overlay hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -209,7 +243,6 @@
     </div>
   </div>
 
-  <!-- 4. COMMENTS MODAL -->
   <div id="commentsModal" class="modal-overlay hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -224,7 +257,6 @@
     </div>
   </div>
 
-  <!-- 5. EDIT PRODUCT MODAL -->
   <div id="editModal" class="modal-overlay hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -234,20 +266,18 @@
       <form id="editForm" class="modal-form" style="margin-top: 15px;">
         <input type="text" id="editModelName" placeholder="Product Name" required>
         <textarea id="editModelDesc" rows="3" placeholder="Product Description..." required></textarea>
-        <input type="number" id="editModelPrice" step="0.01" placeholder="Price (0 for Free)" required>
+        <input type="number" id="editModelPrice" step="1" placeholder="Price in ₹ (0 for Free)" required>
         <div class="drop-zone" id="editDropZone">
           <span class="drop-zone__prompt">Drag & Drop New Image</span>
           <input type="file" id="editModelImageFile" class="drop-zone__input" accept="image/*">
         </div>
         <input type="url" id="editModelFile" placeholder="Drive Link to CAD Files (STEP, SLDPRT)" required>
-        <!-- NEW 3D LINK FIELD -->
         <input type="url" id="editModel3dUrl" placeholder="Direct Link to .GLB file for 3D Preview (Optional)">
         <button type="button" id="editBtn" class="btn-blue-large" style="width:100%" onclick="submitEditProduct()">Save Changes</button>
       </form>
     </div>
   </div>
 
-  <!-- 6. ORDER HISTORY MODAL -->
   <div id="ordersModal" class="modal-overlay hidden">
     <div class="modal-content">
       <div class="modal-header">
@@ -258,6 +288,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=grabcad_3d"></script>
+  <script src="app.js?v=grabcad_rupees_final"></script>
 </body>
 </html>
