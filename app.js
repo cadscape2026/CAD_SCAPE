@@ -4,7 +4,7 @@ const API_BASE = "https://procad-backend.onrender.com/api";
 let cart = [];
 let wishlist = [];
 let allProducts = [];
-let requestImages = {}; // Holds temporary image uploads for custom requests
+let requestImages = {}; 
 
 try { cart = JSON.parse(localStorage.getItem('cadCart')) || []; } catch(e){}
 try { wishlist = JSON.parse(localStorage.getItem('cadWishlist')) || []; } catch(e){}
@@ -56,7 +56,7 @@ document.getElementById('btnShowRequests').addEventListener('click', () => {
 });
 
 
-// --- SIDEBAR & THEME ---
+// --- SIDEBAR & THEME TOGGLE (DEFAULT LIGHT MODE) ---
 const sidebar = document.getElementById('sidebar');
 const sidebarOverlay = document.getElementById('sidebarOverlay');
 
@@ -69,12 +69,24 @@ document.getElementById('menuBtn').addEventListener('click', toggleSidebar);
 document.getElementById('closeSidebar').addEventListener('click', toggleSidebar);
 sidebarOverlay.addEventListener('click', toggleSidebar);
 
-document.getElementById('themeToggleBtn').addEventListener('click', () => {
-  if (document.body.classList.contains('dark-mode')) {
-    document.body.classList.replace('dark-mode', 'light-mode');
-  } else {
+const themeToggleBtn = document.getElementById('themeToggleBtn');
+const mainLogoImg = document.getElementById('mainLogoImg');
+
+function updateThemeUI(isDark) {
+  if (isDark) {
     document.body.classList.replace('light-mode', 'dark-mode');
+    themeToggleBtn.textContent = '☀️ Switch to Light Mode';
+    mainLogoImg.src = 'logo_4.png';
+  } else {
+    document.body.classList.replace('dark-mode', 'light-mode');
+    themeToggleBtn.textContent = '🌙 Switch to Dark Mode';
+    mainLogoImg.src = 'logo_light.png';
   }
+}
+
+themeToggleBtn.addEventListener('click', () => {
+  const isDark = document.body.classList.contains('light-mode');
+  updateThemeUI(isDark);
 });
 
 
@@ -99,12 +111,8 @@ function handleSuccessfulLogin(name, email, avatarUrl) {
 
   if (adminEmails.includes(email)) {
     if(navs.admin) navs.admin.classList.remove('hidden');
-    const sideAdminBtn = document.getElementById('sidebarNavAdmin');
-    if(sideAdminBtn) sideAdminBtn.classList.remove('hidden');
   } else {
     if(navs.admin) navs.admin.classList.add('hidden');
-    const sideAdminBtn = document.getElementById('sidebarNavAdmin');
-    if(sideAdminBtn) sideAdminBtn.classList.add('hidden');
   }
   
   if(allProducts.length > 0) renderGrid(allProducts);
@@ -132,7 +140,7 @@ window.onload = function () {
       });
     }
   } catch (error) {
-    console.warn("Google Auth not fully configured.");
+    console.warn("Google Auth not configured.");
   }
 };
 
@@ -155,9 +163,6 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
     document.getElementById('logoutBtn').classList.add('hidden');
     
     if(navs.admin) navs.admin.classList.add('hidden');
-    const sideAdminBtn = document.getElementById('sidebarNavAdmin');
-    if(sideAdminBtn) sideAdminBtn.classList.add('hidden');
-    
     switchView('home');
     toggleSidebar();
     
@@ -183,7 +188,8 @@ function getDirectImageUrl(url) {
   return url; 
 }
 
-// --- DRAG AND DROP IMAGE LOGIC ---
+
+// --- DRAG AND DROP IMAGE UPLOADER ---
 let currentUploadBase64 = "";
 let currentEditBase64 = "";
 
@@ -237,7 +243,7 @@ function updateThumbnail(dropZoneElement, file, isEdit) {
       else currentUploadBase64 = reader.result;
     };
   } else {
-    alert("Please upload an image file (JPG, PNG, etc).");
+    alert("Please upload an image file.");
   }
 }
 
@@ -265,7 +271,7 @@ setupDropZone("uploadDropZone", "modelImageFile", false);
 setupDropZone("editDropZone", "editModelImageFile", true);
 
 
-// --- STEAM CAROUSEL LOGIC ---
+// --- CAROUSEL LOGIC ---
 let currentSlide = 0;
 let carouselInterval;
 
@@ -280,7 +286,7 @@ function initCarousel(products) {
       <div class="carousel-slide">
         <img src="${getDirectImageUrl(p.image_url)}" alt="${p.name}">
         <div class="carousel-info">
-          <h2 style="margin-bottom:10px;">${p.name}</h2>
+          <h2 style="margin-bottom:8px;">${p.name}</h2>
           <button class="btn-blue-large" onclick="addToCart('${p.id}', '${p.name}', ${p.price}, '${p.download_url}')">Add to Cart</button>
         </div>
       </div>
@@ -295,13 +301,59 @@ function initCarousel(products) {
 }
 
 
-// --- RENDER PRODUCTS & SEARCH ---
+// --- 3D / IMAGE LIGHTBOX LOGIC ---
+window.openLightbox = function(id) {
+  const product = allProducts.find(p => p.id === id);
+  if(!product) return;
+
+  document.getElementById('lightboxTitle').textContent = product.name;
+  const imgContainer = document.getElementById('lightboxImgContainer');
+  const threeDContainer = document.getElementById('lightbox3DContainer');
+  const toggles = document.getElementById('lightboxToggles');
+  
+  document.getElementById('lightboxMainImg').src = getDirectImageUrl(product.image_url);
+  
+  // Set default view back to Image
+  toggleLightboxView('img');
+
+  if (product.model_3d_url) {
+    toggles.classList.remove('hidden');
+    document.getElementById('lightbox3DViewer').src = product.model_3d_url;
+  } else {
+    toggles.classList.add('hidden');
+    document.getElementById('lightbox3DViewer').src = '';
+  }
+
+  document.getElementById('lightboxModal').classList.remove('hidden');
+};
+
+window.toggleLightboxView = function(view) {
+  const imgContainer = document.getElementById('lightboxImgContainer');
+  const threeDContainer = document.getElementById('lightbox3DContainer');
+  const btnImg = document.getElementById('btnViewImg');
+  const btn3D = document.getElementById('btnView3D');
+
+  if (view === '3d') {
+    imgContainer.classList.add('hidden');
+    threeDContainer.classList.remove('hidden');
+    btn3D.classList.add('active');
+    btnImg.classList.remove('active');
+  } else {
+    threeDContainer.classList.add('hidden');
+    imgContainer.classList.remove('hidden');
+    btnImg.classList.add('active');
+    btn3D.classList.remove('active');
+  }
+};
+
+
+// --- RENDER PRODUCTS GRID ---
 function renderGrid(products) {
   const grid = document.getElementById('productGrid');
   grid.innerHTML = '';
   
   if (products.length === 0) {
-    grid.innerHTML = '<p style="color:var(--text-muted)">No products found.</p>';
+    grid.innerHTML = '<p style="color:var(--text-muted)">No models found.</p>';
     return;
   }
 
@@ -313,12 +365,14 @@ function renderGrid(products) {
       : `<span class="price">$${p.price.toFixed(2)}</span>`;
 
     const actionHtml = `<button onclick="addToCart('${p.id}', '${p.name}', ${p.price}, '${p.download_url}')" class="btn-small">Add to Cart</button>`;
-
     const isWishlisted = wishlist.includes(p.id) ? 'Remove' : 'Wishlist';
     const commentsLength = p.comments ? p.comments.length : 0;
+    
+    // Tiny badge to let users know a 3D preview exists
+    const previewBadge = p.model_3d_url ? `<div style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.7); color:#fff; padding:4px 8px; border-radius:12px; font-size:0.75rem; font-weight:bold;">3D VIEW</div>` : '';
 
     const adminControls = isAdmin ? `
-      <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border); display: flex; gap: 10px;">
+      <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; gap: 8px;">
         <button onclick="openEditModal('${p.id}')" class="btn-small" style="background:#f59e0b; flex:1;">Edit</button>
         <button onclick="deleteProduct('${p.id}')" class="btn-small" style="background:#ef4444; flex:1;">Delete</button>
       </div>
@@ -326,11 +380,12 @@ function renderGrid(products) {
 
     grid.innerHTML += `
       <div class="card">
-        <div class="card-img-wrapper">
+        <div class="card-img-wrapper" onclick="openLightbox('${p.id}')">
           <img src="${getDirectImageUrl(p.image_url)}" alt="${p.name}">
+          ${previewBadge}
         </div>
         <div class="card-info">
-          <h3 class="card-title">${p.name}</h3>
+          <h3 class="card-title" onclick="openLightbox('${p.id}')" style="cursor:pointer;">${p.name}</h3>
           <p class="card-desc">${p.description || 'No description provided.'}</p>
           
           <div class="card-social">
@@ -363,13 +418,11 @@ async function loadProducts() {
     allProducts = await response.json();
 
     const validIds = allProducts.map(p => p.id);
-    const oldWishlistLen = wishlist.length;
     wishlist = wishlist.filter(id => validIds.includes(id));
-    if (wishlist.length !== oldWishlistLen) localStorage.setItem('cadWishlist', JSON.stringify(wishlist));
+    localStorage.setItem('cadWishlist', JSON.stringify(wishlist));
 
-    const oldCartLen = cart.length;
     cart = cart.filter(item => validIds.includes(item.id));
-    if (cart.length !== oldCartLen) localStorage.setItem('cadCart', JSON.stringify(cart));
+    localStorage.setItem('cadCart', JSON.stringify(cart));
     
     updateCounters();
     initCarousel(allProducts);
@@ -380,16 +433,17 @@ async function loadProducts() {
 }
 
 
-// --- ADMIN: UPLOAD, EDIT, DELETE PRODUCTS ---
+// --- ADMIN: PRODUCT MANAGEMENT ---
 window.submitNewProduct = async function() {
   const btn = document.getElementById('uploadBtn');
   const name = document.getElementById('modelName').value;
   const desc = document.getElementById('modelDesc').value;
   const price = document.getElementById('modelPrice').value;
   const file = document.getElementById('modelFile').value;
+  const url3d = document.getElementById('model3dUrl').value;
 
   if (!name || !desc || !currentUploadBase64 || !file) {
-    alert("Please fill in all fields and upload an image!");
+    alert("Please fill in all required fields!");
     return;
   }
 
@@ -397,7 +451,14 @@ window.submitNewProduct = async function() {
   btn.style.backgroundColor = "#f59e0b";
   btn.style.pointerEvents = "none"; 
 
-  const data = { name, description: desc, price, image_url: currentUploadBase64, download_url: file };
+  const data = { 
+    name, 
+    description: desc, 
+    price, 
+    image_url: currentUploadBase64, 
+    download_url: file,
+    model_3d_url: url3d 
+  };
 
   try {
     const response = await fetch(`${API_BASE}/products`, {
@@ -412,10 +473,10 @@ window.submitNewProduct = async function() {
       resetDropZone("uploadDropZone", false); 
       loadProducts(); 
     } else {
-      alert("Failed to upload product. Check backend connection.");
+      alert("Failed to upload product.");
     }
   } catch (error) {
-    alert("Error uploading product. Is the backend running?");
+    alert("Error uploading product.");
   } finally {
     btn.textContent = "Upload to Database";
     btn.style.backgroundColor = ""; 
@@ -433,6 +494,7 @@ window.openEditModal = function(id) {
   document.getElementById('editModelDesc').value = product.description;
   document.getElementById('editModelPrice').value = product.price;
   document.getElementById('editModelFile').value = product.download_url;
+  document.getElementById('editModel3dUrl').value = product.model_3d_url || '';
   
   currentEditBase64 = product.image_url;
   const dropZoneElement = document.getElementById('editDropZone');
@@ -457,14 +519,22 @@ window.submitEditProduct = async function() {
   const desc = document.getElementById('editModelDesc').value;
   const price = document.getElementById('editModelPrice').value;
   const file = document.getElementById('editModelFile').value;
+  const url3d = document.getElementById('editModel3dUrl').value;
 
-  if (!name || !desc || !currentEditBase64 || !file) return alert("Fill all fields and include an image!");
+  if (!name || !desc || !currentEditBase64 || !file) return alert("Fill all fields!");
 
   btn.textContent = "Saving...";
   btn.style.backgroundColor = "#f59e0b";
   btn.style.pointerEvents = "none";
 
-  const data = { name, description: desc, price, image_url: currentEditBase64, download_url: file };
+  const data = { 
+    name, 
+    description: desc, 
+    price, 
+    image_url: currentEditBase64, 
+    download_url: file,
+    model_3d_url: url3d 
+  };
 
   try {
     const res = await fetch(`${API_BASE}/products/${currentEditId}`, {
@@ -491,7 +561,7 @@ window.submitEditProduct = async function() {
 };
 
 window.deleteProduct = async function(id) {
-  if(!confirm("Are you sure you want to permanently delete this product?")) return;
+  if(!confirm("Permanently delete this product?")) return;
   try {
     const res = await fetch(`${API_BASE}/products/${id}`, { method: 'DELETE' });
     if(res.ok) {
@@ -506,14 +576,14 @@ window.deleteProduct = async function(id) {
 }
 
 
-// --- REQUESTS & ORDER HISTORY LOGIC ---
+// --- REQUESTS & WHATSAPP DISCUSSIONS ---
 window.submitDesignRequest = async function() {
   const btn = document.getElementById('requestBtn');
   const phone = document.getElementById('reqPhone').value;
   const details = document.getElementById('reqDetails').value;
   const link = document.getElementById('reqLink').value;
 
-  if(!phone || !details) return alert("Please provide your phone number and details.");
+  if(!phone || !details) return alert("Please provide your phone number and requirements.");
 
   btn.textContent = "Submitting...";
   btn.style.backgroundColor = "#f59e0b";
@@ -539,17 +609,15 @@ window.submitDesignRequest = async function() {
     if(res.ok) {
       document.getElementById('requestForm').reset();
       
-      // WhatsApp Discussion Trigger
       const waText = encodeURIComponent(`Hi, I just submitted a new CAD design request.\nEmail: ${safeEmail}\nDetails: ${details}`);
-      if(confirm("Request Submitted Successfully! \n\nWould you like to open WhatsApp now to discuss your project details with us?")) {
+      if(confirm("Request Submitted Successfully!\n\nWould you like to open WhatsApp now to discuss your project details with us?")) {
           window.open(`https://wa.me/919446308229?text=${waText}`, '_blank');
       }
     } else {
-      const err = await res.json();
-      alert("Server Rejected Request: " + (err.error || "Check backend logs."));
+      alert("Failed to submit request.");
     }
   } catch (error) {
-    alert("Network Error: Could not connect to Render Database. Ensure your backend is live!");
+    alert("Network Error.");
   } finally {
     btn.textContent = "Submit Request";
     btn.style.backgroundColor = "";
@@ -584,9 +652,7 @@ window.saveAdminUpdate = async function(id) {
       completed_link: link
   };
 
-  if(imageBase64) {
-      payload.completed_image = imageBase64;
-  }
+  if(imageBase64) payload.completed_image = imageBase64;
 
   try {
     const res = await fetch(`${API_BASE}/requests/${id}`, {
@@ -642,7 +708,7 @@ async function fetchAdminRequests() {
           <p style="margin-top: 5px;"><strong>Details:</strong><br>${req.details.replace(/\n/g, '<br>')}</p>
           <p style="margin-top: 10px;">${linkHtml}</p>
 
-          <div style="background:var(--bg-main); padding: 15px; border-radius: 8px; margin-top: 15px; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--border);">
+          <div style="background:var(--bg-main); padding: 14px; border-radius: 8px; margin-top: 14px; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--border);">
              <label style="font-size:0.85rem; color:var(--text-muted);">Admin Controls (Price, Files, Image):</label>
              
              <div style="display:flex; gap: 10px;">
@@ -662,15 +728,15 @@ async function fetchAdminRequests() {
              
              <textarea id="link_${req.id}" class="admin-input" rows="2" placeholder="Paste Completed Drive Links here...">${req.completed_link || ''}</textarea>
 
-             <div style="border: 1px dashed var(--border); padding: 10px; border-radius: 6px; text-align: center; margin-top: 5px;">
-                 <label style="cursor: pointer; color: var(--blue-primary); font-size: 0.9rem; display: block;">
-                     📷 Click to Upload Preview Image
+             <div style="border: 1px dashed var(--border); padding: 10px; border-radius: 6px; text-align: center; margin-top: 4px;">
+                 <label style="cursor: pointer; color: var(--blue-primary); font-size: 0.85rem; display: block;">
+                     📷 Upload Finished Preview Image
                      <input type="file" accept="image/*" class="hidden" onchange="encodeRequestImage(this, '${req.id}')">
                  </label>
-                 <img id="preview_${req.id}" src="${req.completed_image || ''}" class="${req.completed_image ? '' : 'hidden'}" style="max-width: 100%; height: 120px; object-fit: cover; border-radius: 6px; margin-top: 10px;">
+                 <img id="preview_${req.id}" src="${req.completed_image || ''}" class="${req.completed_image ? '' : 'hidden'}" style="max-width: 100%; height: 120px; object-fit: cover; border-radius: 6px; margin-top: 8px;">
              </div>
 
-             <button onclick="saveAdminUpdate('${req.id}')" class="btn-blue-large" style="margin-top:5px; padding: 8px;">Save Settings</button>
+             <button onclick="saveAdminUpdate('${req.id}')" class="btn-blue-large" style="margin-top:4px; padding: 8px;">Save Settings</button>
           </div>
         </div>
       `;
@@ -680,7 +746,7 @@ async function fetchAdminRequests() {
   }
 }
 
-// User Checking their Order History
+// User Checking Order History
 document.getElementById('orderHistoryBtn').addEventListener('click', () => {
   toggleSidebar();
   if(!currentUser || !currentUser.email) {
@@ -708,37 +774,37 @@ document.getElementById('orderHistoryBtn').addEventListener('click', () => {
         if(req.status === "Completed") badgeClass = "status-completed";
 
         let actionHtml = '';
-        let imagePreviewHtml = req.completed_image ? `<img src="${req.completed_image}" style="width:100%; max-height:200px; object-fit:cover; border-radius:8px; margin-bottom:10px; border:1px solid var(--border);">` : '';
+        let imagePreviewHtml = req.completed_image ? `<img src="${req.completed_image}" style="width:100%; max-height:220px; object-fit:cover; border-radius:8px; margin-bottom:10px; border:1px solid var(--border);">` : '';
         
         const waPayText = encodeURIComponent(`Hello! I want to pay for my CAD order.\nEmail: ${currentUser.email}\nOrder Details: ${req.details}\nTotal: $${req.price}`);
         const waPayLink = `https://wa.me/919446308229?text=${waPayText}`;
 
         const waDiscussText = encodeURIComponent(`Hello! I'd like to discuss my CAD request.\nEmail: ${currentUser.email}\nOrder Details: ${req.details}`);
         const waDiscussLink = `https://wa.me/919446308229?text=${waDiscussText}`;
-        const discussBtn = `<a href="${waDiscussLink}" target="_blank" class="btn-small" style="background:#25D366; display:inline-block; margin-top:5px; margin-right:10px; text-decoration:none;">💬 Discuss on WhatsApp</a>`;
+        const discussBtn = `<a href="${waDiscussLink}" target="_blank" class="btn-small" style="background:#25D366; display:inline-block; margin-top:6px; margin-right:8px; text-decoration:none;">💬 Discuss on WhatsApp</a>`;
 
         if (req.payment_status === 'Paid') {
            actionHtml = `
              ${imagePreviewHtml}
-             <div style="margin-top:10px; padding:10px; background:rgba(34, 197, 94, 0.1); border:1px solid var(--green-free); border-radius:6px;">
-                <p style="color:var(--green-free); font-weight:bold; margin-bottom:5px;">✅ Payment Confirmed</p>
-                <p style="word-break: break-all;"><strong>Your Files:</strong><br>${(req.completed_link || 'No links attached.').replace(/\n/g, '<br>')}</p>
+             <div style="margin-top:8px; padding:10px; background:rgba(34, 197, 94, 0.1); border:1px solid var(--green-free); border-radius:6px;">
+                <p style="color:var(--green-free); font-weight:bold; margin-bottom:4px;">✅ Payment Confirmed</p>
+                <p style="word-break: break-all;"><strong>Your Download Files:</strong><br>${(req.completed_link || 'No links attached.').replace(/\n/g, '<br>')}</p>
              </div>
              ${discussBtn}
            `;
         } else if (req.price > 0 && req.payment_status === 'Unpaid') {
            actionHtml = `
              ${imagePreviewHtml}
-             <div style="margin-top:10px; padding:10px; background:rgba(245, 158, 11, 0.1); border:1px solid #f59e0b; border-radius:6px;">
-                <p style="color:#f59e0b; font-weight:bold; margin-bottom:5px;">⚠️ Pending Payment: $${req.price}</p>
-                <a href="${waPayLink}" target="_blank" class="btn-small" style="background:#f59e0b; display:inline-block; margin-top:5px; margin-right:10px; text-decoration:none;">Pay via WhatsApp</a>
+             <div style="margin-top:8px; padding:10px; background:rgba(245, 158, 11, 0.1); border:1px solid #f59e0b; border-radius:6px;">
+                <p style="color:#f59e0b; font-weight:bold; margin-bottom:4px;">⚠️ Pending Payment: $${req.price}</p>
+                <a href="${waPayLink}" target="_blank" class="btn-small" style="background:#f59e0b; display:inline-block; margin-top:4px; margin-right:8px; text-decoration:none;">Pay via WhatsApp</a>
              </div>
              ${discussBtn}
            `;
         } else {
            actionHtml = `
              ${imagePreviewHtml}
-             <p style="margin-top:10px; color:var(--text-muted); font-size: 0.9rem;"><em>Waiting for Admin to review and quote price.</em></p>
+             <p style="margin-top:8px; color:var(--text-muted); font-size: 0.85rem;"><em>Waiting for Admin to review and quote price.</em></p>
              ${discussBtn}
            `;
         }
@@ -746,15 +812,15 @@ document.getElementById('orderHistoryBtn').addEventListener('click', () => {
         list.innerHTML += `
           <div class="admin-req-card">
             <span class="status-badge ${badgeClass}">${req.status}</span>
-            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom: 5px; text-transform: uppercase;">${req.req_type}</p>
-            <p style="font-size: 0.95rem; margin-bottom: 10px;">${req.details.replace(/\n/g, '<br>')}</p>
+            <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom: 4px; text-transform: uppercase; font-weight:700;">${req.req_type}</p>
+            <p style="font-size: 0.9rem; margin-bottom: 8px;">${req.details.replace(/\n/g, '<br>')}</p>
             ${actionHtml}
           </div>
         `;
       });
     })
     .catch(() => {
-      list.innerHTML = '<p style="color:#ef4444">Failed to load orders. Are you offline?</p>';
+      list.innerHTML = '<p style="color:#ef4444">Failed to load orders.</p>';
     });
 });
 
@@ -790,11 +856,11 @@ function renderCart() {
     cart.forEach((item, index) => {
       total += item.price;
       cartItemsDiv.innerHTML += `
-        <div class="cart-item" style="display:flex; justify-content:space-between; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+        <div class="cart-item" style="display:flex; justify-content:space-between; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
           <span style="font-weight: 500;">${item.name}</span>
           <div>
             <span style="color:var(--green-free); font-weight:bold;">$${item.price.toFixed(2)}</span>
-            <button onclick="removeFromCart(${index})" style="background:none; border:none; color:#ef4444; margin-left:15px; cursor:pointer; font-weight:bold;">X</button>
+            <button onclick="removeFromCart(${index})" style="background:none; border:none; color:#ef4444; margin-left:12px; cursor:pointer; font-weight:bold;">X</button>
           </div>
         </div>
       `;
@@ -816,11 +882,11 @@ window.checkoutCart = async function() {
   const cartItemsDiv = document.getElementById('cartItems');
 
   if (total === 0) {
-    let html = `<h3 style="color:var(--green-free); margin-bottom: 15px;">Success! Here are your free files:</h3>`;
+    let html = `<h3 style="color:var(--green-free); margin-bottom: 12px;">Success! Here are your free files:</h3>`;
     cart.forEach(item => {
       const dlLink = item.download_url ? item.download_url : '#';
       html += `
-        <div style="margin-bottom: 10px; padding: 10px; background: rgba(34, 197, 94, 0.1); border: 1px solid var(--green-free); border-radius: 6px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="margin-bottom: 8px; padding: 10px; background: rgba(34, 197, 94, 0.1); border: 1px solid var(--green-free); border-radius: 6px; display:flex; justify-content:space-between; align-items:center;">
           <span style="font-weight:500;">${item.name}</span>
           <a href="${dlLink}" target="_blank" class="btn-small" style="background:var(--green-free);">Download File</a>
         </div>
@@ -869,7 +935,7 @@ window.checkoutCart = async function() {
         
         alert("Order placed! Complete your payment on WhatsApp. You can track this in your Order History.");
       } else {
-        alert("Error saving order to backend. Try again.");
+        alert("Error saving order.");
       }
     } catch(e) {
       alert("Network Error.");
@@ -908,7 +974,7 @@ function renderWishlist() {
       const item = allProducts.find(p => p.id === id);
       if(item) {
         wishlistItemsDiv.innerHTML += `
-          <div class="cart-item" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+          <div class="cart-item" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
             <span style="font-weight: 500;">${item.name}</span>
             <div>
               <span style="color:var(--green-free); font-weight:bold; margin-right:10px;">$${item.price.toFixed(2)}</span>
