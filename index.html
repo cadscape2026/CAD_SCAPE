@@ -76,16 +76,19 @@
   <!-- VIEW: PARALLAX HOMEPAGE WITH 3D SCROLL ANIMATION -->
   <section id="viewHome" class="view-section active">
     
+    <!-- FULL PAGE VIDEO LAYER -->
+    <video class="hero-bg-video" autoplay loop muted playsinline>
+      <source src="background-video.mp4" type="video/mp4">
+    </video>
+    <div class="home-overlay-dimmer"></div>
+    
     <!-- This extremely tall track allows us to scroll "through" the animation -->
     <div class="scroll-track" id="heroScrollTrack">
       
       <!-- This sticky layer stays perfectly on screen while scrolling -->
       <div class="sticky-hero">
-        <video class="hero-bg-video" autoplay loop muted playsinline>
-          <source src="background-video.mp4" type="video/mp4">
-        </video>
         
-        <!-- Interactive 3D Model Layer -->
+        <!-- Interactive 3D Model Layer (Floating on the right) -->
         <div class="hero-3d-container">
           <!-- PUT YOUR ANIMATED .GLB LINK HERE -->
           <model-viewer 
@@ -93,18 +96,18 @@
             src="https://modelviewer.dev/shared-assets/models/RobotExpressive.glb" 
             camera-controls 
             shadow-intensity="1" 
-            interaction-prompt="auto"
+            interaction-prompt="none"
             camera-orbit="0deg 75deg 105%"
             alt="3D Interactive Assembly">
           </model-viewer>
         </div>
 
-        <!-- Fading Text Layer -->
-        <div class="hero-content-overlay" id="heroTextOverlay">
-          <span class="hero-badge">PRECISION ENGINEERING & 3D ASSETS</span>
-          <h1 style="font-size: 3.5rem; font-weight: 800; line-height: 1.15; margin-bottom: 1.2rem; text-shadow: 0 4px 10px rgba(0,0,0,0.1);">Industrial CAD Models & Custom Assemblies</h1>
-          <p style="font-size: 1.15rem; color: var(--text-main); font-weight: 600; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto; text-shadow: 0 2px 5px rgba(0,0,0,0.2);">Scroll down to disassemble the model. Click and drag to rotate it.</p>
-          <div style="display:flex; gap:15px; justify-content: center; margin-top:30px;">
+        <!-- NEW SLEEK LEFT-ALIGNED TEXT -->
+        <div class="hero-content-left" id="heroTextOverlay">
+          <span class="hero-badge">PRECISION ENGINEERING</span>
+          <h1 class="hero-title">Industrial CAD & Custom Assemblies</h1>
+          <p class="hero-subtitle">Scroll down to disassemble the model. Click and drag to rotate it.</p>
+          <div style="display:flex; gap:15px; margin-top:30px;">
             <button class="btn-blue-large" onclick="switchView('market')">Explore Library</button>
             <button class="btn-glass-large" onclick="switchView('requests')">Custom Design</button>
           </div>
@@ -115,8 +118,10 @@
     <!-- SECTION 2: STORE HIGHLIGHTS -->
     <div class="home-section">
       <div class="glass-panel">
-        <h2>Latest Additions to the Store</h2>
-        <p>Instantly download high-quality mechanical components and cinematic 3D models.</p>
+        <h2>About CAD SCAPE</h2>
+        <p>Production-ready SolidWorks, STEP, and parametric assemblies crafted for industrial robotics, aerospace, and mechanical engineering. Instantly download high-quality mechanical components and cinematic 3D models from our expanding library.</p>
+        
+        <h2 style="margin-top: 50px;">Latest Additions</h2>
         <div class="grid" id="homeRecentGrid">
           <!-- JS will populate the 3 newest models here -->
         </div>
@@ -293,7 +298,6 @@
     </div>
   </div>
 
-  <!-- CACHE BUSTER ADDED -->
-  <script src="app.js?v=apple_scroll"></script>
+  <script src="app.js?v=sleek_layout"></script>
 </body>
 </html>
