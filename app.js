@@ -33,7 +33,6 @@ function switchView(target) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// BULLETPROOF EVENT LISTENERS (Using Optional Chaining ?.)
 document.getElementById('logoHomeBtn')?.addEventListener('click', (e) => { e.preventDefault(); switchView('home'); });
 if(navs.market) navs.market.addEventListener('click', (e) => { e.preventDefault(); switchView('market'); });
 if(navs.requests) navs.requests.addEventListener('click', (e) => { e.preventDefault(); switchView('requests'); });
@@ -120,8 +119,12 @@ function handleSuccessfulLogin(name, email, avatarUrl) {
 
   if (adminEmails.includes(email)) {
     if(navs.admin) navs.admin.classList.remove('hidden');
+    const sideAdminBtn = document.getElementById('sidebarNavAdmin');
+    if(sideAdminBtn) sideAdminBtn.classList.remove('hidden');
   } else {
     if(navs.admin) navs.admin.classList.add('hidden');
+    const sideAdminBtn = document.getElementById('sidebarNavAdmin');
+    if(sideAdminBtn) sideAdminBtn.classList.add('hidden');
   }
   
   if(allProducts.length > 0) renderGrid(allProducts);
@@ -172,6 +175,9 @@ document.getElementById('logoutBtn')?.addEventListener('click', () => {
     document.getElementById('logoutBtn')?.classList.add('hidden');
     
     if(navs.admin) navs.admin.classList.add('hidden');
+    const sideAdminBtn = document.getElementById('sidebarNavAdmin');
+    if(sideAdminBtn) sideAdminBtn.classList.add('hidden');
+
     switchView('home');
     toggleSidebar();
     
@@ -198,6 +204,45 @@ function getDirectImageUrl(url) {
   }
   return url; 
 }
+
+
+// --- 3D SCROLL-SCRUB ANIMATION LOGIC (APPLE STYLE) ---
+const heroScrollTrack = document.getElementById('heroScrollTrack');
+const heroScrubModel = document.getElementById('heroScrubModel');
+const heroTextOverlay = document.getElementById('heroTextOverlay');
+
+// Pause the 3D model automatically so it doesn't play without scrolling
+if(heroScrubModel) {
+    heroScrubModel.addEventListener('load', () => {
+      heroScrubModel.pause();
+      heroScrubModel.currentTime = 0;
+    });
+}
+
+window.addEventListener('scroll', () => {
+  // Only run the complex math if we are actually looking at the Home page
+  if (!views.home.classList.contains('hidden') && heroScrollTrack && heroScrubModel) {
+    
+    const rect = heroScrollTrack.getBoundingClientRect();
+    
+    // Calculates a perfect 0.0 to 1.0 depending on how deep into the track we scrolled
+    const rawProgress = -rect.top / (rect.height - window.innerHeight);
+    const scrollProgress = Math.max(0, Math.min(1, rawProgress));
+    
+    // 1. Tie the 3D Assembly animation time directly to the Scroll Position
+    if (heroScrubModel.availableAnimations && heroScrubModel.availableAnimations.length > 0) {
+      heroScrubModel.pause(); 
+      heroScrubModel.currentTime = scrollProgress * heroScrubModel.duration;
+    }
+
+    // 2. Fade out the text box smoothly as the user starts to scroll
+    if (heroTextOverlay) {
+      const fadeProgress = Math.min(1, scrollProgress * 2.5); // Fades out fast
+      heroTextOverlay.style.opacity = 1 - fadeProgress;
+      heroTextOverlay.style.transform = `translateY(${fadeProgress * 80}px)`;
+    }
+  }
+});
 
 
 // --- DRAG AND DROP IMAGE UPLOADER ---
