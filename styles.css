@@ -4,9 +4,9 @@
   --grabcad-red: #da291c;
 }
 
-/* Default Theme: LIGHT MODE (APPLE GLASS) */
+/* LIGHT MODE (APPLE GLASS) - Video 100% Visible */
 body.light-mode {
-  --bg-dimmer: rgba(240, 244, 248, 0.4); 
+  --bg-dimmer: transparent; 
   --bg-card: rgba(255, 255, 255, 0.65); 
   --bg-nav: rgba(255, 255, 255, 0.75); 
   --bg-input: rgba(255, 255, 255, 0.55);
@@ -15,13 +15,13 @@ body.light-mode {
   --border: rgba(15, 23, 42, 0.1); 
   --glass-border: rgba(255, 255, 255, 0.9); 
   --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-  --video-op: 0.9; 
+  --video-op: 1; 
   --video-filter: grayscale(0%);
 }
 
-/* Optional Theme: DARK MODE (APPLE GLASS) */
+/* DARK MODE (APPLE GLASS) - Video 100% Visible */
 body.dark-mode {
-  --bg-dimmer: rgba(5, 8, 15, 0.6); 
+  --bg-dimmer: rgba(0, 0, 0, 0.4); /* Faint darkening so white text is readable */
   --bg-card: rgba(20, 26, 35, 0.45); 
   --bg-nav: rgba(5, 8, 15, 0.75); 
   --bg-input: rgba(0, 0, 0, 0.35);
@@ -30,8 +30,8 @@ body.dark-mode {
   --border: rgba(255, 255, 255, 0.08);
   --glass-border: rgba(255, 255, 255, 0.12); 
   --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-  --video-op: 0.65; 
-  --video-filter: grayscale(10%);
+  --video-op: 1; 
+  --video-filter: grayscale(0%);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
@@ -51,8 +51,9 @@ body { background-color: var(--bg-dimmer); color: var(--text-main); transition: 
 .app-bg-dimmer {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
   background: var(--bg-dimmer); z-index: -1; pointer-events: none;
-  backdrop-filter: blur(12px); 
-  -webkit-backdrop-filter: blur(12px);
+  /* Removed the blur completely as requested */
+  backdrop-filter: none; 
+  -webkit-backdrop-filter: none;
   transition: background 0.4s;
 }
 
@@ -224,29 +225,24 @@ model-viewer { width: 100%; height: 420px; background-color: var(--bg-input); bo
 
 /* --- MOBILE RESPONSIVENESS ENGINE --- */
 @media (max-width: 850px) {
-  /* Navbar Adjustments */
   .main-nav { display: none; }
-  .nav-text { display: none; } /* Hides "Cart", "Wishlist", "Sign In" text, leaving only icons */
+  .nav-text { display: none; } 
   .nav-actions { gap: 10px; }
-  .g-signin-btn { padding: 8px; border-radius: 50%; } /* Makes sign-in button a perfect circle icon */
+  .g-signin-btn { padding: 8px; border-radius: 50%; } 
   
-  /* Hero Section Adjustments */
   .hero-content-left { left: 5%; width: 90%; top: 50%; transform: translateY(-50%); text-align: center; }
   .hero-title { font-size: 2.2rem; }
   .hero-subtitle { font-size: 1rem; }
-  .hero-3d-container { width: 100%; opacity: 0.25; } /* Dims the 3D model heavily so text is readable over it */
+  .hero-3d-container { width: 100%; opacity: 0.25; } 
   .hero-btn-group { flex-direction: column; gap: 12px; align-items: stretch; }
   
-  /* General Layout */
   .home-section { padding: 40px 15px; }
   .glass-panel { padding: 20px; }
   .toolbar-inner { flex-direction: column; align-items: stretch; gap: 15px; }
   .search-bar { width: 100%; }
   
-  /* Admin & Grid adjustments */
-  .requests-grid { grid-template-columns: 1fr; } /* Stacks all admin cards in 1 column */
+  .requests-grid { grid-template-columns: 1fr; } 
   .admin-req-card { padding: 1rem; }
   
-  /* Modals */
   .modal-content { padding: 1.5rem; width: 95%; }
 }
