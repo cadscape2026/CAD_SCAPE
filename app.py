@@ -33,10 +33,15 @@ requests_collection = db['custom_requests']
 def require_admin(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Checks if the incoming request has the secret PIN
+        # 1. Allow the browser's empty "Preflight Check" to pass through automatically
+        if request.method == 'OPTIONS':
+            return f(*args, **kwargs)
+            
+        # 2. Check the real request for the secret PIN
         if request.headers.get('X-Admin-Key') != ADMIN_PIN:
             print("🚨 BLOCKED HACKING ATTEMPT!")
             return jsonify({"error": "Unauthorized. Access Denied."}), 403
+            
         return f(*args, **kwargs)
     return decorated_function
 
@@ -47,8 +52,8 @@ def format_product(doc):
     for c in comments_cursor:
         comments.append({
             "id": str(c["_id"]),
-            "user_name": html.escape(c.get("user_name", "")), # Sanitizes against XSS scripts
-            "text": html.escape(c.get("text", "")) # Sanitizes against XSS scripts
+            "user_name": html.escape(c.get("user_name", "")), 
+            "text": html.escape(c.get("text", "")) 
         })
     return {
         "id": prod_id,
