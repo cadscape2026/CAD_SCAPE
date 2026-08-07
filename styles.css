@@ -4,7 +4,7 @@
   --grabcad-red: #da291c;
 }
 
-/* LIGHT MODE (APPLE GLASS) - Adds a white wash to dim video for dark text */
+/* LIGHT MODE (APPLE GLASS) */
 body.light-mode {
   --bg-dimmer: rgba(255, 255, 255, 0.65); 
   --bg-card: rgba(255, 255, 255, 0.65); 
@@ -19,7 +19,7 @@ body.light-mode {
   --video-filter: grayscale(0%);
 }
 
-/* DARK MODE (APPLE GLASS) - Adds a dark shadow to dim video for white text */
+/* DARK MODE (APPLE GLASS) */
 body.dark-mode {
   --bg-dimmer: rgba(0, 0, 0, 0.65); 
   --bg-card: rgba(20, 26, 35, 0.45); 
@@ -51,7 +51,6 @@ body { background-color: var(--bg-dimmer); color: var(--text-main); transition: 
 .app-bg-dimmer {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
   background: var(--bg-dimmer); z-index: -1; pointer-events: none;
-  /* NO BLUR APPLIED TO THE BACKGROUND VIDEO */
   backdrop-filter: none; 
   -webkit-backdrop-filter: none;
   transition: background 0.4s;
@@ -108,20 +107,24 @@ body.light-mode .logo-img { mix-blend-mode: darken; }
 .sidebar-user { display: flex; flex-direction: column; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
 .sidebar-user img { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--blue-primary); margin-bottom: 10px; }
 
-/* SVG Sidebar Links */
 .sidebar-link { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: none; border: none; padding: 12px 14px; font-size: 0.95rem; color: var(--text-main); cursor: pointer; border-radius: 6px; transition: 0.2s; margin-bottom: 5px; font-weight: 500; }
 .sidebar-link:hover { background: rgba(0, 132, 255, 0.08); color: var(--blue-primary); }
 .sidebar-link svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .text-red { color: #ef4444 !important; }
 
-/* --- 3D SCROLLING HERO SECTION --- */
+/* --- 3D SCROLLING HERO SECTION (UPDATED FOR CENTERING) --- */
 .scroll-track { height: 300vh; position: relative; width: 100%; }
 .sticky-hero { position: sticky; top: 0; left: 0; width: 100%; height: 100vh; display: flex; align-items: center; overflow: hidden; }
 
-.hero-3d-container { position: absolute; top: 0; right: 0; width: 65%; height: 100%; z-index: 5; }
+/* Container is now 100% screen width to allow centering */
+.hero-3d-container { 
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; 
+  pointer-events: none; /* Let clicks pass through empty spaces to buttons */
+}
 .hero-3d-container model-viewer { 
   width: 100%; 
   height: 100%; 
+  pointer-events: auto; /* Allow dragging the model */
   background-color: transparent !important; 
   outline: none !important; 
   border: none !important;
@@ -233,7 +236,7 @@ model-viewer { width: 100%; height: 420px; background-color: var(--bg-input); bo
   .hero-content-left { left: 5%; width: 90%; top: 50%; transform: translateY(-50%); text-align: center; }
   .hero-title { font-size: 2.2rem; }
   .hero-subtitle { font-size: 1rem; }
-  .hero-3d-container { width: 100%; opacity: 0.25; } 
+  .hero-3d-container { opacity: 0.25; } 
   .hero-btn-group { flex-direction: column; gap: 12px; align-items: stretch; }
   
   .home-section { padding: 40px 15px; }
