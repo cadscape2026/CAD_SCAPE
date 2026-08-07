@@ -4,9 +4,9 @@
   --grabcad-red: #da291c;
 }
 
-/* LIGHT MODE (APPLE GLASS) - Video 100% Visible */
+/* LIGHT MODE (APPLE GLASS) - Adds a white wash to dim video for dark text */
 body.light-mode {
-  --bg-dimmer: transparent; 
+  --bg-dimmer: rgba(255, 255, 255, 0.65); 
   --bg-card: rgba(255, 255, 255, 0.65); 
   --bg-nav: rgba(255, 255, 255, 0.75); 
   --bg-input: rgba(255, 255, 255, 0.55);
@@ -15,13 +15,13 @@ body.light-mode {
   --border: rgba(15, 23, 42, 0.1); 
   --glass-border: rgba(255, 255, 255, 0.9); 
   --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-  --video-op: 1; 
+  --video-op: 0.95; 
   --video-filter: grayscale(0%);
 }
 
-/* DARK MODE (APPLE GLASS) - Video 100% Visible */
+/* DARK MODE (APPLE GLASS) - Adds a dark shadow to dim video for white text */
 body.dark-mode {
-  --bg-dimmer: rgba(0, 0, 0, 0.4); /* Faint darkening so white text is readable */
+  --bg-dimmer: rgba(0, 0, 0, 0.65); 
   --bg-card: rgba(20, 26, 35, 0.45); 
   --bg-nav: rgba(5, 8, 15, 0.75); 
   --bg-input: rgba(0, 0, 0, 0.35);
@@ -30,7 +30,7 @@ body.dark-mode {
   --border: rgba(255, 255, 255, 0.08);
   --glass-border: rgba(255, 255, 255, 0.12); 
   --shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-  --video-op: 1; 
+  --video-op: 0.95; 
   --video-filter: grayscale(0%);
 }
 
@@ -51,7 +51,7 @@ body { background-color: var(--bg-dimmer); color: var(--text-main); transition: 
 .app-bg-dimmer {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
   background: var(--bg-dimmer); z-index: -1; pointer-events: none;
-  /* Removed the blur completely as requested */
+  /* NO BLUR APPLIED TO THE BACKGROUND VIDEO */
   backdrop-filter: none; 
   -webkit-backdrop-filter: none;
   transition: background 0.4s;
