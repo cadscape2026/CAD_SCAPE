@@ -14,8 +14,8 @@
 </head>
 <body class="light-mode">
 
-  <!-- UNIVERSAL BACKGROUND VIDEO & DIMMER -->
-  <video class="app-bg-video" autoplay loop muted playsinline>
+  <!-- PERFORMANCE OPTIMIZATION: Video won't block the rest of the site from loading -->
+  <video class="app-bg-video" autoplay loop muted playsinline preload="none" poster="poster.jpg">
     <source src="background-video.mp4" type="video/mp4">
   </video>
   <div class="app-bg-dimmer"></div>
@@ -119,8 +119,6 @@
       <div class="sticky-hero">
         
         <div class="hero-3d-container">
-          
-          <!-- FIXED: ADDED DISABLE-ZOOM AND AUTOPLAY SO SCROLLING TRIGGERS ANIMATION -->
           <model-viewer 
             id="heroScrubModel" 
             src="snowflake.glb" 
@@ -134,7 +132,6 @@
             reveal="auto"
             alt="3D Interactive Assembly">
           </model-viewer>
-
         </div>
 
         <div class="hero-content-left" id="heroTextOverlay">
@@ -332,6 +329,7 @@
     </div>
   </div>
 
-  <script src="app.js?v=zoom_fix"></script>
+  <!-- CACHE BUSTER UPDATE TO FORCE BROWSER TO FORGET THE OLD FORM -->
+  <script src="app.js?v=security_fix_final"></script>
 </body>
 </html>
