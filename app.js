@@ -209,7 +209,7 @@ function getDirectImageUrl(url) {
 }
 
 
-// --- 3D SCROLL-SCRUB ANIMATION LOGIC ---
+// --- 3D SCROLL-SCRUB ANIMATION LOGIC (UPDATED WITH PING-PONG & CENTERING) ---
 const heroScrollTrack = document.getElementById('heroScrollTrack');
 const heroScrubModel = document.getElementById('heroScrubModel');
 const heroTextOverlay = document.getElementById('heroTextOverlay');
@@ -226,17 +226,37 @@ window.addEventListener('scroll', () => {
     
     const rect = heroScrollTrack.getBoundingClientRect();
     const rawProgress = -rect.top / (rect.height - window.innerHeight);
-    const scrollProgress = Math.max(0, Math.min(1, rawProgress));
+    const scrollProgress = Math.max(0, Math.min(1, rawProgress)); // Goes from 0 to 1
+    
+    // 1. PING-PONG ANIMATION LOGIC
+    // As you scroll from 0 to 0.5, animation goes forward (0 to 1) -> Disassemble
+    // As you scroll from 0.5 to 1.0, animation goes backward (1 to 0) -> Assemble
+    const animProgress = scrollProgress <= 0.5 ? (scrollProgress * 2) : (2 - (scrollProgress * 2));
     
     if (heroScrubModel.availableAnimations && heroScrubModel.availableAnimations.length > 0) {
       heroScrubModel.pause(); 
-      heroScrubModel.currentTime = scrollProgress * heroScrubModel.duration;
+      heroScrubModel.currentTime = animProgress * heroScrubModel.duration;
     }
 
+    // 2. SMOOTH CENTERING SLIDE LOGIC
+    // On desktop, the model starts pushed to the right side (25vw).
+    // As it disassembles (animProgress goes to 1), it mathematically slides to the exact center (0vw).
+    let shiftX = 0;
+    if (window.innerWidth > 850) {
+      shiftX = 25 - (animProgress * 25);
+    }
+    heroScrubModel.style.transform = `translateX(${shiftX}vw)`;
+
+    // 3. TEXT FADING & CLICK FIX
     if (heroTextOverlay) {
+      // Text fades out 3x faster so it disappears as the model slides in
       const fadeProgress = Math.min(1, scrollProgress * 3); 
       heroTextOverlay.style.opacity = 1 - fadeProgress;
       heroTextOverlay.style.transform = `translateY(calc(-50% - ${fadeProgress * 50}px))`;
+      
+      // Magic fix: Once the text is faded, disable its pointer events 
+      // so the user can freely click and rotate the 3D model behind it!
+      heroTextOverlay.style.pointerEvents = fadeProgress > 0.5 ? 'none' : 'auto';
     }
   }
 });
