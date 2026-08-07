@@ -115,17 +115,18 @@
 
   <!-- VIEW: PARALLAX HOMEPAGE WITH 3D SCROLL ANIMATION -->
   <section id="viewHome" class="view-section active">
-    <!-- This extremely tall track allows us to scroll "through" the animation -->
     <div class="scroll-track" id="heroScrollTrack">
-      <!-- This sticky layer stays perfectly on screen while scrolling -->
       <div class="sticky-hero">
         
-        <!-- Interactive 3D Model Layer (Floating on the right) -->
         <div class="hero-3d-container">
+          
+          <!-- FIXED: ADDED DISABLE-ZOOM AND AUTOPLAY SO SCROLLING TRIGGERS ANIMATION -->
           <model-viewer 
             id="heroScrubModel" 
             src="snowflake.glb" 
             camera-controls 
+            disable-zoom
+            autoplay
             shadow-intensity="1" 
             interaction-prompt="none"
             camera-orbit="0deg 75deg 105%"
@@ -133,12 +134,13 @@
             reveal="auto"
             alt="3D Interactive Assembly">
           </model-viewer>
+
         </div>
 
         <div class="hero-content-left" id="heroTextOverlay">
           <span class="hero-badge">PRECISION ENGINEERING</span>
           <h1 class="hero-title">Industrial CAD & Custom Assemblies</h1>
-          <p class="hero-subtitle">Best viewed on a desktop..</p>
+          <p class="hero-subtitle">Scroll down to assemble the model. Click and drag to rotate it.</p>
           <div class="hero-btn-group">
             <button class="btn-blue-large" onclick="switchView('market')">Explore Library</button>
             <button class="btn-glass-large" onclick="switchView('requests')">Custom Design</button>
@@ -220,8 +222,6 @@
       <form id="uploadForm">
         <input type="text" id="modelName" placeholder="Product Name" required>
         <textarea id="modelDesc" rows="3" placeholder="Product Description..." required></textarea>
-        
-        <!-- EXPLICITLY REMOVED VALUE="0", ADDED CLEAR PLACEHOLDER -->
         <input type="number" id="modelPrice" step="1" placeholder="Price in ₹ (Enter 0 for Free)" required>
         
         <div class="drop-zone" id="uploadDropZone">
@@ -310,10 +310,7 @@
       <form id="editForm" class="modal-form" style="margin-top: 15px;">
         <input type="text" id="editModelName" placeholder="Product Name" required>
         <textarea id="editModelDesc" rows="3" placeholder="Product Description..." required></textarea>
-        
-        <!-- EXPLICITLY REMOVED VALUE="0", ADDED CLEAR PLACEHOLDER -->
         <input type="number" id="editModelPrice" step="1" placeholder="Price in ₹ (Enter 0 for Free)" required>
-        
         <div class="drop-zone" id="editDropZone">
           <span class="drop-zone__prompt">Drag & Drop New Image</span>
           <input type="file" id="editModelImageFile" class="drop-zone__input" accept="image/*">
@@ -335,7 +332,6 @@
     </div>
   </div>
 
-  <!-- CACHE BUSTER UPDATE TO FORCE BROWSER TO FORGET THE OLD FORM -->
-  <script src="app.js?v=placeholder_fix_final"></script>
+  <script src="app.js?v=zoom_fix"></script>
 </body>
 </html>
