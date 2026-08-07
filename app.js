@@ -1,4 +1,5 @@
 const API_BASE = "https://procad-backend.onrender.com/api"; 
+const ADMIN_SECRET = "778899"; // SECURITY PIN TO PREVENT HACKING
 
 // --- GLOBAL STATE ---
 let cart = [];
@@ -33,7 +34,6 @@ function switchView(target) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// BULLETPROOF EVENT LISTENERS 
 document.getElementById('logoHomeBtn')?.addEventListener('click', (e) => { e.preventDefault(); switchView('home'); });
 if(navs.market) navs.market.addEventListener('click', (e) => { e.preventDefault(); switchView('market'); });
 if(navs.requests) navs.requests.addEventListener('click', (e) => { e.preventDefault(); switchView('requests'); });
@@ -60,8 +60,7 @@ document.getElementById('btnShowRequests')?.addEventListener('click', () => {
   fetchAdminRequests();
 });
 
-
-// --- SIDEBAR & THEME TOGGLE (DEFAULT LIGHT MODE) ---
+// --- SIDEBAR & THEME TOGGLE ---
 function toggleSidebar() {
   document.getElementById('sidebar')?.classList.toggle('open');
   document.getElementById('sidebarOverlay')?.classList.toggle('hidden');
@@ -408,7 +407,7 @@ window.toggleLightboxView = function(view) {
 };
 
 
-// --- RENDER PRODUCTS GRID (LAZY LOADING ADDED) ---
+// --- RENDER PRODUCTS GRID ---
 function generateProductCardHTML(p, isAdmin, isWishlisted) {
   const priceDisplay = p.price === 0 
     ? `<span class="price text-green">Free</span>` 
@@ -502,17 +501,17 @@ async function loadProducts() {
 }
 
 
-// --- ADMIN: PRODUCT MANAGEMENT ---
+// --- ADMIN: PRODUCT MANAGEMENT (NOW SECURE) ---
 window.submitNewProduct = async function() {
   const btn = document.getElementById('uploadBtn');
   const name = document.getElementById('modelName').value;
   const desc = document.getElementById('modelDesc').value;
-  const price = document.getElementById('modelPrice').value;
+  const priceInput = document.getElementById('modelPrice').value;
   const file = document.getElementById('modelFile').value;
   const url3d = document.getElementById('model3dUrl')?.value || '';
 
-  if (!name || !desc || !currentUploadBase64 || !file) {
-    alert("Please fill in all required fields!");
+  if (!name || !desc || !currentUploadBase64 || !file || priceInput === '') {
+    alert("Please fill in all required fields! (Enter 0 if the product is free)");
     return;
   }
 
@@ -525,7 +524,7 @@ window.submitNewProduct = async function() {
   const data = { 
     name, 
     description: desc, 
-    price, 
+    price: parseFloat(priceInput) || 0, 
     image_url: currentUploadBase64, 
     download_url: file,
     model_3d_url: url3d 
@@ -534,7 +533,10 @@ window.submitNewProduct = async function() {
   try {
     const response = await fetch(`${API_BASE}/products`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-Admin-Key': ADMIN_SECRET // SENDS THE SECRET PIN TO THE BACKEND
+      },
       body: JSON.stringify(data)
     });
 
@@ -544,7 +546,7 @@ window.submitNewProduct = async function() {
       resetDropZone("uploadDropZone", false); 
       loadProducts(); 
     } else {
-      alert("Failed to upload product.");
+      alert("Unauthorized: Hack attempt blocked or wrong Admin PIN.");
     }
   } catch (error) {
     alert("Error uploading product.");
@@ -599,11 +601,13 @@ window.submitEditProduct = async function() {
   const btn = document.getElementById('editBtn');
   const name = document.getElementById('editModelName')?.value;
   const desc = document.getElementById('editModelDesc')?.value;
-  const price = document.getElementById('editModelPrice')?.value;
+  const priceInput = document.getElementById('editModelPrice')?.value;
   const file = document.getElementById('editModelFile')?.value;
   const url3d = document.getElementById('editModel3dUrl')?.value || '';
 
-  if (!name || !desc || !currentEditBase64 || !file) return alert("Fill all fields!");
+  if (!name || !desc || !currentEditBase64 || !file || priceInput === '') {
+      return alert("Fill all fields! (Enter 0 if the product is free)");
+  }
 
   if(btn){
       btn.textContent = "Saving...";
@@ -614,7 +618,7 @@ window.submitEditProduct = async function() {
   const data = { 
     name, 
     description: desc, 
-    price, 
+    price: parseFloat(priceInput) || 0, 
     image_url: currentEditBase64, 
     download_url: file,
     model_3d_url: url3d 
@@ -623,7 +627,10 @@ window.submitEditProduct = async function() {
   try {
     const res = await fetch(`${API_BASE}/products/${currentEditId}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-Admin-Key': ADMIN_SECRET
+      },
       body: JSON.stringify(data)
     });
 
@@ -633,7 +640,7 @@ window.submitEditProduct = async function() {
       resetDropZone('editDropZone', true);
       loadProducts();
     } else {
-      alert("Failed to update product.");
+      alert("Unauthorized: Hack attempt blocked or wrong Admin PIN.");
     }
   } catch (error) {
     alert("Error communicating with server.");
@@ -649,12 +656,15 @@ window.submitEditProduct = async function() {
 window.deleteProduct = async function(id) {
   if(!confirm("Permanently delete this product?")) return;
   try {
-    const res = await fetch(`${API_BASE}/products/${id}`, { method: 'DELETE' });
+    const res = await fetch(`${API_BASE}/products/${id}`, { 
+      method: 'DELETE',
+      headers: { 'X-Admin-Key': ADMIN_SECRET } 
+    });
     if(res.ok) {
       alert("Product deleted!");
       loadProducts();
     } else {
-      alert("Failed to delete product.");
+      alert("Unauthorized: Hack attempt blocked or wrong Admin PIN.");
     }
   } catch (error) {
     alert("Error communicating with server.");
@@ -749,14 +759,17 @@ window.saveAdminUpdate = async function(id) {
   try {
     const res = await fetch(`${API_BASE}/requests/${id}`, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-Admin-Key': ADMIN_SECRET
+      },
       body: JSON.stringify(payload)
     });
     if(res.ok) {
        alert("Order saved successfully!");
        fetchAdminRequests(); 
     } else {
-       alert("Failed to update Order.");
+       alert("Unauthorized: Hack attempt blocked or wrong Admin PIN.");
     }
   } catch(e) {
      alert("Error connecting to server.");
