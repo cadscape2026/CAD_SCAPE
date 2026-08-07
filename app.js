@@ -83,23 +83,21 @@ function updateThemeUI(setDark) {
     document.body.classList.add('dark-mode');
     if(themeToggleBtn) themeToggleBtn.innerHTML = `${sunIcon} <span>Switch to Light Mode</span>`;
     if(mainLogoImg) mainLogoImg.src = 'logo_4.png';
-    localStorage.setItem('cadTheme', 'dark'); // Save to memory
+    localStorage.setItem('cadTheme', 'dark'); 
   } else {
     document.body.classList.remove('dark-mode');
     document.body.classList.add('light-mode');
     if(themeToggleBtn) themeToggleBtn.innerHTML = `${moonIcon} <span>Switch to Dark Mode</span>`;
     if(mainLogoImg) mainLogoImg.src = 'logo_light.png';
-    localStorage.setItem('cadTheme', 'light'); // Save to memory
+    localStorage.setItem('cadTheme', 'light'); 
   }
 }
 
-// Click event for the toggle button
 document.getElementById('themeToggleBtn')?.addEventListener('click', () => {
   const isCurrentlyDark = document.body.classList.contains('dark-mode');
   updateThemeUI(!isCurrentlyDark); 
 });
 
-// Run theme update once DOM loads to match text and icons to saved preference
 document.addEventListener('DOMContentLoaded', () => {
   const isSavedDark = document.body.classList.contains('dark-mode');
   updateThemeUI(isSavedDark);
@@ -221,25 +219,18 @@ function getDirectImageUrl(url) {
 }
 
 
-// --- 3D SCROLL-SCRUB ANIMATION LOGIC ---
+// --- 3D SCROLL-SCRUB ANIMATION LOGIC (FIXED INITIAL START POSITION) ---
 const heroScrollTrack = document.getElementById('heroScrollTrack');
 const heroScrubModel = document.getElementById('heroScrubModel');
 const heroTextOverlay = document.getElementById('heroTextOverlay');
 
-if(heroScrubModel) {
-    heroScrubModel.addEventListener('load', () => {
-      heroScrubModel.pause();
-      heroScrubModel.currentTime = 0;
-    });
-}
-
-window.addEventListener('scroll', () => {
+function updateScrollAnimation() {
   if (!views.home.classList.contains('hidden') && heroScrollTrack && heroScrubModel) {
-    
     const rect = heroScrollTrack.getBoundingClientRect();
-    const rawProgress = -rect.top / (rect.height - window.innerHeight);
-    const scrollProgress = Math.max(0, Math.min(1, rawProgress)); // Goes from 0 to 1
+    let rawProgress = -rect.top / (rect.height - window.innerHeight);
+    if (isNaN(rawProgress)) rawProgress = 0; // Prevent Math errors before render
     
+    const scrollProgress = Math.max(0, Math.min(1, rawProgress)); 
     const animProgress = scrollProgress <= 0.5 ? (scrollProgress * 2) : (2 - (scrollProgress * 2));
     
     if (heroScrubModel.availableAnimations && heroScrubModel.availableAnimations.length > 0) {
@@ -260,7 +251,22 @@ window.addEventListener('scroll', () => {
       heroTextOverlay.style.pointerEvents = fadeProgress > 0.5 ? 'none' : 'auto';
     }
   }
-});
+}
+
+// Attach the listener
+window.addEventListener('scroll', updateScrollAnimation);
+window.addEventListener('resize', updateScrollAnimation); 
+
+// FIX: Force the animation to perfectly sync to the start position instantly on load
+if(heroScrubModel) {
+    heroScrubModel.addEventListener('load', () => {
+      heroScrubModel.pause();
+      heroScrubModel.currentTime = 0;
+      updateScrollAnimation(); 
+    });
+}
+// Run once immediately as a safety net
+updateScrollAnimation();
 
 
 // --- DRAG AND DROP IMAGE UPLOADER ---
