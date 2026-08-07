@@ -60,7 +60,8 @@ document.getElementById('btnShowRequests')?.addEventListener('click', () => {
   fetchAdminRequests();
 });
 
-// --- SIDEBAR & THEME TOGGLE ---
+
+// --- SIDEBAR & LOCAL-STORAGE THEME TOGGLE ---
 function toggleSidebar() {
   document.getElementById('sidebar')?.classList.toggle('open');
   document.getElementById('sidebarOverlay')?.classList.toggle('hidden');
@@ -70,27 +71,38 @@ document.getElementById('menuBtn')?.addEventListener('click', toggleSidebar);
 document.getElementById('closeSidebar')?.addEventListener('click', toggleSidebar);
 document.getElementById('sidebarOverlay')?.addEventListener('click', toggleSidebar);
 
-function updateThemeUI(isDark) {
+function updateThemeUI(setDark) {
   const themeToggleBtn = document.getElementById('themeToggleBtn');
   const mainLogoImg = document.getElementById('mainLogoImg');
   
   const sunIcon = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
   const moonIcon = `<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
 
-  if (isDark) {
-    document.body.classList.replace('light-mode', 'dark-mode');
+  if (setDark) {
+    document.body.classList.remove('light-mode');
+    document.body.classList.add('dark-mode');
     if(themeToggleBtn) themeToggleBtn.innerHTML = `${sunIcon} <span>Switch to Light Mode</span>`;
     if(mainLogoImg) mainLogoImg.src = 'logo_4.png';
+    localStorage.setItem('cadTheme', 'dark'); // Save to memory
   } else {
-    document.body.classList.replace('dark-mode', 'light-mode');
+    document.body.classList.remove('dark-mode');
+    document.body.classList.add('light-mode');
     if(themeToggleBtn) themeToggleBtn.innerHTML = `${moonIcon} <span>Switch to Dark Mode</span>`;
     if(mainLogoImg) mainLogoImg.src = 'logo_light.png';
+    localStorage.setItem('cadTheme', 'light'); // Save to memory
   }
 }
 
+// Click event for the toggle button
 document.getElementById('themeToggleBtn')?.addEventListener('click', () => {
-  const isDark = document.body.classList.contains('light-mode');
-  updateThemeUI(isDark);
+  const isCurrentlyDark = document.body.classList.contains('dark-mode');
+  updateThemeUI(!isCurrentlyDark); 
+});
+
+// Run theme update once DOM loads to match text and icons to saved preference
+document.addEventListener('DOMContentLoaded', () => {
+  const isSavedDark = document.body.classList.contains('dark-mode');
+  updateThemeUI(isSavedDark);
 });
 
 
@@ -209,7 +221,7 @@ function getDirectImageUrl(url) {
 }
 
 
-// --- 3D SCROLL-SCRUB ANIMATION LOGIC (UPDATED WITH PING-PONG & CENTERING) ---
+// --- 3D SCROLL-SCRUB ANIMATION LOGIC ---
 const heroScrollTrack = document.getElementById('heroScrollTrack');
 const heroScrubModel = document.getElementById('heroScrubModel');
 const heroTextOverlay = document.getElementById('heroTextOverlay');
@@ -228,9 +240,6 @@ window.addEventListener('scroll', () => {
     const rawProgress = -rect.top / (rect.height - window.innerHeight);
     const scrollProgress = Math.max(0, Math.min(1, rawProgress)); // Goes from 0 to 1
     
-    // 1. PING-PONG ANIMATION LOGIC
-    // As you scroll from 0 to 0.5, animation goes forward (0 to 1) -> Disassemble
-    // As you scroll from 0.5 to 1.0, animation goes backward (1 to 0) -> Assemble
     const animProgress = scrollProgress <= 0.5 ? (scrollProgress * 2) : (2 - (scrollProgress * 2));
     
     if (heroScrubModel.availableAnimations && heroScrubModel.availableAnimations.length > 0) {
@@ -238,24 +247,16 @@ window.addEventListener('scroll', () => {
       heroScrubModel.currentTime = animProgress * heroScrubModel.duration;
     }
 
-    // 2. SMOOTH CENTERING SLIDE LOGIC
-    // On desktop, the model starts pushed to the right side (25vw).
-    // As it disassembles (animProgress goes to 1), it mathematically slides to the exact center (0vw).
     let shiftX = 0;
     if (window.innerWidth > 850) {
       shiftX = 25 - (animProgress * 25);
     }
     heroScrubModel.style.transform = `translateX(${shiftX}vw)`;
 
-    // 3. TEXT FADING & CLICK FIX
     if (heroTextOverlay) {
-      // Text fades out 3x faster so it disappears as the model slides in
       const fadeProgress = Math.min(1, scrollProgress * 3); 
       heroTextOverlay.style.opacity = 1 - fadeProgress;
       heroTextOverlay.style.transform = `translateY(calc(-50% - ${fadeProgress * 50}px))`;
-      
-      // Magic fix: Once the text is faded, disable its pointer events 
-      // so the user can freely click and rotate the 3D model behind it!
       heroTextOverlay.style.pointerEvents = fadeProgress > 0.5 ? 'none' : 'auto';
     }
   }
@@ -521,7 +522,7 @@ async function loadProducts() {
 }
 
 
-// --- ADMIN: PRODUCT MANAGEMENT (NOW SECURE) ---
+// --- ADMIN: PRODUCT MANAGEMENT ---
 window.submitNewProduct = async function() {
   const btn = document.getElementById('uploadBtn');
   const name = document.getElementById('modelName').value;
@@ -555,7 +556,7 @@ window.submitNewProduct = async function() {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'X-Admin-Key': ADMIN_SECRET // SENDS THE SECRET PIN TO THE BACKEND
+        'X-Admin-Key': ADMIN_SECRET 
       },
       body: JSON.stringify(data)
     });
