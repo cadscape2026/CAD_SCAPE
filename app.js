@@ -219,7 +219,7 @@ function getDirectImageUrl(url) {
 }
 
 
-// --- 3D SCROLL-SCRUB ANIMATION LOGIC (FIXED INITIAL START POSITION) ---
+// --- 3D SCROLL-SCRUB ANIMATION LOGIC ---
 const heroScrollTrack = document.getElementById('heroScrollTrack');
 const heroScrubModel = document.getElementById('heroScrubModel');
 const heroTextOverlay = document.getElementById('heroTextOverlay');
@@ -228,7 +228,7 @@ function updateScrollAnimation() {
   if (!views.home.classList.contains('hidden') && heroScrollTrack && heroScrubModel) {
     const rect = heroScrollTrack.getBoundingClientRect();
     let rawProgress = -rect.top / (rect.height - window.innerHeight);
-    if (isNaN(rawProgress)) rawProgress = 0; // Prevent Math errors before render
+    if (isNaN(rawProgress)) rawProgress = 0; 
     
     const scrollProgress = Math.max(0, Math.min(1, rawProgress)); 
     const animProgress = scrollProgress <= 0.5 ? (scrollProgress * 2) : (2 - (scrollProgress * 2));
@@ -253,11 +253,9 @@ function updateScrollAnimation() {
   }
 }
 
-// Attach the listener
 window.addEventListener('scroll', updateScrollAnimation);
 window.addEventListener('resize', updateScrollAnimation); 
 
-// FIX: Force the animation to perfectly sync to the start position instantly on load
 if(heroScrubModel) {
     heroScrubModel.addEventListener('load', () => {
       heroScrubModel.pause();
@@ -265,7 +263,6 @@ if(heroScrubModel) {
       updateScrollAnimation(); 
     });
 }
-// Run once immediately as a safety net
 updateScrollAnimation();
 
 
@@ -370,7 +367,7 @@ function initCarousel(products) {
       <div class="carousel-slide">
         <img src="${getDirectImageUrl(p.image_url)}" alt="${p.name}" loading="lazy">
         <div class="carousel-info">
-          <h2 style="margin-bottom:8px;">${p.name}</h2>
+          <h2>${p.name}</h2>
           <button class="btn-blue-large" onclick="addToCart('${p.id}', '${p.name}', ${p.price}, '${p.download_url}')">Add to Cart</button>
         </div>
       </div>
