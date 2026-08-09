@@ -112,7 +112,7 @@ body.light-mode .logo-img { mix-blend-mode: darken; }
 .sidebar-link svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .text-red { color: #ef4444 !important; }
 
-/* --- 3D SCROLLING HERO SECTION (UPDATED START POSITION) --- */
+/* --- 3D SCROLLING HERO SECTION --- */
 .scroll-track { height: 300vh; position: relative; width: 100%; }
 .sticky-hero { position: sticky; top: 0; left: 0; width: 100%; height: 100vh; display: flex; align-items: center; overflow: hidden; }
 
@@ -128,7 +128,7 @@ body.light-mode .logo-img { mix-blend-mode: darken; }
   outline: none !important; 
   border: none !important;
   --poster-color: transparent; 
-  transform: translateX(25vw); /* FIXED: Forces model to start on the right initially */
+  transform: translateX(25vw); 
 }
 
 .hero-content-left { position: absolute; top: 50%; left: 8%; transform: translateY(-50%); z-index: 10; max-width: 500px; text-align: left; transition: opacity 0.1s linear, transform 0.1s linear; }
@@ -154,11 +154,41 @@ body.light-mode .logo-img { mix-blend-mode: darken; }
 .search-bar { width: 320px; padding: 10px 16px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); font-size: 0.9rem; outline: none; transition: 0.2s; backdrop-filter: blur(10px);}
 .search-bar:focus { background: var(--bg-card); border-color: var(--blue-primary); box-shadow: 0 0 0 3px rgba(0, 132, 255, 0.2);}
 
-.carousel-container { width: 100%; height: 380px; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; position: relative; box-shadow: var(--shadow); }
-.carousel-track { display: flex; width: 100%; height: 100%; transition: transform 0.5s ease-in-out; }
+/* AMAZON-STYLE EDGE-TO-EDGE CAROUSEL */
+.carousel-container { 
+  width: 100%; 
+  height: 480px; 
+  background: transparent; 
+  overflow: hidden; 
+  position: relative; 
+  margin-bottom: -100px; /* Pulls the product grid upward over the fade */
+  z-index: 1;
+}
+.carousel-track { display: flex; width: 100%; height: 100%; transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1); }
 .carousel-slide { min-width: 100%; height: 100%; position: relative; }
-.carousel-slide img { width: 100%; height: 100%; object-fit: cover; }
-.carousel-info { position: absolute; bottom: 0; left: 0; width: 100%; padding: 24px; background: linear-gradient(to top, rgba(0,0,0,0.85), transparent); color: #fff; }
+.carousel-slide img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
+  /* The Magic Fade into the Background */
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
+}
+.carousel-info { 
+  position: absolute; 
+  bottom: 120px; /* Sits exactly on the fade line */
+  left: 0; 
+  width: 100%; 
+  padding: 0 5%; /* Stays aligned within edges */
+  background: transparent; 
+  color: #fff; 
+  text-shadow: 0 4px 12px rgba(0,0,0,0.9);
+  pointer-events: none;
+}
+.carousel-info h2 { font-size: 2.8rem; margin-bottom: 15px; font-weight: 800; }
+.carousel-info button { pointer-events: auto; } /* Ensures the "Add to Cart" button remains clickable */
+
+.store-grid-container { position: relative; z-index: 10; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; padding-bottom: 50px; }
 .card { border-radius: 12px; overflow: hidden; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -236,17 +266,19 @@ model-viewer { width: 100%; height: 420px; background-color: var(--bg-input); bo
   .hero-content-left { left: 5%; width: 90%; top: 50%; transform: translateY(-50%); text-align: center; }
   .hero-title { font-size: 2.2rem; }
   .hero-subtitle { font-size: 1rem; }
-  .hero-3d-container { opacity: 0.25; }
-  
-  /* FIXED: Remove starting translation shift for mobile screens */ 
+  .hero-3d-container { opacity: 0.25; } 
   .hero-3d-container model-viewer { transform: translateX(0vw); } 
-
   .hero-btn-group { flex-direction: column; gap: 12px; align-items: stretch; }
   
   .home-section { padding: 40px 15px; }
   .glass-panel { padding: 20px; }
   .toolbar-inner { flex-direction: column; align-items: stretch; gap: 15px; }
   .search-bar { width: 100%; }
+
+  /* Mobile scaling for the Amazon-style Carousel */
+  .carousel-container { height: 350px; margin-bottom: -60px; }
+  .carousel-info { bottom: 80px; }
+  .carousel-info h2 { font-size: 2rem; }
   
   .requests-grid { grid-template-columns: 1fr; } 
   .admin-req-card { padding: 1rem; }
