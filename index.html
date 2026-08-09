@@ -3,17 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>CAD SCAPE | Precision Engineering</title>
+  <title>CAD SCAPE | Precision Engineering Platform</title>
+  
   <link rel="icon" type="image/png" href="logo_4.png">
   
+  <!-- Premium Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
+  <!-- Lenis Smooth Scroll Engine -->
   <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
 
   <link rel="stylesheet" href="styles.css">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Google's 3D Model Viewer Engine -->
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
 </head>
 <body class="dark-mode">
@@ -25,6 +29,7 @@
   <div class="custom-cursor" id="customCursor"></div>
   <div class="custom-cursor-follower" id="customCursorFollower"></div>
 
+  <!-- THEME ANTI-FLASH SCRIPT -->
   <script>
     if (localStorage.getItem('cadTheme') === 'light') {
       document.body.classList.replace('dark-mode', 'light-mode');
@@ -36,6 +41,7 @@
   <div class="ambient-glow glow-2"></div>
   <div class="noise-overlay"></div>
 
+  <!-- PERFORMANCE OPTIMIZATION: Background Video -->
   <video class="app-bg-video" autoplay loop muted playsinline preload="none" poster="poster.jpg">
     <source src="background-video.mp4" type="video/mp4">
   </video>
@@ -48,13 +54,16 @@
         <img id="mainLogoImg" src="logo_4.png" alt="CAD SCAPE" class="logo-img" onerror="this.onerror=null; this.src='logo_light.png';">
       </a>
 
+      <!-- Hidden on Mobile -->
       <nav class="main-nav">
         <a href="#" id="navMarket" class="hover-target">Store</a>
         <a href="#" id="navRequests" class="hover-target">Custom</a>
         <a href="#" id="navAdmin" class="hidden hover-target">Admin</a>
       </nav>
 
+      <!-- Action Buttons -->
       <div class="nav-actions">
+        
         <button class="nav-search-btn hover-target" onclick="toggleCmdPalette()">
           <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
           <span>Search...</span>
@@ -64,6 +73,7 @@
           <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
           <span class="badge" id="wishlistCount">0</span>
         </button>
+        
         <button id="cartBtn" class="nav-link icon-only hover-target">
           <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
           <span class="badge" id="cartCount">0</span>
@@ -75,13 +85,14 @@
     </header>
   </div>
 
-  <!-- SIDEBAR (Refined sizes) -->
+  <!-- SIDEBAR -->
   <div id="sidebarOverlay" class="sidebar-overlay hidden"></div>
   <aside id="sidebar" class="sidebar">
     <div class="sidebar-header">
       <h3>Account</h3>
       <button id="closeSidebar" class="icon-btn hover-target">&times;</button>
     </div>
+    
     <div class="sidebar-content">
       <div id="sidebarUserInfo" class="sidebar-user hidden">
         <img id="userAvatar" src="" alt="Avatar">
@@ -96,14 +107,23 @@
       <div class="sidebar-menu">
         <div class="mobile-only-nav">
           <button class="sidebar-link hover-target" onclick="switchView('home'); toggleSidebar();">Home</button>
-          <button class="sidebar-link hover-target" onclick="switchView('market'); toggleSidebar();">Store</button>
-          <button class="sidebar-link hover-target" onclick="switchView('requests'); toggleSidebar();">Custom Design</button>
-          <button id="sidebarNavAdmin" class="sidebar-link hidden text-blue hover-target" onclick="switchView('admin'); toggleSidebar();">Admin</button>
+          <button class="sidebar-link hover-target" onclick="switchView('market'); toggleSidebar();">Store & Models</button>
+          <button class="sidebar-link hover-target" onclick="switchView('requests'); toggleSidebar();">Design Requests</button>
+          <button id="sidebarNavAdmin" class="sidebar-link hidden text-blue hover-target" onclick="switchView('admin'); toggleSidebar();">Admin Console</button>
           <hr style="border-color: var(--border); margin: 10px 0;">
         </div>
-        <button id="themeToggleBtn" class="sidebar-link hover-target"><span>Switch Theme</span></button>
-        <button id="orderHistoryBtn" class="sidebar-link hover-target"><span>Order History</span></button>
-        <button id="logoutBtn" class="sidebar-link text-red hidden hover-target"><span>Sign Out</span></button>
+
+        <button id="themeToggleBtn" class="sidebar-link hover-target">
+          <span>Switch Theme</span>
+        </button>
+        
+        <button id="orderHistoryBtn" class="sidebar-link hover-target">
+          <span>Order & Request History</span>
+        </button>
+        
+        <button id="logoutBtn" class="sidebar-link text-red hidden hover-target">
+          <span>Sign Out</span>
+        </button>
       </div>
     </div>
   </aside>
@@ -113,10 +133,12 @@
     <div class="cmd-palette" onclick="event.stopPropagation()">
       <div class="cmd-header">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        <input type="text" id="cmdSearchInput" placeholder="Search components..." autocomplete="off">
+        <input type="text" id="cmdSearchInput" placeholder="Search components, assemblies, files..." autocomplete="off">
         <button class="cmd-esc hover-target" onclick="toggleCmdPalette()">ESC</button>
       </div>
-      <div class="cmd-results" id="cmdResults"></div>
+      <div class="cmd-results" id="cmdResults">
+        <!-- Search results injected here via JS -->
+      </div>
     </div>
   </div>
 
@@ -124,9 +146,23 @@
   <section id="viewHome" class="view-section active">
     <div class="scroll-track" id="heroScrollTrack">
       <div class="sticky-hero">
+        
         <div class="hero-3d-container">
-          <model-viewer id="heroScrubModel" src="snowflake.glb" camera-controls disable-zoom autoplay shadow-intensity="1" interaction-prompt="none" camera-orbit="0deg 75deg 105%" loading="eager" reveal="auto" alt="3D Assembly"></model-viewer>
+          <model-viewer 
+            id="heroScrubModel" 
+            src="snowflake.glb" 
+            camera-controls 
+            disable-zoom
+            autoplay
+            shadow-intensity="1" 
+            interaction-prompt="none"
+            camera-orbit="0deg 75deg 105%"
+            loading="eager"
+            reveal="auto"
+            alt="3D Interactive Assembly">
+          </model-viewer>
         </div>
+
         <div class="hero-content-left reveal" id="heroTextOverlay">
           <span class="hero-badge">AEROSPACE & ROBOTICS</span>
           <h1 class="hero-title">Engineering The Future.</h1>
@@ -147,19 +183,23 @@
       </div>
     </div>
 
+    <!-- SECTION 2: STORE HIGHLIGHTS -->
     <div class="home-section">
       <div class="glass-panel reveal">
         <h2>Precision at Scale.</h2>
-        <p>Production-ready SolidWorks, STEP, and parametric assemblies crafted for industrial robotics, aerospace, and mechanical engineering.</p>
+        <p>Production-ready SolidWorks, STEP, and parametric assemblies crafted for industrial robotics, aerospace, and mechanical engineering. Instantly download high-quality mechanical components.</p>
         
         <h2 style="margin-top: 50px;">Latest Additions</h2>
-        <div class="grid" id="homeRecentGrid"></div>
+        <div class="grid" id="homeRecentGrid">
+          <!-- JS populates models here -->
+        </div>
         <div style="text-align: center; margin-top: 40px;">
            <button class="btn-secondary hover-target" onclick="switchView('market')">View Entire Store</button>
         </div>
       </div>
     </div>
 
+    <!-- SECTION 3: CUSTOM SERVICES -->
     <div class="home-section">
       <div class="glass-panel reveal" style="text-align:center; padding: 80px 40px;">
         <h2>Bespoke Assemblies.</h2>
@@ -180,6 +220,7 @@
       </div>
     </div>
 
+    <!-- Product Grid & Filters -->
     <div class="container store-grid-container">
       <div class="filter-bar reveal">
         <div class="filter-chips">
@@ -189,9 +230,12 @@
           <button class="chip hover-target">Automotive</button>
         </div>
         <div class="filter-actions">
-           <button class="btn-secondary hover-target" onclick="toggleCmdPalette()" style="padding: 10px 20px; font-size: 0.8rem;">Filter / Search</button>
+           <button class="btn-secondary hover-target" onclick="toggleCmdPalette()" style="padding: 10px 20px; font-size: 0.8rem;">
+              Filter / Search
+           </button>
         </div>
       </div>
+
       <div class="grid" id="productGrid"></div>
     </div>
   </section>
@@ -201,6 +245,7 @@
     <div class="form-card reveal" style="margin-top: 60px;">
       <h2>Request Custom CAD Build</h2>
       <p style="color:var(--text-muted); margin-bottom: 30px;">Describe your engineering requirements. We will review and provide a quote.</p>
+      
       <form id="requestForm">
         <input type="tel" id="reqPhone" placeholder="Phone or WhatsApp Number" required>
         <textarea id="reqDetails" rows="5" placeholder="Dimensions, constraints, mechanical requirements..." required></textarea>
@@ -217,22 +262,27 @@
       <button id="btnShowRequests" class="btn-secondary hover-target">View Incoming Requests</button>
     </div>
 
+    <!-- Upload Section -->
     <div id="adminUploadSection" class="form-card reveal">
       <h2>Publish New CAD Product</h2>
       <form id="uploadForm">
         <input type="text" id="modelName" placeholder="Product Name" required>
         <textarea id="modelDesc" rows="3" placeholder="Product Description..." required></textarea>
         <input type="number" id="modelPrice" step="1" placeholder="Price in ₹ (Enter 0 for Free)" required>
+        
         <div class="drop-zone hover-target" id="uploadDropZone">
           <span class="drop-zone__prompt">Drag & Drop Main Thumbnail Image</span>
           <input type="file" id="modelImageFile" class="drop-zone__input" accept="image/*">
         </div>
+
         <input type="url" id="modelFile" placeholder="Drive Link to CAD Files (STEP, SLDPRT)" required>
         <input type="url" id="model3dUrl" placeholder="Direct Link to .GLB file for 3D Preview (Optional)">
+        
         <button type="button" id="uploadBtn" class="btn-primary hover-target" style="width:100%" onclick="submitNewProduct()">Upload to Database</button>
       </form>
     </div>
 
+    <!-- Requests Review Section -->
     <div id="adminRequestsSection" class="hidden reveal">
       <h2 style="margin-bottom: 30px; text-align: center;">Client Custom Requests & Orders</h2>
       <div id="adminRequestsList" class="requests-grid"></div>
@@ -328,6 +378,7 @@
     </div>
   </div>
 
+  <!-- ULTRA-PREMIUM FOOTER -->
   <footer class="site-footer">
     <div class="footer-content container reveal">
       <div class="footer-brand">
@@ -351,6 +402,7 @@
     <div class="footer-bottom"><p>&copy; 2026 CAD SCAPE. All rights reserved.</p></div>
   </footer>
 
-  <script src="app.js?v=awwwards_edition"></script>
+  <!-- CACHE BUSTER -->
+  <script src="app.js?v=uncompressed_final_build"></script>
 </body>
 </html>
