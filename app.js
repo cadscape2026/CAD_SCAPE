@@ -20,7 +20,7 @@ try {
 }
 
 // ==========================================================================
-// 1. LENIS SMOOTH SCROLL PHYSICS ENGINE (TRIONN STYLE)
+// 1. LENIS SMOOTH SCROLL PHYSICS ENGINE & PROGRESS BAR
 // ==========================================================================
 const lenis = new Lenis({
     duration: 1.2,
@@ -35,6 +35,15 @@ function raf(time) {
 }
 requestAnimationFrame(raf);
 
+// Update progress bar on scroll
+const progressBar = document.getElementById('scrollProgress');
+lenis.on('scroll', (e) => {
+    const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+    if(progressBar) {
+        progressBar.style.width = `${scrollPercent}%`;
+    }
+});
+
 
 // ==========================================================================
 // 2. MAGNETIC CUSTOM CURSOR LOGIC
@@ -47,14 +56,12 @@ let followerX = 0;
 let followerY = 0;
 
 if (window.matchMedia("(pointer: fine)").matches) {
-    // Only run custom cursor logic on desktop devices (where mouse exists)
     document.addEventListener('mousemove', (e) => {
         mouseX = e.clientX; 
         mouseY = e.clientY;
         cursor.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
     });
     
-    // Smooth lagging follower physics
     function animateFollower() {
         followerX += (mouseX - followerX) * 0.15;
         followerY += (mouseY - followerY) * 0.15;
@@ -63,7 +70,6 @@ if (window.matchMedia("(pointer: fine)").matches) {
     }
     animateFollower();
 
-    // Hover state expansion for interactive elements
     document.addEventListener('mouseover', (e) => {
         if(e.target.closest('button') || e.target.closest('a') || e.target.closest('.hover-target') || e.target.closest('.card') || e.target.closest('input') || e.target.closest('textarea')) {
             follower.classList.add('hovering');
@@ -75,24 +81,19 @@ if (window.matchMedia("(pointer: fine)").matches) {
 
 
 // ==========================================================================
-// 3. SCROLL REVEAL ANIMATIONS (INTERSECTION OBSERVER)
+// 3. SCROLL REVEAL ANIMATIONS
 // ==========================================================================
 const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
             entry.target.classList.add('active');
-            // Stop observing once it has been revealed
             revealObserver.unobserve(entry.target); 
         }
     });
-}, { 
-    threshold: 0.1, 
-    rootMargin: "0px 0px -50px 0px" 
-});
+}, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
 
 function initReveals() {
-    const revealElements = document.querySelectorAll('.reveal');
-    revealElements.forEach(el => revealObserver.observe(el));
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 }
 
 
@@ -113,33 +114,23 @@ const navs = {
 };
 
 function switchView(target) {
-    // Hide all views
     Object.values(views).forEach(v => { 
         if(v) v.classList.add('hidden'); 
     });
     
-    // Deactivate all nav links
     Object.values(navs).forEach(n => { 
         if(n) n.classList.remove('active'); 
     });
     
-    // Show target view
     if(views[target]) views[target].classList.remove('hidden');
     if(navs[target]) navs[target].classList.add('active');
 
-    // Load admin data if admin view is opened
-    if(target === 'admin') {
-        fetchAdminRequests();
-    }
+    if(target === 'admin') fetchAdminRequests();
     
-    // Reset lenis scroll to top instantly without smooth transition
     lenis.scrollTo(0, { immediate: true });
-    
-    // Re-initialize reveals for the newly opened view
     setTimeout(initReveals, 100); 
 }
 
-// Nav Click Listeners
 document.getElementById('logoHomeBtn')?.addEventListener('click', (e) => { 
     e.preventDefault(); 
     switchView('home'); 
@@ -166,6 +157,10 @@ if(navs.admin) {
     });
 }
 
+document.getElementById('heroBrowseBtn')?.addEventListener('click', () => {
+    switchView('market');
+});
+
 
 // ==========================================================================
 // 5. COMMAND PALETTE (CMD+K SEARCH)
@@ -185,16 +180,13 @@ window.toggleCmdPalette = function() {
     }
 }
 
-// Keyboard shortcuts for search
 window.addEventListener('keydown', (e) => {
-    // CMD+K or CTRL+K
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') { 
         e.preventDefault(); 
         toggleCmdPalette(); 
     }
-    // ESC to close
-    if (e.key === 'Escape' && !document.getElementById('cmdPaletteOverlay').classList.contains('hidden')) {
-        toggleCmdPalette();
+    if (e.key === 'Escape' && !document.getElementById('cmdPaletteOverlay').classList.contains('hidden')) { 
+        toggleCmdPalette(); 
     }
 });
 
@@ -235,7 +227,7 @@ document.getElementById('cmdSearchInput')?.addEventListener('input', (e) => {
 
 
 // ==========================================================================
-// 6. SIDEBAR & PERSISTENT THEME TOGGLE
+// 6. SIDEBAR & THEME TOGGLE
 // ==========================================================================
 function toggleSidebar() {
     document.getElementById('sidebar')?.classList.toggle('open');
@@ -269,8 +261,7 @@ function updateThemeUI(setDark) {
 }
 
 document.getElementById('themeToggleBtn')?.addEventListener('click', () => { 
-    const isCurrentlyDark = document.body.classList.contains('dark-mode');
-    updateThemeUI(!isCurrentlyDark); 
+    updateThemeUI(!document.body.classList.contains('dark-mode')); 
 });
 
 document.addEventListener('DOMContentLoaded', () => { 
@@ -280,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // ==========================================================================
-// 7. GOOGLE AUTHENTICATION & USER STATE
+// 7. GOOGLE AUTHENTICATION
 // ==========================================================================
 const adminEmails = ["deekshith123pi@gmail.com", "cadscape2026@gmail.com"]; 
 let savedUser = null; 
@@ -302,26 +293,18 @@ function handleSuccessfulLogin(name, email, avatarUrl) {
     document.getElementById('sidebarGuestInfo')?.classList.add('hidden');
     document.getElementById('sidebarUserInfo')?.classList.remove('hidden');
     
-    const avatarEl = document.getElementById('userAvatar');
-    if(avatarEl && avatarUrl) avatarEl.src = avatarUrl;
-    
-    const nameEl = document.getElementById('userNameDisplay');
-    if(nameEl) nameEl.textContent = name;
-    
-    const emailEl = document.getElementById('userEmailDisplay');
-    if(emailEl) emailEl.textContent = email;
-    
+    if(document.getElementById('userAvatar')) document.getElementById('userAvatar').src = avatarUrl;
+    if(document.getElementById('userNameDisplay')) document.getElementById('userNameDisplay').textContent = name;
+    if(document.getElementById('userEmailDisplay')) document.getElementById('userEmailDisplay').textContent = email;
     document.getElementById('logoutBtn')?.classList.remove('hidden');
 
     const isAdmin = adminEmails.includes(email);
     if(navs.admin) navs.admin.classList.toggle('hidden', !isAdmin);
     if(document.getElementById('sidebarNavAdmin')) document.getElementById('sidebarNavAdmin').classList.toggle('hidden', !isAdmin);
     
-    // Re-render grid to show/hide admin edit controls
     if(allProducts.length > 0) renderGrid(allProducts);
 }
 
-// Auto-login if previously saved
 if (currentUser.email) {
     handleSuccessfulLogin(currentUser.name, currentUser.email, currentUser.avatar);
 }
@@ -344,7 +327,7 @@ window.onload = function () {
             });
         }
     } catch (error) { 
-        console.warn("Google Auth not configured properly on this environment."); 
+        console.warn("Google Auth not configured properly."); 
     }
 };
 
@@ -352,7 +335,6 @@ document.getElementById('customLoginBtn')?.addEventListener('click', () => {
     if (tokenClient) {
         tokenClient.requestAccessToken(); 
     } else {
-        // Fallback for testing environments without working Google Client ID
         handleSuccessfulLogin("Admin Demo", "cadscape2026@gmail.com", "https://via.placeholder.com/64"); 
     }
 });
@@ -374,7 +356,6 @@ function updateCounters() {
 
 function getDirectImageUrl(url) {
     if (!url) return '';
-    // Fix Google Drive links to be directly displayable as images
     if (url.includes('drive.google.com/file/d/')) { 
         const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/); 
         if (match && match[1]) {
@@ -400,8 +381,6 @@ function updateScrollAnimation() {
         if (isNaN(rawProgress)) rawProgress = 0; 
         
         const scrollProgress = Math.max(0, Math.min(1, rawProgress)); 
-        
-        // Ping-pong calculation: Disassemble from 0-50%, Reassemble from 50-100%
         const animProgress = scrollProgress <= 0.5 ? (scrollProgress * 2) : (2 - (scrollProgress * 2));
         
         if (heroScrubModel.availableAnimations && heroScrubModel.availableAnimations.length > 0) { 
@@ -409,14 +388,12 @@ function updateScrollAnimation() {
             heroScrubModel.currentTime = animProgress * heroScrubModel.duration; 
         }
         
-        // Centering Math: Move from right edge to center
         let shiftX = 0;
         if (window.innerWidth > 850) {
             shiftX = 25 - (animProgress * 25);
         }
         heroScrubModel.style.transform = `translateX(${shiftX}vw)`;
         
-        // Text fading
         if (overlay) {
             const fade = Math.min(1, scrollProgress * 3); 
             overlay.style.opacity = 1 - fade;
@@ -426,7 +403,6 @@ function updateScrollAnimation() {
     }
 }
 
-// Bind to Lenis event instead of window scroll for butter-smooth sync
 lenis.on('scroll', updateScrollAnimation);
 window.addEventListener('resize', updateScrollAnimation); 
 
@@ -441,7 +417,7 @@ updateScrollAnimation();
 
 
 // ==========================================================================
-// 9. PRODUCT GRID RENDERING & STORE LOGIC
+// 9. 3D TILT PRODUCT GRID RENDERING
 // ==========================================================================
 function generateProductCardHTML(product, isAdmin, isWishlisted) {
     const priceDisplay = product.price === 0 
@@ -487,6 +463,29 @@ function generateProductCardHTML(product, isAdmin, isWishlisted) {
     `;
 }
 
+function init3DTilt() {
+    if (!window.matchMedia("(pointer: fine)").matches) return; 
+    
+    document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('mousemove', e => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = ((y - centerY) / centerY) * -8; 
+            const rotateY = ((x - centerX) / centerX) * 8;
+            
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+        });
+        
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+        });
+    });
+}
+
 function renderGrid(productsToRender) {
     const grid = document.getElementById('productGrid');
     const homeGrid = document.getElementById('homeRecentGrid');
@@ -509,16 +508,13 @@ function renderGrid(productsToRender) {
         if(homeGrid && index < 3) homeGrid.innerHTML += cardHTML;
     });
     
-    // Re-initialize intersection observers for the newly rendered cards
     initReveals();
+    init3DTilt(); 
 }
 
-// Store Filter Chips Logic
 document.querySelectorAll('.chip').forEach(chip => {
     chip.addEventListener('click', (e) => {
-        // Remove active class from all chips
         document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-        // Add to clicked chip
         e.target.classList.add('active');
         
         const filterText = e.target.textContent;
@@ -541,7 +537,6 @@ async function loadProducts() {
         
         allProducts = await response.json();
         
-        // Clean up invalid items from local storage
         const validIds = allProducts.map(p => p.id);
         wishlist = wishlist.filter(id => validIds.includes(id));
         localStorage.setItem('cadWishlist', JSON.stringify(wishlist));
@@ -551,7 +546,6 @@ async function loadProducts() {
         
         updateCounters();
         
-        // Render Edge-to-Edge Cinematic Store Hero
         const track = document.getElementById('carouselTrack');
         if(track && allProducts.length > 0) {
             track.innerHTML = allProducts.slice(0, 3).map(p => `
@@ -560,7 +554,6 @@ async function loadProducts() {
                 </div>
             `).join('');
             
-            // Carousel Auto-play logic
             setInterval(() => {
                 let currentSlide = parseInt(track.dataset.slide || 0);
                 currentSlide = (currentSlide + 1) % Math.min(3, allProducts.length);
@@ -571,7 +564,7 @@ async function loadProducts() {
         
         renderGrid(allProducts);
     } catch (error) { 
-        console.warn("Backend not connected yet or server error.", error); 
+        console.error("Backend not connected yet.", error); 
     }
 }
 
@@ -640,7 +633,8 @@ window.submitNewProduct = async function() {
             alert("Unauthorized: Hack attempt blocked or wrong Admin PIN.");
         }
     } catch (e) { 
-        alert("Error communicating with backend."); 
+        alert("Error communicating with backend. Check console."); 
+        console.error(e);
     } finally { 
         if(btn){ 
             btn.textContent = "Upload to Database"; 
@@ -649,7 +643,6 @@ window.submitNewProduct = async function() {
     }
 };
 
-// Drag and Drop Logic
 let currentUploadBase64 = "";
 let currentEditBase64 = "";
 
@@ -770,6 +763,7 @@ window.submitEditProduct = async function() {
         }
     } catch (e) { 
         alert("Error communicating with backend."); 
+        console.error(e);
     } finally { 
         if(btn){ 
             btn.textContent = "Save Changes"; 
@@ -795,6 +789,7 @@ window.deleteProduct = async function(id) {
         }
     } catch (e) { 
         alert("Error communicating with backend."); 
+        console.error(e);
     }
 }
 
@@ -843,6 +838,7 @@ window.submitDesignRequest = async function() {
         }
     } catch (e) { 
         alert("Network Error."); 
+        console.error(e);
     } finally { 
         if(btn){ 
             btn.textContent = "Submit Request"; 
@@ -881,7 +877,10 @@ window.saveAdminUpdate = async function(id) {
     try { 
         const res = await fetch(`${API_BASE}/requests/${id}`, { 
             method: 'PUT', 
-            headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_SECRET }, 
+            headers: { 
+                'Content-Type': 'application/json', 
+                'X-Admin-Key': ADMIN_SECRET 
+            }, 
             body: JSON.stringify(payload) 
         }); 
         
@@ -893,6 +892,7 @@ window.saveAdminUpdate = async function(id) {
         }
     } catch(e) { 
         alert("Error connecting to server."); 
+        console.error(e);
     }
 };
 
@@ -901,6 +901,7 @@ async function fetchAdminRequests() {
         const res = await fetch(`${API_BASE}/requests`); 
         const reqs = await res.json();
         const list = document.getElementById('adminRequestsList'); 
+        
         if(!list) return;
         
         if(reqs.length === 0) { 
@@ -964,7 +965,7 @@ async function fetchAdminRequests() {
         
         setTimeout(initReveals, 100); 
     } catch (err) {
-        console.error("Could not fetch requests");
+        console.error("Could not fetch requests", err);
     }
 }
 
@@ -1044,8 +1045,9 @@ document.getElementById('orderHistoryBtn')?.addEventListener('click', () => {
                 </div>`;
             }).join('');
         })
-        .catch(() => {
+        .catch((error) => {
             list.innerHTML = '<p style="color:var(--grabcad-red)">Failed to load orders.</p>';
+            console.error(error);
         });
 });
 
@@ -1100,7 +1102,6 @@ window.addToCart = function(id, name, price, link) {
     localStorage.setItem('cadCart', JSON.stringify(cart)); 
     updateCounters(); 
     
-    // Magnetic pulse to show addition
     follower?.classList.add('hovering'); 
     setTimeout(() => follower?.classList.remove('hovering'), 300); 
     alert(`${name} added to cart!`);
@@ -1124,7 +1125,8 @@ function renderWishlist() {
     div.innerHTML = '';
     
     if (wishlist.length === 0) {
-        return div.innerHTML = '<p style="color:var(--text-muted);">Your wishlist is empty.</p>';
+        div.innerHTML = '<p style="color:var(--text-muted);">Your wishlist is empty.</p>';
+        return;
     }
     
     wishlist.forEach(id => { 
@@ -1142,6 +1144,7 @@ function renderWishlist() {
         }
     });
 }
+
 document.getElementById('wishlistBtn')?.addEventListener('click', () => { 
     renderWishlist(); 
     document.getElementById('wishlistModal').classList.remove('hidden'); 
@@ -1158,7 +1161,8 @@ function renderCart() {
     cartTotalContainer.classList.remove('hidden');
     
     if (cart.length === 0) {
-        return div.innerHTML = '<p style="color:var(--text-muted);">Your cart is empty.</p>';
+        div.innerHTML = '<p style="color:var(--text-muted);">Your cart is empty.</p>';
+        return;
     }
     
     div.innerHTML = cart.map((item, i) => { 
@@ -1173,8 +1177,11 @@ function renderCart() {
         </div>`; 
     }).join('');
     
-    if(cartTotalSpan) cartTotalSpan.textContent = total.toFixed(2);
+    if(cartTotalSpan) {
+        cartTotalSpan.textContent = total.toFixed(2);
+    }
 }
+
 document.getElementById('cartBtn')?.addEventListener('click', () => { 
     renderCart(); 
     document.getElementById('cartModal').classList.remove('hidden'); 
@@ -1187,7 +1194,7 @@ window.checkoutCart = async function() {
     const total = cart.reduce((sum, item) => sum + item.price, 0); 
     const div = document.getElementById('cartItems');
 
-    // Instant Free Download Logic
+    // Free Download Logic
     if (total === 0) {
         div.innerHTML = `<h3 style="color:var(--green-free); margin-bottom:16px;">Success! Here are your free files:</h3>` + 
             cart.map(i => `
@@ -1244,6 +1251,7 @@ window.checkoutCart = async function() {
             }
         } catch(e) { 
             alert("Network Error. Cannot connect to database."); 
+            console.error(e);
         } finally { 
             if(btn){ 
                 btn.textContent = "Checkout"; 
@@ -1260,6 +1268,7 @@ window.openComments = function(id) {
     currentCommentProductId = id; 
     const product = allProducts.find(x => x.id === id); 
     const div = document.getElementById('commentsList'); 
+    
     if(!div) return;
     
     if (product && product.comments && product.comments.length > 0) {
@@ -1272,6 +1281,7 @@ window.openComments = function(id) {
     } else {
         div.innerHTML = '<p style="color:var(--text-muted);">No comments yet. Be the first to share your thoughts!</p>';
     }
+    
     document.getElementById('commentsModal').classList.remove('hidden');
 }
 
@@ -1293,15 +1303,17 @@ document.getElementById('submitCommentBtn')?.addEventListener('click', async () 
             headers: { 'Content-Type': 'application/json' }, 
             body: JSON.stringify(payload) 
         }); 
+        
         inputEl.value = ''; 
         document.getElementById('commentsModal').classList.add('hidden'); 
         alert("Comment posted successfully!");
         loadProducts(); 
     } catch (e) { 
         alert("Failed to post comment. Network error."); 
+        console.error(e);
     }
 });
 
-// Initialization
+// Initial Setup Calls
 updateCounters();
 loadProducts();
