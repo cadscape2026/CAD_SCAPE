@@ -58,6 +58,7 @@
       <nav class="main-nav">
         <a href="#" id="navMarket" class="hover-target">Store</a>
         <a href="#" id="navRequests" class="hover-target">Custom</a>
+        <a href="#" id="navProfile" class="hidden hover-target">Developer Profile</a>
         <a href="#" id="navAdmin" class="hidden hover-target">Admin</a>
       </nav>
 
@@ -101,7 +102,7 @@
       </div>
       <div id="sidebarGuestInfo" class="sidebar-user">
         <h4>Guest User</h4>
-        <p style="font-size: 0.8rem; color: var(--text-muted);">Sign in to save files.</p>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">Sign in to save files & view developer profile.</p>
       </div>
 
       <div class="sidebar-menu">
@@ -109,9 +110,16 @@
           <button class="sidebar-link hover-target" onclick="switchView('home'); toggleSidebar();">Home</button>
           <button class="sidebar-link hover-target" onclick="switchView('market'); toggleSidebar();">Store & Models</button>
           <button class="sidebar-link hover-target" onclick="switchView('requests'); toggleSidebar();">Design Requests</button>
-          <button id="sidebarNavAdmin" class="sidebar-link hidden text-blue hover-target" onclick="switchView('admin'); toggleSidebar();">Admin Console</button>
           <hr style="border-color: var(--border); margin: 10px 0;">
         </div>
+
+        <button id="sidebarNavProfile" class="sidebar-link hidden portfolio-sidebar-btn hover-target" onclick="switchView('profile'); toggleSidebar();">
+          <span>👨‍🚀 Developer Profile</span>
+        </button>
+
+        <button id="sidebarNavAdmin" class="sidebar-link hidden text-blue hover-target" onclick="switchView('admin'); toggleSidebar();">
+          <span>⚙️ Admin Console</span>
+        </button>
 
         <button id="themeToggleBtn" class="sidebar-link hover-target">
           <span>Switch Theme</span>
@@ -253,6 +261,289 @@
         <button type="button" id="requestBtn" class="btn-primary hover-target" style="width:100%" onclick="submitDesignRequest()">Submit Request</button>
       </form>
     </div>
+  </section>
+
+  <!-- VIEW: DEVELOPER PROFILE / PORTFOLIO (VISIBLE TO LOGGED-IN USERS) -->
+  <section id="viewProfile" class="view-section hidden container">
+    
+    <!-- Hidden file input for quick photo customization -->
+    <input type="file" id="portfolioImgPicker" accept="image/*" class="hidden">
+
+    <!-- PORTFOLIO HERO / ABOUT ME -->
+    <div class="portfolio-hero glass-panel reveal">
+      <div class="portfolio-hero-grid">
+        
+        <!-- Developer Portrait Card -->
+        <div class="portfolio-avatar-col">
+          <div class="portfolio-avatar-frame">
+            <img 
+              id="portfolioImg_developer" 
+              src="developer.jpg" 
+              alt="Developer Portrait" 
+              class="portfolio-avatar-img hover-target"
+              onclick="openPortfolioLightbox('developer', 'Lead 3D Artist, CAD Designer & Aerospace Engineering Student')"
+              onerror="handlePortfolioImgError(this, 'developer', 'Developer Portrait')"
+            >
+            <button class="portfolio-photo-edit-btn hover-target" onclick="triggerPortfolioImgUpload('developer')" title="Change Portrait Photo">
+              📷 Set Photo
+            </button>
+          </div>
+          <div class="portfolio-status-pill">
+            <span class="status-dot"></span>
+            <span>Aerospace Engineering &amp; 3D Design</span>
+          </div>
+        </div>
+
+        <!-- Bio & Details -->
+        <div class="portfolio-bio-col">
+          <div class="portfolio-eyebrow">CREATOR &amp; LEAD ENGINEER PORTFOLIO</div>
+          <h1 class="portfolio-name">3D Artist, CAD Designer &amp; Aerospace Engineer</h1>
+          <p class="portfolio-role-subtitle">
+            SolidWorks Mechanical Design • Blender 3D Animation • Aerospace &amp; Robotics Systems
+          </p>
+
+          <div class="portfolio-about-text">
+            <p>
+              I am a passionate <strong>3D Artist, Designer, and Aerospace Engineering student</strong> with a strong interest in 3D modelling, animation, product visualization, and creative design. I specialize in creating detailed 3D models, realistic environments, cinematic renders, and animations using <strong>Blender</strong>.
+            </p>
+            <p>
+              Alongside my creative skills, I have experience in CAD modelling and mechanical design using <strong>SolidWorks</strong> and other design tools. I enjoy transforming ideas and concepts into visually engaging and technically detailed 3D creations.
+            </p>
+            <p>
+              My work combines creativity, technical knowledge, and attention to detail, with a continuous passion for learning new techniques and exploring innovative design possibilities.
+            </p>
+          </div>
+
+          <div class="portfolio-cta-row">
+            <button class="btn-primary hover-target" onclick="document.getElementById('portfolioProjectsAnchor').scrollIntoView({behavior: 'smooth'})">
+              Explore Engineering Projects
+            </button>
+            <button class="btn-secondary hover-target" onclick="switchView('requests')">
+              Hire for Custom CAD
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- AREAS OF EXPERTISE -->
+      <div class="portfolio-expertise-block">
+        <h3 class="portfolio-section-label">AREAS OF EXPERTISE</h3>
+        <div class="expertise-badges">
+          <span class="expertise-pill hover-target">3D Modelling</span>
+          <span class="expertise-pill hover-target">3D Animation</span>
+          <span class="expertise-pill hover-target">Product Visualization</span>
+          <span class="expertise-pill hover-target">Environment Design</span>
+          <span class="expertise-pill hover-target">VFX</span>
+          <span class="expertise-pill hover-target">CAD Design</span>
+          <span class="expertise-pill hover-target">Rendering</span>
+          <span class="expertise-pill hover-target">Motion Graphics</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FEATURED ENGINEERING PROJECTS -->
+    <div id="portfolioProjectsAnchor" class="portfolio-projects-header reveal">
+      <span class="hero-badge">ENGINEERING &amp; CAD SHOWCASE</span>
+      <h2>Featured Technical Projects</h2>
+      <p>Detailed mechanical assemblies, aerospace propulsion mechanisms, and robotic systems designed in SolidWorks and visualized in Blender.</p>
+    </div>
+
+    <!-- PROJECT 1: CDTVC SYSTEM -->
+    <article class="portfolio-project-card glass-panel reveal">
+      <div class="project-header-bar">
+        <div>
+          <span class="project-number">PROJECT 01 // AEROSPACE PROPULSION</span>
+          <h3 class="project-title">Cable Driven Thrust Vector Control (CDTVC) System</h3>
+        </div>
+        <div class="project-domain-tags">
+          <span class="domain-tag">Aerospace Engineering</span>
+          <span class="domain-tag">Mechanical Design</span>
+          <span class="domain-tag">Thrust Vector Control</span>
+        </div>
+      </div>
+
+      <div class="project-body-grid">
+        <div class="project-narrative">
+          <p>
+            The <strong>Cable Driven Thrust Vector Control (CDTVC) System</strong> is an aerospace engineering project focused on developing an alternative mechanism for controlling rocket thrust direction using a cable-driven arrangement.
+          </p>
+          <p>
+            The system utilizes high-strength steel cables, precision pulleys, and electromechanical actuators to achieve controlled movement of the thrust vector. The complete mechanical assembly was designed and modelled in <strong>SolidWorks</strong>, with a 3D animation created using <strong>Blender</strong> to demonstrate the mechanism and its working principle.
+          </p>
+
+          <div class="project-contributions">
+            <h4>My Contributions:</h4>
+            <ul>
+              <li>Designed and developed the 3D mechanical components and assembly using SolidWorks.</li>
+              <li>Modelled the cable routing, pulley arrangement, and actuator mounting system.</li>
+              <li>Created a 3D animated demonstration of the mechanism using Blender.</li>
+              <li>Contributed to the mechanical design and visualization of the thrust vector control concept.</li>
+            </ul>
+          </div>
+
+          <div class="project-meta-footer">
+            <div class="meta-item">
+              <span class="meta-label">Tools Used</span>
+              <div class="tool-pills">
+                <span class="tool-pill">SolidWorks</span>
+                <span class="tool-pill">Blender</span>
+              </div>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Project Domain</span>
+              <span class="meta-val">Aerospace Engineering | Mechanical Design | Thrust Vector Control</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Project 1 Gallery (3 Images) -->
+        <div class="project-gallery">
+          <div class="gallery-main-frame">
+            <img 
+              id="portfolioImg_cdtvc_1" 
+              src="cdtvc_1.jpg" 
+              alt="CDTVC SolidWorks Assembly Front View" 
+              class="gallery-img hover-target"
+              onclick="openPortfolioLightbox('cdtvc_1', 'CDTVC System — SolidWorks Full Assembly & Feature Tree')"
+              onerror="handlePortfolioImgError(this, 'cdtvc_1', 'CDTVC Front Assembly')"
+            >
+            <span class="gallery-caption">Front Elevation &amp; CAD Assembly Tree</span>
+            <button class="portfolio-photo-edit-btn hover-target" onclick="triggerPortfolioImgUpload('cdtvc_1')">📷 Set Image 1</button>
+          </div>
+
+          <div class="gallery-sub-grid">
+            <div class="gallery-sub-frame">
+              <img 
+                id="portfolioImg_cdtvc_2" 
+                src="cdtvc_2.jpg" 
+                alt="CDTVC Isometric Structural View" 
+                class="gallery-img hover-target"
+                onclick="openPortfolioLightbox('cdtvc_2', 'CDTVC System — Isometric Structural Frame & Gimbal Ring')"
+                onerror="handlePortfolioImgError(this, 'cdtvc_2', 'CDTVC Isometric View')"
+              >
+              <span class="gallery-caption">Isometric Frame &amp; Gimbal</span>
+              <button class="portfolio-photo-edit-btn hover-target" onclick="triggerPortfolioImgUpload('cdtvc_2')">📷 Set Image 2</button>
+            </div>
+
+            <div class="gallery-sub-frame">
+              <img 
+                id="portfolioImg_cdtvc_3" 
+                src="cdtvc_3.jpg" 
+                alt="CDTVC Pulley & Nozzle Mechanism" 
+                class="gallery-img hover-target"
+                onclick="openPortfolioLightbox('cdtvc_3', 'CDTVC System — Nozzle Gimbal, Pulleys & Cable Routing')"
+                onerror="handlePortfolioImgError(this, 'cdtvc_3', 'CDTVC Nozzle Detail')"
+              >
+              <span class="gallery-caption">Pulley &amp; Nozzle Assembly</span>
+              <button class="portfolio-photo-edit-btn hover-target" onclick="triggerPortfolioImgUpload('cdtvc_3')">📷 Set Image 3</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- PROJECT 2: ROVER MECHANICAL DESIGN – TEAM TARKASHYA -->
+    <article class="portfolio-project-card glass-panel reveal">
+      <div class="project-header-bar">
+        <div>
+          <span class="project-number">PROJECT 02 // ROBOTICS &amp; ROVER SYSTEMS</span>
+          <h3 class="project-title">Rover Mechanical Design – Team Tarkashya</h3>
+          <div class="project-role-banner">
+            <span class="role-highlight">My Role: CAD Head | Mechanical Design</span>
+            <span class="team-highlight">Team: Tarkashya – College Rover Development Team</span>
+          </div>
+        </div>
+        <div class="project-domain-tags">
+          <span class="domain-tag">Robotics</span>
+          <span class="domain-tag">Mechanical Design</span>
+          <span class="domain-tag">Rover Development</span>
+        </div>
+      </div>
+
+      <div class="project-body-grid">
+        <div class="project-narrative">
+          <p>
+            As a member of <strong>Team Tarkashya</strong>, the college rover development team, I contributed to the mechanical design and development of a rover designed for challenging terrain and practical robotic applications.
+          </p>
+          <p>
+            My primary responsibility involved designing and developing the <strong>rover chassis and robotic arm</strong>, focusing on structural design, mechanical integration, and functional movement. I worked on creating 3D CAD models, developing mechanical assemblies, and refining the overall design to meet the project's requirements.
+          </p>
+
+          <div class="project-contributions">
+            <h4>My Contributions:</h4>
+            <ul>
+              <li>Designed and modelled the rover chassis, focusing on structural strength and component arrangement.</li>
+              <li>Developed the robotic arm assembly, including shoulder and elbow mechanisms.</li>
+              <li>Worked on actuator integration and mechanical movement considerations.</li>
+              <li>Created and refined 3D CAD models and mechanical assemblies.</li>
+              <li>Contributed to the overall mechanical design and development of the rover.</li>
+            </ul>
+          </div>
+
+          <div class="project-meta-footer">
+            <div class="meta-item">
+              <span class="meta-label">Tools &amp; Technologies</span>
+              <div class="tool-pills">
+                <span class="tool-pill">SolidWorks</span>
+                <span class="tool-pill">CAD Modelling</span>
+                <span class="tool-pill">Mechanical Design</span>
+                <span class="tool-pill">3D Assembly</span>
+              </div>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Project Domain</span>
+              <span class="meta-val">Robotics | Mechanical Design | Rover Development</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Project 2 Gallery (3 Images) -->
+        <div class="project-gallery">
+          <div class="gallery-main-frame">
+            <img 
+              id="portfolioImg_rover_1" 
+              src="rover_1.jpg" 
+              alt="Rover Mechanical Design SolidWorks Workspace" 
+              class="gallery-img hover-target"
+              onclick="openPortfolioLightbox('rover_1', 'Team Tarkashya Rover — SolidWorks Assembly & Robotic Manipulator')"
+              onerror="handlePortfolioImgError(this, 'rover_1', 'Rover CAD Assembly')"
+            >
+            <span class="gallery-caption">SolidWorks Full Assembly &amp; Chassis Enclosure</span>
+            <button class="portfolio-photo-edit-btn hover-target" onclick="triggerPortfolioImgUpload('rover_1')">📷 Set Image 1</button>
+          </div>
+
+          <div class="gallery-sub-grid">
+            <div class="gallery-sub-frame">
+              <img 
+                id="portfolioImg_rover_2" 
+                src="rover_2.jpg" 
+                alt="Rover Isometric View with Extended Arm" 
+                class="gallery-img hover-target"
+                onclick="openPortfolioLightbox('rover_2', 'Team Tarkashya Rover — Isometric Chassis & Articulated Excavation Arm')"
+                onerror="handlePortfolioImgError(this, 'rover_2', 'Rover Isometric View')"
+              >
+              <span class="gallery-caption">Isometric Chassis &amp; Arm</span>
+              <button class="portfolio-photo-edit-btn hover-target" onclick="triggerPortfolioImgUpload('rover_2')">📷 Set Image 2</button>
+            </div>
+
+            <div class="gallery-sub-frame">
+              <img 
+                id="portfolioImg_rover_3" 
+                src="rover_3.jpg" 
+                alt="Rover Side Profile & Kinematics" 
+                class="gallery-img hover-target"
+                onclick="openPortfolioLightbox('rover_3', 'Team Tarkashya Rover — Side Elevation, Shoulder/Elbow Joints & End-Effector')"
+                onerror="handlePortfolioImgError(this, 'rover_3', 'Rover Side Elevation')"
+              >
+              <span class="gallery-caption">Side Kinematic Profile</span>
+              <button class="portfolio-photo-edit-btn hover-target" onclick="triggerPortfolioImgUpload('rover_3')">📷 Set Image 3</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
   </section>
 
   <!-- VIEW: ADMIN CONSOLE -->
@@ -403,6 +694,6 @@
   </footer>
 
   <!-- CACHE BUSTER -->
-  <script src="app.js?v=uncompressed_final_build"></script>
+  <script src="app.js?v=portfolio_build_v2"></script>
 </body>
 </html>
